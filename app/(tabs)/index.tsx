@@ -1,1157 +1,858 @@
-import React, { useState, useMemo } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Modal,
-  TextInput,
   ScrollView,
   Alert,
   Platform,
   ActivityIndicator,
   KeyboardAvoidingView,
   Pressable,
+  useWindowDimensions,
+  Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MapPin, Navigation, X, Fish, Save, Clock, Trophy, ChevronRight, Info, Map, Waves, Anchor, Star, Download, CircleCheck, Trash2, Cloud, Thermometer, Wind } from 'lucide-react-native';
-import { Colors, Spacing, FontSizes, BorderRadius, FontWeights } from '@/constants/theme';
-import { getSpeciesRecommendations, getTimeOfDayRecommendation, getWeatherRecommendation, getMonthName, getCurrentMonth, RecommendedSpecies, NearbySpot, formatDistance, getWaterTypeIcon } from '@/utils/recommendations';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Fish, Info, MapPin, X } from 'lucide-react-native';
+import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
+import BrandMark from '@/components/brand/BrandMark';
+import { AppScreenHeader, estimateHeroHeaderHeight, type HeroCollapseLevel } from '@/components/ui';
+import {
+  getSpeciesRecommendations,
+  RecommendedSpecies,
+  NearbySpot,
+} from '@/utils/recommendations';
+import { getBestTimeNow } from '@/utils/bestTimeNow';
+import { buildLocationSpeciesGuide } from '@/utils/speciesGuide';
+import { getPrimaryLureLabel } from '@/utils/speciesRigs';
 import speciesData from '@/data/species.json';
 import FishingMap from '@/components/FishingMap';
-import { useUserLocation } from '@/hooks/useUserLocation';
-import { useNearbyFishingSpots } from '@/hooks/useNearbyFishingSpots';
+import MapBottomSheet, { type MapBottomSheetHandle } from '@/components/map/MapBottomSheet';
+import SpeciesGuideSheet from '@/components/map/SpeciesGuideSheet';
+import MapLocationSearchBar, {
+  type MapLocationSearchBarHandle,
+} from '@/components/map/MapLocationSearchBar';
+import MapOverlayControls from '@/components/map/MapOverlayControls';
+import { BOTTOM_SHEET_PEEK_HEIGHT, getSheetHeightForIndex } from '@/components/map/mapSheetConstants';
+import type { FlyToTarget } from '@/components/map/types';
+import { useDeviceLocation } from '@/hooks/useDeviceLocation';
+import { useLocalFishingData } from '@/hooks/useLocalFishingData';
+import { DEFAULT_RADIUS_METERS } from '@/lib/api/endpoints/localSpecies';
+import type { ActiveCoordinates, LocationSearchResult } from '@/lib/types/mapCoordinates';
+import { useCategorizedSpots } from '@/hooks/useCategorizedSpots';
+import type { DiscoveryDashboardStatus } from '@/components/map/DiscoveryDashboard';
 import { useOfflineMap } from '@/hooks/useOfflineMap';
 import { useSaveCatch } from '@/hooks/useCatches';
+import { useCatchInsights } from '@/hooks/useCatchInsights';
+import { getAreaRegulationNotices } from '@/utils/fishingRegulations';
 import { useWeather } from '@/hooks/useWeather';
-import { useSpotsInBBox } from '@/hooks/useSpotsInBBox';
-import type { BBox } from '@/lib/api/fishingApi';
+import { useTides } from '@/hooks/useTides';
+import { useSpotDetails } from '@/hooks/useSpotDetails';
+import { useSpeciesPrediction } from '@/hooks/useSpeciesPrediction';
+import { getSpotLogSpeciesOptions } from '@/lib/species/spotLogSpecies';
+import { searchResultToNearbySpot } from '@/lib/api/endpoints/locationsSearch';
+import type { LocationSpeciesGuide } from '@/lib/types/speciesGuide';
+import type { AvailableSpecies, SpeciesPrediction } from '@/lib/types/speciesPrediction';
+import LogCatchForm, { type LogCatchFormValues } from '@/components/catch/LogCatchForm';
+import { resolveCatchLocationFromMap } from '@/utils/catchLocation';
+import { buildCatchConditions } from '@/utils/catchConditions';
+import { useToast } from '@/components/ui';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useTheme } from '@/providers/ThemeProvider';
+import { hapticLight, hapticSuccess, hapticWarning, hapticError } from '@/utils/haptics';
 
 export default function MapScreen() {
-  const { data: locationData, isLoading: locationLoading } = useUserLocation();
-  const location = locationData?.location ?? null;
-  const usingDefaultLocation = locationData?.isDefault ?? false;
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const router = useRouter();
+  const { lat: flyLatParam, lng: flyLngParam } = useLocalSearchParams<{
+    lat?: string;
+    lng?: string;
+  }>();
+  const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const { isWide, mapPanelWidth, modalMaxWidth } = useResponsiveLayout();
+  const sheetRef = useRef<MapBottomSheetHandle>(null);
+  const searchBarRef = useRef<MapLocationSearchBarHandle>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [sheetIndex, setSheetIndex] = useState(0);
+  const [heroHeaderHeight, setHeroHeaderHeight] = useState(
+    estimateHeroHeaderHeight('full', insets.top)
+  );
 
-  const { data: nearbySpots = [], isFetching: loadingSpots } =
-    useNearbyFishingSpots({
-      latitude: location?.latitude,
-      longitude: location?.longitude,
-      radiusMiles: 50,
-      enabled: !!location,
+  const {
+    data: deviceLocation,
+    isLoading: gpsLoading,
+    refetch: refetchDeviceLocation,
+  } = useDeviceLocation();
+
+  const [activeCoords, setActiveCoords] = useState<ActiveCoordinates | null>(null);
+  const [mapCenterKey, setMapCenterKey] = useState(0);
+  const [showLegend, setShowLegend] = useState(true);
+  const [flyToTarget, setFlyToTarget] = useState<FlyToTarget | null>(null);
+  const [fabBottomOffset, setFabBottomOffset] = useState(BOTTOM_SHEET_PEEK_HEIGHT);
+
+  useEffect(() => {
+    if (deviceLocation && activeCoords === null) {
+      setActiveCoords({
+        latitude: deviceLocation.latitude,
+        longitude: deviceLocation.longitude,
+        source: 'gps',
+      });
+    }
+  }, [deviceLocation, activeCoords]);
+
+  const lastFlyParamsRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!flyLatParam || !flyLngParam) return;
+    const key = `${flyLatParam},${flyLngParam}`;
+    if (lastFlyParamsRef.current === key) return;
+    lastFlyParamsRef.current = key;
+
+    const lat = parseFloat(flyLatParam);
+    const lng = parseFloat(flyLngParam);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    setActiveCoords({
+      latitude: lat,
+      longitude: lng,
+      source: 'search',
+      label: 'Catch location',
     });
+    setFlyToTarget({ lat, lng, key: Date.now(), zoom: 14 });
+    sheetRef.current?.snapToIndex(0);
+  }, [flyLatParam, flyLngParam]);
+
+  const {
+    species: localSpecies,
+    isLoading: speciesLoading,
+    isFetchingSpecies,
+    isOffline,
+    refetchSpecies,
+  } = useLocalFishingData(
+    activeCoords?.latitude,
+    activeCoords?.longitude,
+    DEFAULT_RADIUS_METERS
+  );
+
+  const location = activeCoords
+    ? { latitude: activeCoords.latitude, longitude: activeCoords.longitude }
+    : null;
+
+  const permissionDenied = deviceLocation?.permissionDenied ?? false;
+  const isSearchingLocation = activeCoords?.source === 'search';
+
+  const handleSelectSearchLocation = useCallback((result: LocationSearchResult) => {
+    const spot = searchResultToNearbySpot(result);
+
+    setActiveCoords({
+      latitude: result.latitude,
+      longitude: result.longitude,
+      source: 'search',
+      label: result.name,
+    });
+    setSelectedSpotId(spot.id);
+    setSelectedSpotSnapshot(spot);
+    setFlyToTarget({
+      lat: result.latitude,
+      lng: result.longitude,
+      key: Date.now(),
+      zoom: 14,
+    });
+    setMapCenterKey((key) => key + 1);
+    sheetRef.current?.snapToIndex(1);
+  }, []);
+
+  const handleRecenterOnGps = useCallback(async () => {
+    const { data: freshLocation } = await refetchDeviceLocation();
+    const gps = freshLocation ?? deviceLocation;
+    if (!gps) return;
+
+    setActiveCoords({
+      latitude: gps.latitude,
+      longitude: gps.longitude,
+      source: 'gps',
+      label: undefined,
+    });
+    setSelectedSpotId(null);
+    setSelectedSpotSnapshot(null);
+    setMapCenterKey((key) => key + 1);
+  }, [refetchDeviceLocation, deviceLocation]);
+
+  const {
+    categories: categorizedSpots,
+    mapSpots: discoverySpots,
+    onViewportChange,
+    isFetching: loadingCategorizedSpots,
+    zoomedOutTooFar,
+    hasViewport,
+  } = useCategorizedSpots(location?.latitude, location?.longitude);
+
+  const discoveryStatus = useMemo((): DiscoveryDashboardStatus => {
+    if (!hasViewport) return 'waiting-for-map';
+    if (zoomedOutTooFar) return 'zoom-out';
+    if (loadingCategorizedSpots && categorizedSpots.length === 0) return 'loading';
+    if (categorizedSpots.length === 0) return 'empty';
+    return 'ready';
+  }, [hasViewport, zoomedOutTooFar, loadingCategorizedSpots, categorizedSpots.length]);
 
   const recommendations = useMemo(
     () =>
-      location
-        ? getSpeciesRecommendations(location.latitude, location.longitude)
-        : [],
+      location ? getSpeciesRecommendations(location.latitude, location.longitude) : [],
     [location]
   );
 
-  const timeOfDay = useMemo(() => getTimeOfDayRecommendation(), []);
+  const [timeTick, setTimeTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTimeTick((t) => t + 1), 15 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const offlineMap = useOfflineMap(location?.latitude, location?.longitude);
   const { data: weather } = useWeather(location?.latitude, location?.longitude);
-
-  // Global spatial fetching — the map camera drives which region is loaded
-  const [viewBBox, setViewBBox] = useState<BBox | null>(null);
-  const effectiveBBox: BBox | null =
-    viewBBox ??
-    (location
-      ? [
-          location.longitude - 0.15,
-          location.latitude - 0.15,
-          location.longitude + 0.15,
-          location.latitude + 0.15,
-        ]
-      : null);
-  const { data: bboxSpots = [] } = useSpotsInBBox(effectiveBBox);
-
-  // Merge radius-based spots (rich local data wins) with global bbox spots
-  const mapSpots = useMemo(() => {
-    const byId: Record<string, NearbySpot> = {};
-    for (const spot of [...nearbySpots, ...bboxSpots]) {
-      if (!byId[spot.id]) byId[spot.id] = spot;
-    }
-    return Object.values(byId);
-  }, [nearbySpots, bboxSpots]);
+  const { data: tidesData } = useTides(location?.latitude, location?.longitude);
+  const { getPersonalCatchTimesNear, getPersonalSpeciesNear, insights } = useCatchInsights();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedSpecies, setSelectedSpecies] = useState('');
-  const [weight, setWeight] = useState('');
-  const [lure, setLure] = useState('');
-  const [notes, setNotes] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedRecommendation, setSelectedRecommendation] = useState<RecommendedSpecies | null>(null);
-  const [selectedSpot, setSelectedSpot] = useState<NearbySpot | null>(null);
+  const [formKey, setFormKey] = useState(0);
+  const [modalInitialValues, setModalInitialValues] = useState<Partial<LogCatchFormValues>>({});
+  const [modalSpeciesOptions, setModalSpeciesOptions] = useState<string[] | undefined>(undefined);
+  const [formDirty, setFormDirty] = useState(false);
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const [selectedSpotSnapshot, setSelectedSpotSnapshot] = useState<NearbySpot | null>(null);
+  const [speciesGuide, setSpeciesGuide] = useState<LocationSpeciesGuide | null>(null);
+
+  const selectedSpot = useMemo(() => {
+    if (!selectedSpotId) return null;
+    return (
+      discoverySpots.find((spot) => spot.id === selectedSpotId) ??
+      selectedSpotSnapshot
+    );
+  }, [selectedSpotId, discoverySpots, selectedSpotSnapshot]);
+
+  // All viewport spots become map pins; keep the selected spot pinned even if
+  // the user pans to a viewport that no longer contains it.
+  const mapPinSpots = useMemo(() => {
+    if (!selectedSpot) return discoverySpots;
+    return discoverySpots.some((spot) => spot.id === selectedSpot.id)
+      ? discoverySpots
+      : [...discoverySpots, selectedSpot];
+  }, [discoverySpots, selectedSpot]);
+
+  const {
+    data: spotDetails,
+    isLoading: spotDetailsLoading,
+    isError: spotDetailsError,
+    refetch: refetchSpotDetails,
+  } = useSpotDetails({
+    spotId: selectedSpotId,
+    latitude: selectedSpot?.latitude,
+    longitude: selectedSpot?.longitude,
+  });
+
+  const spotPersonalSpecies = useMemo(() => {
+    if (!selectedSpot) return [];
+    return getPersonalSpeciesNear(selectedSpot.latitude, selectedSpot.longitude);
+  }, [selectedSpot, getPersonalSpeciesNear]);
+
+  const {
+    data: speciesPredictionData,
+    isLoading: speciesPredictionsLoading,
+    isError: speciesPredictionsError,
+    refetch: refetchSpeciesPredictions,
+  } = useSpeciesPrediction({
+    locationId: selectedSpotId,
+    latitude: selectedSpot?.latitude ?? location?.latitude,
+    longitude: selectedSpot?.longitude ?? location?.longitude,
+    spotName: selectedSpot?.name ?? null,
+    personalSpecies: spotPersonalSpecies,
+  });
+
+  const personalCatchTimes = useMemo(() => {
+    const lat = selectedSpot?.latitude ?? location?.latitude;
+    const lon = selectedSpot?.longitude ?? location?.longitude;
+    if (lat == null || lon == null) return [];
+    return getPersonalCatchTimesNear(lat, lon).slice(0, 3);
+  }, [
+    selectedSpot?.latitude,
+    selectedSpot?.longitude,
+    location?.latitude,
+    location?.longitude,
+    getPersonalCatchTimesNear,
+  ]);
+
+  const spotPersonalCatchTimes = useMemo(() => {
+    if (!selectedSpot) return [];
+    return getPersonalCatchTimesNear(selectedSpot.latitude, selectedSpot.longitude);
+  }, [selectedSpot, getPersonalCatchTimesNear]);
+
+  const areaRegulationNotices = useMemo(() => {
+    if (!location) return [];
+    return getAreaRegulationNotices(location.latitude, location.longitude);
+  }, [location?.latitude, location?.longitude]);
+
+  const bestTime = useMemo(
+    () =>
+      getBestTimeNow({
+        latitude: location?.latitude ?? null,
+        longitude: location?.longitude ?? null,
+        weather: weather ?? null,
+        spotCatchTimes: spotDetails?.bestCatchTimes,
+        personalCatchTimes,
+        tides: tidesData?.predictions ?? null,
+        spotSpecies: speciesPredictionData?.predictions,
+      }),
+    [
+      location?.latitude,
+      location?.longitude,
+      weather,
+      spotDetails?.bestCatchTimes,
+      personalCatchTimes,
+      tidesData?.predictions,
+      speciesPredictionData?.predictions,
+      timeTick,
+    ]
+  );
 
   const saveCatchMutation = useSaveCatch();
   const saving = saveCatchMutation.isPending;
+  const { showToast } = useToast();
+  const loading = gpsLoading && activeCoords === null;
 
-  const loading = locationLoading && !locationData;
+  const handleMapPress = useCallback(() => {
+    searchBarRef.current?.dismiss();
+  }, []);
 
-  const handleOpenModal = () => {
+  const handleSpotPress = useCallback((spot: NearbySpot) => {
+    hapticLight();
+    setSelectedSpotId(spot.id);
+    setSelectedSpotSnapshot(spot);
+    setFlyToTarget({
+      lat: spot.latitude,
+      lng: spot.longitude,
+      key: Date.now(),
+      zoom: 14,
+    });
+    sheetRef.current?.snapToIndex(1);
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedSpotId(null);
+    setSelectedSpotSnapshot(null);
+  }, []);
+
+  const handleSheetIndexChange = useCallback(
+    (index: number) => {
+      setSheetIndex(index);
+      if (isWide) {
+        setFabBottomOffset(Spacing.lg);
+        return;
+      }
+      setFabBottomOffset(getSheetHeightForIndex(index, windowHeight) || BOTTOM_SHEET_PEEK_HEIGHT);
+    },
+    [windowHeight, isWide]
+  );
+
+  const heroCollapseLevel: HeroCollapseLevel = useMemo(() => {
+    if (searchFocused) return 'compact';
+    if (sheetIndex >= 1) return 'minimal';
+    return 'full';
+  }, [searchFocused, sheetIndex]);
+
+  const handleHeroHeaderLayout = useCallback((height: number) => {
+    setHeroHeaderHeight((prev) => (Math.abs(prev - height) < 1 ? prev : height));
+  }, []);
+
+  useEffect(() => {
+    if (isWide) {
+      setFabBottomOffset(Spacing.lg);
+    }
+  }, [isWide]);
+
+  const handleOpenModal = (
+    initialValues: Partial<LogCatchFormValues> = {},
+    speciesOptions?: string[]
+  ) => {
+    setModalInitialValues(initialValues);
+    setModalSpeciesOptions(speciesOptions);
+    setFormKey((k) => k + 1);
+    setFormDirty(false);
     setModalVisible(true);
   };
 
-  const handleSaveCatch = () => {
-    if (!selectedSpecies) {
-      Alert.alert('Missing Species', 'Please select a fish species.');
-      return;
-    }
-    if (!weight || weight.trim() === '') {
-      Alert.alert('Missing Weight', 'Please enter the weight of your catch.');
-      return;
-    }
+  const resetModalForm = () => {
+    setModalInitialValues({});
+    setModalSpeciesOptions(undefined);
+    setFormKey((k) => k + 1);
+    setFormDirty(false);
+  };
 
-    const selectedSpeciesData = speciesData.find(s => s.name === selectedSpecies);
+  const logCatchLocation = useMemo(
+    () => resolveCatchLocationFromMap(selectedSpot, activeCoords),
+    [selectedSpot, activeCoords]
+  );
+
+  const handleSaveCatch = (values: LogCatchFormValues) => {
+    const selectedSpeciesData = speciesData.find((s) => s.name === values.species);
     saveCatchMutation.mutate(
       {
-        species: selectedSpecies,
+        species: values.species,
         speciesId: selectedSpeciesData?.id || '',
-        weight: weight.trim(),
-        lure: lure.trim(),
-        notes: notes.trim(),
-        latitude: location?.latitude || null,
-        longitude: location?.longitude || null,
-        date: new Date().toLocaleDateString(),
+        weight: values.weight,
+        length: values.length,
+        lure: values.lure,
+        notes: values.notes,
+        photoUri: values.photoUri,
+        conditions: buildCatchConditions(weather, { tideNote: bestTime.tideNote }),
+        latitude: logCatchLocation.latitude,
+        longitude: logCatchLocation.longitude,
+        locationName: logCatchLocation.locationName,
+        caughtAt: values.caughtAt,
+        date: new Date(values.caughtAt).toLocaleDateString(),
       },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           setModalVisible(false);
-          setSelectedSpecies('');
-          setWeight('');
-          setLure('');
-          setNotes('');
-          setShowDropdown(false);
-          Alert.alert('Success', 'Your catch has been logged!');
+          resetModalForm();
+          if (result.synced) {
+            hapticSuccess();
+            showToast({
+              message: 'Your catch has been logged!',
+              variant: 'success',
+              actionLabel: 'View in History',
+              onAction: () => router.push('/history'),
+            });
+          } else {
+            hapticWarning();
+            showToast({
+              message: 'Saved on this device — will sync when online',
+              variant: 'warning',
+              actionLabel: 'View in History',
+              onAction: () => router.push('/history'),
+            });
+          }
         },
         onError: (error) => {
           console.error('Save catch error:', error);
-          Alert.alert('Error', 'Failed to save catch. Please try again.');
+          hapticError();
+          showToast({ message: 'Failed to save catch. Please try again.', variant: 'error' });
         },
       }
     );
   };
 
   const closeModal = () => {
+    if (formDirty) {
+      Alert.alert('Discard changes?', 'You have unsaved changes. Discard them?', [
+        { text: 'Keep editing', style: 'cancel' },
+        {
+          text: 'Discard',
+          style: 'destructive',
+          onPress: () => {
+            setModalVisible(false);
+            resetModalForm();
+          },
+        },
+      ]);
+      return;
+    }
     setModalVisible(false);
-    setSelectedSpecies('');
-    setWeight('');
-    setLure('');
-    setNotes('');
-    setShowDropdown(false);
+    resetModalForm();
   };
 
   const useRecommendation = (rec: RecommendedSpecies) => {
-    setSelectedSpecies(rec.name);
-    setLure(rec.recommendedLure);
-    setSelectedRecommendation(null);
-    setModalVisible(true);
+    handleOpenModal({ species: rec.name, lure: rec.recommendedLure });
   };
 
-  const useSpotSpecies = (spot: NearbySpot) => {
-    if (spot.matchedSpecies.length > 0) {
-      setSelectedSpecies(spot.matchedSpecies[0]);
-      const speciesInfo = speciesData.find(s => s.name === spot.matchedSpecies[0]);
-      if (speciesInfo && speciesInfo.lures.length > 0) {
-        setLure(speciesInfo.lures[0]);
-      }
-      setSelectedSpot(null);
-      setModalVisible(true);
-    }
+  const useSpotSpecies = (spot: NearbySpot, speciesName?: string) => {
+    const spotSpeciesNames =
+      spot.id === selectedSpotId
+        ? getSpotLogSpeciesOptions(
+            speciesPredictionData?.predictions ?? [],
+            speciesPredictionData?.species ?? []
+          )
+        : getSpotLogSpeciesOptions(
+            spot.matchedSpecies.map((name) => ({ name })),
+            spot.matchedSpecies.map((name) => ({ name }))
+          );
+
+    const targetSpecies =
+      speciesName ??
+      spotSpeciesNames[0] ??
+      (spot.matchedSpecies.length > 0 ? spot.matchedSpecies[0] : '');
+
+    const speciesInfo = targetSpecies
+      ? speciesData.find((s) => s.name === targetSpecies)
+      : undefined;
+    const lure =
+      (speciesInfo && getPrimaryLureLabel(speciesInfo.id)) ??
+      (speciesInfo && speciesInfo.lures.length > 0 ? speciesInfo.lures[0] : '') ??
+      '';
+
+    handleOpenModal(
+      {
+        species: targetSpecies,
+        lure,
+      },
+      spotSpeciesNames.length > 0 ? spotSpeciesNames : undefined
+    );
+    setSpeciesGuide(null);
   };
+
+  const handleSpeciesPress = useCallback(
+    (species: AvailableSpecies, prediction?: SpeciesPrediction) => {
+      if (!selectedSpot) return;
+      setSpeciesGuide(
+        buildLocationSpeciesGuide({
+          species,
+          prediction,
+          spot: selectedSpot,
+          bestCatchTimes: spotDetails?.bestCatchTimes ?? [],
+        })
+      );
+    },
+    [selectedSpot, spotDetails?.bestCatchTimes]
+  );
+
+  const handleLogFromGuide = useCallback(
+    (speciesName: string) => {
+      if (!selectedSpot) return;
+      useSpotSpecies(selectedSpot, speciesName);
+    },
+    [selectedSpot]
+  );
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color={Colors.accent} size="large" />
-          <Text style={styles.loadingText}>Loading Map...</Text>
+          <BrandMark size="lg" showTagline />
+          <ActivityIndicator color={colors.brandAccent} size="large" />
+          <Text style={styles.loadingText}>Loading map…</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <MapPin color={Colors.accent} size={24} />
-          <Text style={styles.headerText}>Fishing Map</Text>
-        </View>
-
-        {usingDefaultLocation && (
-          <View style={styles.locationBanner}>
-            <Info color={Colors.textSecondary} size={16} />
-            <Text style={styles.locationBannerText}>
-              Enable location access to see fishing spots near you.
-            </Text>
-          </View>
-        )}
-
-        {location && (
-          <View style={styles.mapWrapper}>
+    <View style={styles.container}>
+      {location && (
+        <View style={styles.mapScreen}>
+          <View style={[styles.mapColumn, isWide && { marginRight: mapPanelWidth }]}>
             <FishingMap
-              latitude={location.latitude}
-              longitude={location.longitude}
-              nearbySpots={mapSpots}
-              onSpotPress={setSelectedSpot}
-              onRegionChange={setViewBBox}
+            latitude={location.latitude}
+            longitude={location.longitude}
+            nearbySpots={mapPinSpots}
+            onSpotPress={handleSpotPress}
+            onRegionChange={onViewportChange}
+            recenterOnLocationChange
+            centerRequestKey={mapCenterKey}
+            selectedSpotId={selectedSpotId}
+            flyToTarget={flyToTarget}
+            onMapPress={handleMapPress}
+            showLegend={showLegend}
+          />
+
+          {!isWide ? (
+            <AppScreenHeader
+              variant="hero"
+              collapseLevel={heroCollapseLevel}
+              onLayout={handleHeroHeaderLayout}
+            >
+              <MapLocationSearchBar
+                ref={searchBarRef}
+                onSelectLocation={handleSelectSearchLocation}
+                embedded
+                onFocusChange={setSearchFocused}
+              />
+            </AppScreenHeader>
+          ) : (
+            <MapLocationSearchBar
+              ref={searchBarRef}
+              onSelectLocation={handleSelectSearchLocation}
+              onFocusChange={setSearchFocused}
             />
-          </View>
-        )}
+          )}
 
-        {offlineMap.state !== 'unavailable' && (
-          <View style={styles.offlineRow}>
-            {offlineMap.state === 'idle' && (
-              <TouchableOpacity style={styles.offlineButton} onPress={offlineMap.download}>
-                <Download color={Colors.accent} size={16} />
-                <Text style={styles.offlineButtonText}>Save this area for offline use</Text>
-              </TouchableOpacity>
-            )}
-            {offlineMap.state === 'downloading' && (
-              <View style={styles.offlineButton}>
-                <ActivityIndicator color={Colors.accent} size="small" />
-                <Text style={styles.offlineButtonText}>
-                  Downloading offline map… {offlineMap.percentage}%
-                </Text>
-              </View>
-            )}
-            {offlineMap.state === 'complete' && (
-              <View style={styles.offlineButton}>
-                <CircleCheck color={Colors.success} size={16} />
-                <Text style={styles.offlineButtonText}>Offline map saved</Text>
-                <TouchableOpacity onPress={offlineMap.remove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Trash2 color={Colors.textMuted} size={16} />
-                </TouchableOpacity>
-              </View>
-            )}
-            {offlineMap.state === 'error' && (
-              <TouchableOpacity style={styles.offlineButton} onPress={offlineMap.download}>
-                <Info color={Colors.error} size={16} />
-                <Text style={styles.offlineButtonText}>
-                  Download failed — tap to retry
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+          <MapOverlayControls
+            onRecenter={handleRecenterOnGps}
+            recenterDisabled={gpsLoading}
+            showLegend={showLegend}
+            onToggleLegend={() => setShowLegend((prev) => !prev)}
+            bottomOffset={fabBottomOffset}
+          />
 
-        <View style={styles.sectionHeader}>
-          <Clock color={Colors.accent} size={18} />
-          <Text style={styles.sectionTitle}>Best Time Now</Text>
-        </View>
-        <View style={styles.timeCard}>
-          <Text style={styles.timePeriod}>{timeOfDay.period}</Text>
-          <Text style={styles.timeTip}>{timeOfDay.tip}</Text>
-        </View>
-
-        {weather && (
-          <>
-            <View style={styles.sectionHeader}>
-              <Cloud color={Colors.accent} size={18} />
-              <Text style={styles.sectionTitle}>Conditions</Text>
+          {(permissionDenied && !isSearchingLocation) || isSearchingLocation ? (
+            <View
+              style={[
+                styles.bannerContainer,
+                { top: isWide ? 110 : heroHeaderHeight + Spacing.xs },
+              ]}
+              pointerEvents="box-none"
+            >
+              {permissionDenied && !isSearchingLocation && (
+                <View style={styles.locationBanner}>
+                  <Info color={colors.textSecondary} size={14} />
+                  <Text style={styles.bannerText}>
+                    Enable location for GPS-accurate species and map centering.
+                  </Text>
+                  <Pressable
+                    style={styles.settingsButton}
+                    onPress={() => Linking.openSettings()}
+                    accessibilityRole="button"
+                    accessibilityLabel="Open settings to enable location"
+                  >
+                    <Text style={styles.settingsButtonText}>Open Settings</Text>
+                  </Pressable>
+                </View>
+              )}
+              {isSearchingLocation && activeCoords?.label && !selectedSpot && (
+                <View style={styles.searchBanner}>
+                  <MapPin color={colors.brandAccent} size={14} />
+                  <Text style={styles.bannerText}>Viewing {activeCoords.label}</Text>
+                </View>
+              )}
             </View>
-            <View style={styles.timeCard}>
-              <View style={styles.weatherRow}>
-                <View style={styles.weatherStat}>
-                  <Thermometer color={Colors.textSecondary} size={16} />
-                  <Text style={styles.weatherValue}>{Math.round(weather.temperatureF)}°F</Text>
-                </View>
-                <View style={styles.weatherStat}>
-                  <Wind color={Colors.textSecondary} size={16} />
-                  <Text style={styles.weatherValue}>{Math.round(weather.windSpeedMph)} mph</Text>
-                </View>
-                <View style={styles.weatherStat}>
-                  <Cloud color={Colors.textSecondary} size={16} />
-                  <Text style={styles.weatherValue}>{weather.cloudCoverPercent}% cloud</Text>
-                </View>
-              </View>
-              <Text style={styles.timeTip}>
-                {getWeatherRecommendation(weather.temperatureF).tip}
-              </Text>
-            </View>
-          </>
-        )}
+          ) : null}
+          </View>
 
-        <View style={styles.sectionHeader}>
-          <Fish color={Colors.accent} size={18} />
-          <Text style={styles.sectionTitle}>Fish to Catch in {getMonthName(getCurrentMonth())}</Text>
+          <MapBottomSheet
+            ref={sheetRef}
+            panelMode={isWide}
+            panelWidth={mapPanelWidth}
+            species={localSpecies}
+            speciesLoading={speciesLoading || (gpsLoading && !activeCoords)}
+            speciesFetching={isFetchingSpecies}
+            isOffline={isOffline}
+            permissionDenied={permissionDenied && !isSearchingLocation}
+            radiusMeters={DEFAULT_RADIUS_METERS}
+            coordinateSource={activeCoords?.source ?? 'gps'}
+            locationLabel={activeCoords?.label}
+            onRetrySpecies={refetchSpecies}
+            selectedSpot={selectedSpot}
+            spotDetails={spotDetails ?? null}
+            spotDetailsLoading={spotDetailsLoading}
+            spotDetailsError={spotDetailsError}
+            speciesPredictions={speciesPredictionData?.predictions ?? []}
+            availableSpecies={speciesPredictionData?.species ?? []}
+            speciesPredictionsLoading={speciesPredictionsLoading}
+            speciesPredictionsError={speciesPredictionsError}
+            speciesSkyCondition={speciesPredictionData?.skyCondition ?? null}
+            speciesTemperatureF={speciesPredictionData?.temperatureF ?? null}
+            speciesContextSubtitle={speciesPredictionData?.contextSubtitle ?? null}
+            onSheetIndexChange={handleSheetIndexChange}
+            bestTime={bestTime}
+            weather={weather ?? null}
+            recommendations={recommendations}
+            categorizedSpots={categorizedSpots}
+            discoveryStatus={discoveryStatus}
+            offlineMap={offlineMap}
+            onSpotPress={handleSpotPress}
+            onClearSelection={handleClearSelection}
+            selectedSpotId={selectedSpotId}
+            onUseRecommendation={useRecommendation}
+            onLogSpotFish={useSpotSpecies}
+            onSpeciesPress={handleSpeciesPress}
+            personalCatchTimes={spotPersonalCatchTimes}
+            onRetryPredictions={() => refetchSpeciesPredictions()}
+            onRetryCatchTimes={() => refetchSpotDetails()}
+            insights={insights}
+            onViewInsights={() => router.push('/history')}
+            areaRegulationNotices={areaRegulationNotices}
+            personalSpeciesNear={spotPersonalSpecies}
+          />
         </View>
+      )}
 
-        {recommendations.length > 0 && (
-          <View style={styles.recommendationList}>
-            {recommendations.map((rec) => (
-              <TouchableOpacity
-                key={rec.id}
-                style={[styles.recommendationCard, rec.isPeak && styles.peakCard]}
-                onPress={() => setSelectedRecommendation(selectedRecommendation?.id === rec.id ? null : rec)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.recHeader}>
-                  <View style={styles.recIcon}>
-                    <Fish color={Colors.accent} size={18} />
-                  </View>
-                  <View style={styles.recInfo}>
-                    <Text style={styles.recName}>{rec.name}</Text>
-                    <Text style={styles.recHabitat}>{rec.habitat}</Text>
-                  </View>
-                  {rec.isPeak && (
-                    <View style={styles.peakBadge}>
-                      <Trophy color={Colors.background} size={12} />
-                      <Text style={styles.peakBadgeText}>PEAK</Text>
-                    </View>
-                  )}
-                  <ChevronRight
-                    color={selectedRecommendation?.id === rec.id ? Colors.accent : Colors.textMuted}
-                    size={20}
-                  />
-                </View>
+      <SpeciesGuideSheet
+        guide={speciesGuide}
+        spotName={selectedSpot?.name}
+        onClose={() => setSpeciesGuide(null)}
+        onLogFish={selectedSpot ? handleLogFromGuide : undefined}
+      />
 
-                {selectedRecommendation?.id === rec.id && (
-                  <View style={styles.recExpanded}>
-                    <Text style={styles.recDescription}>{rec.tips}</Text>
-                    <View style={styles.recDetails}>
-                      <View style={styles.recDetailItem}>
-                        <Text style={styles.recDetailLabel}>Avg Weight</Text>
-                        <Text style={styles.recDetailValue}>{rec.averageWeight}</Text>
-                      </View>
-                      <View style={styles.recDetailItem}>
-                        <Text style={styles.recDetailLabel}>Best Lure</Text>
-                        <Text style={styles.recDetailValue}>{rec.recommendedLure}</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity style={styles.useRecButton} onPress={() => useRecommendation(rec)}>
-                      <Fish color={Colors.background} size={16} />
-                      <Text style={styles.useRecText}>Log This Fish</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.sectionHeader}>
-          <Map color={Colors.accent} size={18} />
-          <Text style={styles.sectionTitle}>Nearby Fishing Spots</Text>
-        </View>
-
-        {(loadingSpots && nearbySpots.length === 0) ? (
-          <View style={styles.loadingSpots}>
-            <ActivityIndicator color={Colors.accent} size="small" />
-            <Text style={styles.loadingSpotsText}>Finding nearby spots...</Text>
-          </View>
-        ) : nearbySpots.length === 0 ? (
-          <View style={styles.noSpots}>
-            <Waves color={Colors.textMuted} size={32} />
-            <Text style={styles.noSpotsText}>No fishing spots nearby</Text>
-          </View>
-        ) : (
-          <View style={styles.spotsList}>
-            {nearbySpots.slice(0, 5).map((spot) => (
-              <TouchableOpacity
-                key={spot.id}
-                style={[styles.spotCard, spot.isPeakSeason && styles.peakSeasonCard]}
-                onPress={() => setSelectedSpot(selectedSpot?.id === spot.id ? null : spot)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.spotHeader}>
-                  <View style={styles.spotIcon}>
-                    <Anchor color={Colors.accent} size={20} />
-                  </View>
-                  <View style={styles.spotInfo}>
-                    <Text style={styles.spotName}>{spot.name}</Text>
-                    <View style={styles.spotMeta}>
-                      <Waves color={Colors.textMuted} size={12} />
-                      <Text style={styles.spotType}>{getWaterTypeIcon(spot.water_type)}</Text>
-                      <Text style={styles.spotDistance}>{formatDistance(spot.distance)}</Text>
-                      <Star color={Colors.warning} size={12} fill={Colors.warning} />
-                      <Text style={styles.spotRating}>{spot.rating.toFixed(1)}</Text>
-                    </View>
-                  </View>
-                  {spot.isPeakSeason && (
-                    <View style={styles.peakSeasonBadge}>
-                      <Trophy color={Colors.background} size={10} />
-                      <Text style={styles.peakSeasonText}>PEAK</Text>
-                    </View>
-                  )}
-                </View>
-
-                {selectedSpot?.id === spot.id && (
-                  <View style={styles.spotExpanded}>
-                    <Text style={styles.spotDescription}>{spot.description}</Text>
-
-                    {(spot.avgDepthFeet != null || spot.bestSeason) && (
-                      <View style={styles.spotFacilities}>
-                        <Text style={styles.facilitiesTitle}>Conditions: </Text>
-                        <Text style={styles.facilitiesList}>
-                          {[
-                            spot.avgDepthFeet != null ? `Avg depth ${spot.avgDepthFeet} ft` : null,
-                            spot.bestSeason ? `Best in ${spot.bestSeason}` : null,
-                          ].filter(Boolean).join(' · ')}
-                        </Text>
-                      </View>
-                    )}
-
-                    {spot.underwaterStructure && spot.underwaterStructure.length > 0 && (
-                      <View style={styles.spotFacilities}>
-                        <Text style={styles.facilitiesTitle}>Structure: </Text>
-                        <Text style={styles.facilitiesList}>
-                          {spot.underwaterStructure.join(', ')}
-                        </Text>
-                      </View>
-                    )}
-
-                    <View style={styles.spotFishSection}>
-                      <Text style={styles.spotFishTitle}>Available Fish:</Text>
-                      <View style={styles.spotFishList}>
-                        {spot.matchedSpecies.length > 0 ? (
-                          spot.matchedSpecies.map((fish, idx) => (
-                            <View key={idx} style={styles.fishChip}>
-                              <Fish color={Colors.accent} size={12} />
-                              <Text style={styles.fishChipText}>{fish}</Text>
-                            </View>
-                          ))
-                        ) : (
-                          <Text style={styles.noFishText}>Various species available</Text>
-                        )}
-                      </View>
-                    </View>
-
-                    <View style={styles.spotFacilities}>
-                      <Text style={styles.facilitiesTitle}>Facilities: </Text>
-                      <Text style={styles.facilitiesList}>
-                        {spot.facilities.map(f => f.replace('_', ' ')).join(', ') || 'None listed'}
-                      </Text>
-                    </View>
-
-                    <View style={styles.spotActionRow}>
-                      <TouchableOpacity
-                        style={styles.directionsButton}
-                        onPress={() => {
-                          const url = Platform.OS === 'web'
-                            ? `https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}`
-                            : `geo:${spot.latitude},${spot.longitude}`;
-                          if (Platform.OS === 'web') {
-                            window.open(url, '_blank');
-                          }
-                        }}
-                      >
-                        <Navigation color={Colors.background} size={14} />
-                        <Text style={styles.directionsText}>Directions</Text>
-                      </TouchableOpacity>
-
-                      {spot.matchedSpecies.length > 0 && (
-                        <TouchableOpacity
-                          style={styles.logSpotButton}
-                          onPress={() => useSpotSpecies(spot)}
-                        >
-                          <Fish color={Colors.accent} size={14} />
-                          <Text style={styles.logSpotText}>Log Fish</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.bottomPadding} />
-      </ScrollView>
-
-      <TouchableOpacity style={styles.fab} onPress={handleOpenModal} activeOpacity={0.8}>
-        <Fish color={Colors.background} size={24} />
+      <TouchableOpacity
+        style={[styles.fab, { bottom: fabBottomOffset + Spacing.md }]}
+        onPress={() => handleOpenModal()}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Log a catch"
+      >
+        <Fish color={colors.brandAccentForeground} size={24} />
       </TouchableOpacity>
 
       <Modal
         visible={modalVisible}
         animationType="slide"
-        transparent={true}
+        transparent
         onRequestClose={closeModal}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, isWide && styles.modalOverlayWide]}
         >
           <Pressable style={styles.modalBackdrop} onPress={closeModal} />
-          <View style={styles.modalContainer}>
+          <View
+            style={[
+              styles.modalContainer,
+              isWide && {
+                maxWidth: modalMaxWidth,
+                borderRadius: BorderRadius.xl,
+                maxHeight: '90%',
+              },
+            ]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Log Your Catch</Text>
-              <TouchableOpacity onPress={closeModal} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <X color={Colors.text} size={24} />
+              <TouchableOpacity
+                onPress={closeModal}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel="Close log catch form"
+              >
+                <X color={colors.text} size={24} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Fish Species *</Text>
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => setShowDropdown(!showDropdown)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={selectedSpecies ? styles.dropdownText : styles.dropdownPlaceholder}>
-                    {selectedSpecies || 'Select species...'}
-                  </Text>
-                  <Text style={styles.dropdownArrow}>{showDropdown ? '▲' : '▼'}</Text>
-                </TouchableOpacity>
-                {showDropdown && (
-                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator>
-                    {speciesData.map((species) => (
-                      <TouchableOpacity
-                        key={species.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSelectedSpecies(species.name);
-                          setShowDropdown(false);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.dropdownItemText}>{species.name}</Text>
-                        <Text style={styles.dropdownItemHabitat}>{species.habitat}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Weight *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g., 4.5 lbs"
-                  placeholderTextColor={Colors.textMuted}
-                  value={weight}
-                  onChangeText={setWeight}
-                  keyboardType="decimal-pad"
-                />
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Lure Used</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g., Crankbait, Spinner..."
-                  placeholderTextColor={Colors.textMuted}
-                  value={lure}
-                  onChangeText={setLure}
-                />
-                {selectedSpecies && (
-                  <View style={styles.lureSuggestions}>
-                    {speciesData.find(s => s.name === selectedSpecies)?.lures.slice(0, 3).map((l, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.lureChip}
-                        onPress={() => setLure(l)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.lureChipText}>{l}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Notes</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  placeholder="Details about your catch..."
-                  placeholderTextColor={Colors.textMuted}
-                  value={notes}
-                  onChangeText={setNotes}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-                onPress={handleSaveCatch}
-                disabled={saving}
-                activeOpacity={0.8}
-              >
-                {saving ? (
-                  <ActivityIndicator color={Colors.background} size="small" />
-                ) : (
-                  <>
-                    <Save color={Colors.background} size={20} />
-                    <Text style={styles.saveButtonText}>Save Catch</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              <LogCatchForm
+                key={formKey}
+                initialValues={modalInitialValues}
+                location={logCatchLocation}
+                speciesOptions={modalSpeciesOptions}
+                speciesOptionsHint="Based on species documented or predicted for this spot."
+                onSubmit={handleSaveCatch}
+                saving={saving}
+                onDirtyChange={setFormDirty}
+              />
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.sm,
-  },
-  headerText: {
-    color: Colors.text,
-    fontSize: FontSizes.xxl,
-    fontWeight: FontWeights.bold,
-  },
-  locationBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-    padding: Spacing.sm,
-    backgroundColor: Colors.cardLight,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  locationBannerText: {
-    flex: 1,
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-  },
-  mapWrapper: {
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-    height: 280,
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: Colors.border,
-  },
-  offlineRow: {
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  offlineButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.sm,
-    backgroundColor: Colors.cardLight,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  offlineButtonText: {
-    flex: 1,
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-  },
-  sectionTitle: {
-    color: Colors.text,
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.semibold,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  loadingText: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.md,
-  },
-  timeCard: {
-    backgroundColor: Colors.card,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  timePeriod: {
-    color: Colors.accent,
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.bold,
-    marginBottom: Spacing.xs,
-  },
-  timeTip: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.md,
-    lineHeight: 22,
-  },
-  weatherRow: {
-    flexDirection: 'row',
-    gap: Spacing.lg,
-    marginBottom: Spacing.sm,
-  },
-  weatherStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  weatherValue: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.semibold,
-  },
-  recommendationList: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
-  },
-  recommendationCard: {
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  peakCard: {
-    borderColor: Colors.accent,
-    backgroundColor: Colors.cardLight,
-  },
-  recHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  recIcon: {
-    backgroundColor: Colors.accentDark,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-  },
-  recInfo: {
-    flex: 1,
-  },
-  recName: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.semibold,
-  },
-  recHabitat: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-    marginTop: Spacing.xs,
-  },
-  peakBadge: {
-    backgroundColor: Colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
-    gap: Spacing.xs,
-  },
-  peakBadgeText: {
-    color: Colors.background,
-    fontSize: FontSizes.xs,
-    fontWeight: FontWeights.bold,
-  },
-  recExpanded: {
-    marginTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: Spacing.md,
-  },
-  recDescription: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-    lineHeight: 20,
-    marginBottom: Spacing.md,
-  },
-  recDetails: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  recDetailItem: {
-    flex: 1,
-  },
-  recDetailLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSizes.xs,
-    textTransform: 'uppercase',
-  },
-  recDetailValue: {
-    color: Colors.text,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-    marginTop: Spacing.xs,
-  },
-  useRecButton: {
-    backgroundColor: Colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-  },
-  useRecText: {
-    color: Colors.background,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.semibold,
-  },
-  loadingSpots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.lg,
-    backgroundColor: Colors.card,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  loadingSpotsText: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.md,
-  },
-  noSpots: {
-    alignItems: 'center',
-    padding: Spacing.lg,
-    backgroundColor: Colors.card,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  noSpotsText: {
-    color: Colors.textMuted,
-    fontSize: FontSizes.md,
-    marginTop: Spacing.sm,
-  },
-  spotsList: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
-  },
-  spotCard: {
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  peakSeasonCard: {
-    borderColor: Colors.success,
-    backgroundColor: Colors.cardLight,
-  },
-  spotHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  spotIcon: {
-    backgroundColor: Colors.accentDark,
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-  },
-  spotInfo: {
-    flex: 1,
-  },
-  spotName: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.semibold,
-  },
-  spotMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginTop: Spacing.xs,
-  },
-  spotType: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-  },
-  spotDistance: {
-    color: Colors.accent,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-  },
-  spotRating: {
-    color: Colors.warning,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-  },
-  peakSeasonBadge: {
-    backgroundColor: Colors.success,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.sm,
-    gap: 2,
-  },
-  peakSeasonText: {
-    color: Colors.background,
-    fontSize: 10,
-    fontWeight: FontWeights.bold,
-  },
-  spotExpanded: {
-    marginTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: Spacing.md,
-  },
-  spotDescription: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-    lineHeight: 20,
-    marginBottom: Spacing.md,
-  },
-  spotFishSection: {
-    marginBottom: Spacing.sm,
-  },
-  spotFishTitle: {
-    color: Colors.text,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-    marginBottom: Spacing.xs,
-  },
-  spotFishList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-  },
-  fishChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.accentDark,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.sm,
-  },
-  fishChipText: {
-    color: Colors.accent,
-    fontSize: FontSizes.xs,
-    fontWeight: FontWeights.medium,
-  },
-  noFishText: {
-    color: Colors.textMuted,
-    fontSize: FontSizes.sm,
-    fontStyle: 'italic',
-  },
-  spotFacilities: {
-    flexDirection: 'row',
-    marginBottom: Spacing.sm,
-  },
-  facilitiesTitle: {
-    color: Colors.textMuted,
-    fontSize: FontSizes.xs,
-    textTransform: 'uppercase',
-  },
-  facilitiesList: {
-    color: Colors.text,
-    fontSize: FontSizes.sm,
-    flex: 1,
-  },
-  spotActionRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  directionsButton: {
-    backgroundColor: Colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    flex: 1,
-  },
-  directionsText: {
-    color: Colors.background,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.semibold,
-  },
-  logSpotButton: {
-    backgroundColor: Colors.cardLight,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.accent,
-    flex: 1,
-  },
-  logSpotText: {
-    color: Colors.accent,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.semibold,
-  },
-  bottomPadding: {
-    height: 100,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: Spacing.xl,
-    right: Spacing.lg,
-    backgroundColor: Colors.accent,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    backgroundColor: Colors.card,
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    maxHeight: '85%',
-    padding: Spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  modalTitle: {
-    color: Colors.text,
-    fontSize: FontSizes.xxl,
-    fontWeight: FontWeights.bold,
-  },
-  formGroup: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.medium,
-    marginBottom: Spacing.xs,
-  },
-  input: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  textArea: {
-    minHeight: 80,
-  },
-  dropdownButton: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dropdownText: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    flex: 1,
-  },
-  dropdownPlaceholder: {
-    color: Colors.textMuted,
-    fontSize: FontSizes.md,
-    flex: 1,
-  },
-  dropdownArrow: {
-    color: Colors.accent,
-    fontSize: FontSizes.sm,
-    marginLeft: Spacing.sm,
-  },
-  dropdownList: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.md,
-    marginTop: Spacing.xs,
-    maxHeight: 180,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  dropdownItem: {
-    padding: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  dropdownItemText: {
-    color: Colors.text,
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.medium,
-  },
-  dropdownItemHabitat: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.sm,
-    marginTop: 2,
-  },
-  lureSuggestions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-    marginTop: Spacing.sm,
-  },
-  lureChip: {
-    backgroundColor: Colors.accentDark,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.sm,
-  },
-  lureChipText: {
-    color: Colors.accent,
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-  },
-  saveButton: {
-    backgroundColor: Colors.accent,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: Colors.background,
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.bold,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    mapScreen: {
+      flex: 1,
+      position: 'relative',
+    },
+    mapColumn: {
+      flex: 1,
+      position: 'relative',
+    },
+    bannerContainer: {
+      position: 'absolute',
+      left: Spacing.sm,
+      right: Spacing.sm,
+      zIndex: 12,
+      gap: Spacing.xs,
+    },
+    locationBanner: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      padding: Spacing.sm,
+      backgroundColor: colors.surfaceElevated,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      padding: Spacing.sm,
+      backgroundColor: colors.surfaceElevated,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.brandAccent,
+    },
+    bannerText: {
+      flex: 1,
+      color: colors.textSecondary,
+      fontSize: FontSizes.sm,
+    },
+    settingsButton: {
+      backgroundColor: colors.brandAccent,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 4,
+      borderRadius: BorderRadius.sm,
+    },
+    settingsButtonText: {
+      color: colors.brandAccentForeground,
+      fontSize: FontSizes.xs,
+      fontWeight: FontWeights.semibold,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: Spacing.md,
+    },
+    loadingText: {
+      color: colors.textSecondary,
+      fontSize: FontSizes.md,
+    },
+    fab: {
+      position: 'absolute',
+      left: Spacing.lg,
+      backgroundColor: colors.brandAccent,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.brandNavy,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 8,
+      zIndex: 16,
+    },
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    modalOverlayWide: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: Spacing.lg,
+    },
+    modalBackdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.overlay,
+    },
+    modalContainer: {
+      backgroundColor: colors.card,
+      borderTopLeftRadius: BorderRadius.xl,
+      borderTopRightRadius: BorderRadius.xl,
+      maxHeight: '85%',
+      padding: Spacing.lg,
+      width: '100%',
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.lg,
+    },
+    modalTitle: {
+      color: colors.text,
+      fontSize: FontSizes.xxl,
+      fontWeight: FontWeights.bold,
+    },
+  });
+}
