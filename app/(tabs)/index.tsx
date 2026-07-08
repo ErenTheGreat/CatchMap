@@ -194,15 +194,24 @@ export default function MapScreen() {
     isFetching: loadingCategorizedSpots,
     zoomedOutTooFar,
     hasViewport,
+    usingCachedDiscovery,
   } = useCategorizedSpots(location?.latitude, location?.longitude);
 
   const discoveryStatus = useMemo((): DiscoveryDashboardStatus => {
     if (!hasViewport) return 'waiting-for-map';
     if (zoomedOutTooFar) return 'zoom-out';
     if (loadingCategorizedSpots && categorizedSpots.length === 0) return 'loading';
-    if (categorizedSpots.length === 0) return 'empty';
+    if (categorizedSpots.length === 0) {
+      return isOffline ? 'offline-empty' : 'empty';
+    }
     return 'ready';
-  }, [hasViewport, zoomedOutTooFar, loadingCategorizedSpots, categorizedSpots.length]);
+  }, [
+    hasViewport,
+    zoomedOutTooFar,
+    loadingCategorizedSpots,
+    categorizedSpots.length,
+    isOffline,
+  ]);
 
   const recommendations = useMemo(
     () =>
@@ -275,6 +284,7 @@ export default function MapScreen() {
     latitude: selectedSpot?.latitude ?? location?.latitude,
     longitude: selectedSpot?.longitude ?? location?.longitude,
     spotName: selectedSpot?.name ?? null,
+    spotWaterType: selectedSpot?.water_type ?? null,
     personalSpecies: spotPersonalSpecies,
     tidesPredictions: tidesData?.predictions ?? null,
   });
@@ -667,6 +677,7 @@ export default function MapScreen() {
             recommendations={recommendations}
             categorizedSpots={categorizedSpots}
             discoveryStatus={discoveryStatus}
+            usingCachedDiscovery={usingCachedDiscovery}
             offlineMap={offlineMap}
             onSpotPress={handleSpotPress}
             onClearSelection={handleClearSelection}

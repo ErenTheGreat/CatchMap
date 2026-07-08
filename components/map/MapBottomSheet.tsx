@@ -69,6 +69,7 @@ export interface MapBottomSheetProps {
   recommendations: RecommendedSpecies[];
   categorizedSpots: CategorizedSpotsResponse;
   discoveryStatus: DiscoveryDashboardStatus;
+  usingCachedDiscovery?: boolean;
   offlineMap: OfflineMapHandle;
   onSpotPress: (spot: NearbySpot) => void;
   /** Highlights the matching card in the discovery carousel. */
@@ -120,6 +121,7 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
       recommendations,
       categorizedSpots,
       discoveryStatus,
+      usingCachedDiscovery = false,
       offlineMap,
       onSpotPress,
       onClearSelection,
@@ -352,6 +354,7 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
               status={discoveryStatus}
               onSpotPress={onSpotPress}
               selectedSpotId={selectedSpotId}
+              usingCachedDiscovery={usingCachedDiscovery}
             />
           ) : null}
 

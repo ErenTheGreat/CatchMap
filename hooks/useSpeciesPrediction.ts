@@ -16,6 +16,7 @@ interface UseSpeciesPredictionOptions {
   latitude?: number | null;
   longitude?: number | null;
   spotName?: string | null;
+  spotWaterType?: string | null;
   personalSpecies?: PersonalSpeciesNear[];
   tidesPredictions?: TidePrediction[] | null;
 }
@@ -34,6 +35,7 @@ export function useSpeciesPrediction({
   latitude,
   longitude,
   spotName = null,
+  spotWaterType = null,
   personalSpecies = [],
   tidesPredictions = null,
 }: UseSpeciesPredictionOptions) {
@@ -62,7 +64,9 @@ export function useSpeciesPrediction({
             longitude ?? null,
             currentMonth,
             signal,
-            spotName
+            spotName,
+            spotWaterType,
+            networkOffline
           ),
         enabled,
         staleTime: 5 * 60 * 1000,

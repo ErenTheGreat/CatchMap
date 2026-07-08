@@ -9,21 +9,31 @@
  *   ---------  ---------------------  -------------------------------
  *   spots      /api/fishing-spots     bundled dataset + OSM + Supabase
  *   weather    /api/weather           Open-Meteo (keyless)
- *   tides      /api/tides             none (needs server-side NOAA station lookup)
+ *   tides      /api/tides             NOAA CO-OPS via BFF or bundled station fallback
  *   species    /api/species           bundled species.json
  *   catches    (local-first)          Supabase + AsyncStorage
  */
 
+import { fetchCategorizedSpotsInBBox } from '@/lib/api/endpoints/categorizedSpots';
 import { fetchNearbyFishingSpots, FishingSpotsParams } from '@/lib/api/endpoints/fishingSpots';
 import { fetchSpotsInBBox, BBox } from '@/lib/api/endpoints/spatialSpots';
+import { fetchSpotDetails } from '@/lib/api/endpoints/spotDetails';
+import { fetchSpeciesAvailability, fetchSpeciesAvailabilityWithContext, fetchCatchActivityNearPoint } from '@/lib/api/endpoints/speciesPrediction';
 import { fetchWeather, WeatherSnapshot } from '@/lib/api/endpoints/weather';
 import { fetchTides, TidesResponse } from '@/lib/api/endpoints/tides';
 import { fetchSpeciesCatalog, SpeciesRecord } from '@/lib/api/endpoints/speciesCatalog';
 import {
   getCatches,
   saveCatch,
+  updateCatch,
   deleteCatch,
+  clearAllCatches,
+  syncPendingCatches,
   CatchRecord,
+  SaveResult,
+  SyncPendingResult,
+  SaveCatchInput,
+  UpdateCatchInput,
 } from '@/utils/storage';
 import { NearbySpot } from '@/utils/osmFishingSpots';
 
@@ -32,12 +42,67 @@ export const fishingApi = {
     return fetchNearbyFishingSpots(params);
   },
 
+  getCategorizedSpotsInBBox(bbox: BBox, signal?: AbortSignal) {
+    return fetchCategorizedSpotsInBBox(bbox, signal);
+  },
+
   /**
    * Global spatial query — documented fishing spots inside the current map
    * view, anywhere in the world. bbox is [minLon, minLat, maxLon, maxLat].
    */
   getSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<NearbySpot[]> {
     return fetchSpotsInBBox(bbox, signal);
+  },
+
+  getSpotDetails(
+    latitude: number,
+    longitude: number,
+    spotId: string,
+    signal?: AbortSignal
+  ) {
+    return fetchSpotDetails(latitude, longitude, spotId, signal);
+  },
+
+  getSpeciesAvailability(
+    locationId: string | null,
+    latitude: number | null,
+    longitude: number | null,
+    month?: number,
+    signal?: AbortSignal
+  ) {
+    return fetchSpeciesAvailability(locationId, latitude, longitude, month, signal);
+  },
+
+  getSpeciesAvailabilityWithContext(
+    locationId: string | null,
+    latitude: number | null,
+    longitude: number | null,
+    month?: number,
+    signal?: AbortSignal,
+    spotName?: string | null,
+    waterType?: string | null,
+    offlineMode?: boolean
+  ) {
+    return fetchSpeciesAvailabilityWithContext(
+      locationId,
+      latitude,
+      longitude,
+      month,
+      signal,
+      spotName,
+      waterType,
+      offlineMode
+    );
+  },
+
+  getCatchActivityNearPoint(
+    latitude: number,
+    longitude: number,
+    radiusMeters?: number,
+    daysBack?: number,
+    signal?: AbortSignal
+  ) {
+    return fetchCatchActivityNearPoint(latitude, longitude, radiusMeters, daysBack, signal);
   },
 
   getWeather(latitude: number, longitude: number, signal?: AbortSignal): Promise<WeatherSnapshot> {
@@ -56,14 +121,26 @@ export const fishingApi = {
     return getCatches();
   },
 
-  saveCatch(catchData: Omit<CatchRecord, 'id' | 'createdAt'>): Promise<CatchRecord> {
+  saveCatch(catchData: SaveCatchInput): Promise<SaveResult> {
     return saveCatch(catchData);
+  },
+
+  updateCatch(id: string, changes: UpdateCatchInput): Promise<CatchRecord | null> {
+    return updateCatch(id, changes);
   },
 
   deleteCatch(id: string): Promise<void> {
     return deleteCatch(id);
   },
+
+  syncPendingCatches(): Promise<SyncPendingResult> {
+    return syncPendingCatches();
+  },
+
+  clearLocalCatches(): Promise<void> {
+    return clearAllCatches();
+  },
 };
 
-export type { NearbySpot, WeatherSnapshot, TidesResponse, SpeciesRecord, CatchRecord };
+export type { NearbySpot, WeatherSnapshot, TidesResponse, SpeciesRecord, CatchRecord, SaveResult, SyncPendingResult, SaveCatchInput, UpdateCatchInput };
 export type { BBox };

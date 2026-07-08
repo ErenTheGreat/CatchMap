@@ -5,7 +5,11 @@ import {
   findBundledSpot,
 } from '@/lib/api/endpoints/bundledSpeciesAvailability';
 import { fetchCatalogSpeciesPresenceNearPoint } from '@/lib/species/gbifCatalogPresence';
+import { getCachedPresenceNearPoint } from '@/lib/species/gbifPresenceCache';
 import { matchGbifOccurrencesToCatalog } from '@/lib/species/matchGbifToCatalog';
+import {
+  fetchOfflineCategorySpeciesForSpot,
+} from '@/lib/species/offlineCategorySpecies';
 import { spotLikelyNeedsGbifLookup } from '@/lib/species/spotGbifLookup';
 import type {
   AvailableSpecies,
@@ -304,14 +308,60 @@ export async function fetchCatchActivityNearPoint(
   }));
 }
 
+async function fetchSpeciesAvailabilityOffline(
+  locationId: string | null,
+  latitude: number | null,
+  longitude: number | null,
+  month: number,
+  spotName?: string | null,
+  waterType?: string | null
+): Promise<SpeciesAvailabilityResult> {
+  const bundledSpot = findBundledSpot(locationId);
+  if (bundledSpot) {
+    return fetchBundledSpeciesAvailabilityWithContext(locationId, month);
+  }
+
+  if (latitude != null && longitude != null) {
+    for (const radiusKm of gbifSearchRadii(spotName)) {
+      const cached = await getCachedPresenceNearPoint(latitude, longitude, radiusKm);
+      if (cached === undefined || cached.length === 0) continue;
+
+      const species = matchGbifOccurrencesToCatalog(cached, month);
+      if (species.length > 0) {
+        return { species, spotContext: freshwaterSpotContext() };
+      }
+    }
+  }
+
+  const categoryResult = fetchOfflineCategorySpeciesForSpot(spotName, waterType, month);
+  if (categoryResult.species.length > 0) {
+    return categoryResult;
+  }
+
+  return fetchBundledSpeciesAvailabilityWithContext(locationId, month);
+}
+
 export async function fetchSpeciesAvailabilityWithContext(
   locationId: string | null,
   latitude: number | null,
   longitude: number | null,
   month: number = new Date().getMonth() + 1,
   signal?: AbortSignal,
-  spotName?: string | null
+  spotName?: string | null,
+  waterType?: string | null,
+  offlineMode: boolean = false
 ): Promise<SpeciesAvailabilityResult> {
+  if (offlineMode) {
+    return fetchSpeciesAvailabilityOffline(
+      locationId,
+      latitude,
+      longitude,
+      month,
+      spotName,
+      waterType
+    );
+  }
+
   const parsedLocationId = resolvePostgisLocationUuid(locationId);
   const bundledSpot = findBundledSpot(locationId);
 
@@ -404,7 +454,9 @@ export async function fetchSpeciesAvailability(
   longitude: number | null,
   month: number = new Date().getMonth() + 1,
   signal?: AbortSignal,
-  spotName?: string | null
+  spotName?: string | null,
+  waterType?: string | null,
+  offlineMode: boolean = false
 ): Promise<AvailableSpecies[]> {
   const result = await fetchSpeciesAvailabilityWithContext(
     locationId,
@@ -412,7 +464,9 @@ export async function fetchSpeciesAvailability(
     longitude,
     month,
     signal,
-    spotName
+    spotName,
+    waterType,
+    offlineMode
   );
   return result.species;
 }

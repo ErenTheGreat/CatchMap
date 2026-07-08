@@ -180,7 +180,14 @@ export default memo(function MapSpotDetail({
 
       <View style={styles.fishSection}>
         <Text style={styles.fishTitle}>Potential Catches</Text>
-        {isOffline && displayItems.length > 0 ? (
+        {isOffline && displayItems.length > 0 && displayItems.every((item) => item.source === 'category') ? (
+          <OfflineBanner
+            compact
+            title="Offline category estimate"
+            message="Typical species for this water type when live lookups are unavailable."
+          />
+        ) : null}
+        {isOffline && displayItems.length > 0 && !displayItems.every((item) => item.source === 'category') ? (
           <OfflineBanner
             compact
             title="Offline — showing cached species"

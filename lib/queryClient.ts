@@ -33,7 +33,6 @@ const NON_PERSISTED_QUERY_KEYS = new Set([
   'spotsBBox',
   'spotDetails',
   'localSpecies',
-  'categorizedSpots',
   'catchActivity',
 ]);
 
@@ -42,6 +41,7 @@ const PERSISTED_QUERY_KEYS = new Set([
   'userLocation',
   'speciesAvailability',
   'weather',
+  'categorizedSpots',
 ]);
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {

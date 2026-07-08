@@ -15,6 +15,8 @@ import {
   auditBBoxAgainstReference,
   EAST_BAY_DISCOVERY_BBOX,
 } from '@/lib/mapViewport';
+import { getBundledSpotsInBBox } from '@/lib/offline/discoveryFallback';
+import { useNetworkStatus } from '@/providers/NetworkProvider';
 import type { CategorizedSpotsResponse } from '@/lib/types/categorizedSpots';
 import type { NearbySpot } from '@/utils/osmFishingSpots';
 import { queryClient, STALE_TIME_MS } from '@/lib/queryClient';
@@ -56,6 +58,11 @@ function mergeViewportSpots(
   return Array.from(byId.values());
 }
 
+function categoriesFromSpots(spots: NearbySpot[]): CategorizedSpotsResponse {
+  if (spots.length === 0) return EMPTY_CATEGORIES;
+  return [{ category: 'Nearby', spots }];
+}
+
 async function fetchCategoriesWithCache(bbox: BBox): Promise<CategorizedSpotsResponse> {
   const snapped = snapBBoxToTileGrid(bbox);
   const cacheKey = bboxCacheKey(snapped);
@@ -76,6 +83,7 @@ async function fetchCategoriesWithCache(bbox: BBox): Promise<CategorizedSpotsRes
     queryFn: () => fishingApi.getCategorizedSpotsInBBox(snapped),
     staleTime: STALE_TIME_MS,
     gcTime: 24 * 60 * 60 * 1000,
+    networkMode: 'offlineFirst',
     retry: (failureCount, error) => {
       if (error instanceof Error && /429|504|rate.?limit|timeout/i.test(error.message)) {
         return false;
@@ -92,6 +100,32 @@ function seedBboxForCenter(centerLat?: number, centerLng?: number): BBox {
   return EAST_BAY_DISCOVERY_BBOX;
 }
 
+function applyOfflineDiscovery(
+  rawBbox: BBox,
+  cacheKey: string,
+  setDisplayedCategories: (value: CategorizedSpotsResponse) => void,
+  setViewportMapSpots: (value: NearbySpot[]) => void,
+  setUsingCachedDiscovery: (value: boolean) => void,
+  lastFetchedKeyRef: { current: string | null }
+): boolean {
+  const cached = readCachedCategories(cacheKey);
+  const bundledSpots = getBundledSpotsInBBox(rawBbox);
+  const cachedCount = cached ? countCategorizedSpots(cached) : 0;
+
+  if (cachedCount > 0 || bundledSpots.length > 0) {
+    const mergedSpots = mergeViewportSpots(cached ?? EMPTY_CATEGORIES, bundledSpots);
+    lastFetchedKeyRef.current = cacheKey;
+    setUsingCachedDiscovery(true);
+    setDisplayedCategories(
+      cachedCount > 0 ? cached! : categoriesFromSpots(bundledSpots)
+    );
+    setViewportMapSpots(mergedSpots);
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Viewport-synced categorized discovery query.
  *
@@ -101,6 +135,7 @@ function seedBboxForCenter(centerLat?: number, centerLng?: number): BBox {
  * - Clears pins when the viewport has no spots or is zoomed out too far.
  */
 export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
+  const { isOffline } = useNetworkStatus();
   const initialBbox = seedBboxForCenter(centerLat, centerLng);
   const initialCacheKey = bboxCacheKey(snapBBoxToTileGrid(initialBbox));
   const initialCached = readCachedCategories(initialCacheKey);
@@ -113,6 +148,9 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
     initialCached ? mergeViewportSpots(initialCached, []) : []
   );
   const [isFetching, setIsFetching] = useState(false);
+  const [usingCachedDiscovery, setUsingCachedDiscovery] = useState(
+    Boolean(initialCached && countCategorizedSpots(initialCached) > 0)
+  );
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFetchedKeyRef = useRef<string | null>(
@@ -129,6 +167,23 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
 
     const cacheKey = bboxCacheKey(snapBBoxToTileGrid(rawBbox));
     if (!options?.force && cacheKey === lastFetchedKeyRef.current) {
+      return;
+    }
+
+    if (isOffline) {
+      setIsFetching(true);
+      const applied = applyOfflineDiscovery(
+        rawBbox,
+        cacheKey,
+        setDisplayedCategories,
+        setViewportMapSpots,
+        setUsingCachedDiscovery,
+        lastFetchedKeyRef
+      );
+      setIsFetching(false);
+      if (!applied) {
+        setUsingCachedDiscovery(false);
+      }
       return;
     }
 
@@ -152,12 +207,14 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
       if (mergedSpots.length === 0) {
         console.warn('[useCategorizedSpots] Empty bbox result — clearing viewport pins');
         lastFetchedKeyRef.current = cacheKey;
+        setUsingCachedDiscovery(false);
         setDisplayedCategories(EMPTY_CATEGORIES);
         setViewportMapSpots([]);
         return;
       }
 
       lastFetchedKeyRef.current = cacheKey;
+      setUsingCachedDiscovery(false);
       setDisplayedCategories(
         countCategorizedSpots(data) > 0
           ? data
@@ -167,13 +224,21 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
     } catch (error) {
       if (mountedRef.current && requestId === activeRequestRef.current) {
         console.error('[useCategorizedSpots] Fetch failed:', error);
+        applyOfflineDiscovery(
+          rawBbox,
+          cacheKey,
+          setDisplayedCategories,
+          setViewportMapSpots,
+          setUsingCachedDiscovery,
+          lastFetchedKeyRef
+        );
       }
     } finally {
       if (mountedRef.current && requestId === activeRequestRef.current) {
         setIsFetching(false);
       }
     }
-  }, []);
+  }, [isOffline]);
 
   const onViewportChange = useCallback(
     (bbox: BBox) => {
@@ -238,5 +303,6 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
     zoomedOutTooFar,
     hasViewport,
     viewportBBox,
+    usingCachedDiscovery,
   };
 }
