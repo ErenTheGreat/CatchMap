@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import {
   View,
   Text,
@@ -68,6 +68,7 @@ interface MapSpotDetailProps {
   availableSpecies?: AvailableSpecies[];
   predictions?: SpeciesPrediction[];
   predictionsLoading?: boolean;
+  predictionsUpdating?: boolean;
   predictionsError?: boolean;
   skyCondition?: SkyCondition | null;
   temperatureF?: number | null;
@@ -80,7 +81,7 @@ interface MapSpotDetailProps {
   onRetryCatchTimes?: () => void;
 }
 
-export default function MapSpotDetail({
+export default memo(function MapSpotDetail({
   spot,
   spotDetails,
   spotDetailsLoading = false,
@@ -88,6 +89,7 @@ export default function MapSpotDetail({
   availableSpecies = [],
   predictions = [],
   predictionsLoading = false,
+  predictionsUpdating = false,
   predictionsError = false,
   skyCondition = null,
   temperatureF = null,
@@ -183,6 +185,10 @@ export default function MapSpotDetail({
           <Text style={styles.fallbackHint}>
             Activity scores unavailable — showing documented species for this spot
           </Text>
+        ) : null}
+
+        {predictionsUpdating && !predictionsLoading && displayItems.length > 0 ? (
+          <Text style={styles.updatingHint}>Updating species and activity scores…</Text>
         ) : null}
 
         {predictionsLoading ? (
@@ -320,7 +326,16 @@ export default function MapSpotDetail({
       <View style={styles.catchTimesSection}>
         <Text style={styles.fishTitle}>Best Catch Times:</Text>
         {spotDetailsLoading ? (
-          <Text style={styles.noFishText}>Analyzing nearby catch activity…</Text>
+          <View style={styles.catchTimesSkeletonList}>
+            {[0, 1, 2].map((index) => (
+              <Skeleton
+                key={index}
+                width="100%"
+                height={28}
+                borderRadius={BorderRadius.full}
+              />
+            ))}
+          </View>
         ) : bestCatchTimes.length > 0 ? (
           <View style={styles.catchTimesList}>
             {bestCatchTimes.map((slot) => (
@@ -414,7 +429,7 @@ export default function MapSpotDetail({
       </View>
     </View>
   );
-}
+});
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
@@ -526,6 +541,14 @@ function createStyles(colors: ThemeColors) {
     fontSize: FontSizes.xs,
     fontStyle: 'italic',
     marginBottom: Spacing.sm,
+  },
+  updatingHint: {
+    color: colors.textMuted,
+    fontSize: FontSizes.xs,
+    marginBottom: Spacing.xs,
+  },
+  catchTimesSkeletonList: {
+    gap: Spacing.xs,
   },
   rowConfidenceChip: {
     alignSelf: 'flex-start',

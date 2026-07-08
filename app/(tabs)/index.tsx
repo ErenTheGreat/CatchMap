@@ -53,6 +53,8 @@ import { useTides } from '@/hooks/useTides';
 import { useSpotDetails } from '@/hooks/useSpotDetails';
 import { useSpeciesPrediction } from '@/hooks/useSpeciesPrediction';
 import { getSpotLogSpeciesOptions } from '@/lib/species/spotLogSpecies';
+import { prefetchSpotData } from '@/lib/species/prefetchSpotData';
+import { queryClient } from '@/lib/queryClient';
 import { searchResultToNearbySpot } from '@/lib/api/endpoints/locationsSearch';
 import type { LocationSpeciesGuide } from '@/lib/types/speciesGuide';
 import type { AvailableSpecies, SpeciesPrediction } from '@/lib/types/speciesPrediction';
@@ -263,6 +265,7 @@ export default function MapScreen() {
   const {
     data: speciesPredictionData,
     isLoading: speciesPredictionsLoading,
+    isUpdating: speciesPredictionsUpdating,
     isError: speciesPredictionsError,
     refetch: refetchSpeciesPredictions,
   } = useSpeciesPrediction({
@@ -271,6 +274,7 @@ export default function MapScreen() {
     longitude: selectedSpot?.longitude ?? location?.longitude,
     spotName: selectedSpot?.name ?? null,
     personalSpecies: spotPersonalSpecies,
+    tidesPredictions: tidesData?.predictions ?? null,
   });
 
   const personalCatchTimes = useMemo(() => {
@@ -330,6 +334,7 @@ export default function MapScreen() {
 
   const handleSpotPress = useCallback((spot: NearbySpot) => {
     hapticLight();
+    prefetchSpotData(queryClient, spot);
     setSelectedSpotId(spot.id);
     setSelectedSpotSnapshot(spot);
     setFlyToTarget({
@@ -527,6 +532,14 @@ export default function MapScreen() {
     [selectedSpot]
   );
 
+  const handleRetryPredictions = useCallback(() => {
+    void refetchSpeciesPredictions();
+  }, [refetchSpeciesPredictions]);
+
+  const handleRetryCatchTimes = useCallback(() => {
+    void refetchSpotDetails();
+  }, [refetchSpotDetails]);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -641,6 +654,7 @@ export default function MapScreen() {
             speciesPredictions={speciesPredictionData?.predictions ?? []}
             availableSpecies={speciesPredictionData?.species ?? []}
             speciesPredictionsLoading={speciesPredictionsLoading}
+            speciesPredictionsUpdating={speciesPredictionsUpdating}
             speciesPredictionsError={speciesPredictionsError}
             speciesSkyCondition={speciesPredictionData?.skyCondition ?? null}
             speciesTemperatureF={speciesPredictionData?.temperatureF ?? null}
@@ -659,8 +673,8 @@ export default function MapScreen() {
             onLogSpotFish={useSpotSpecies}
             onSpeciesPress={handleSpeciesPress}
             personalCatchTimes={spotPersonalCatchTimes}
-            onRetryPredictions={() => refetchSpeciesPredictions()}
-            onRetryCatchTimes={() => refetchSpotDetails()}
+            onRetryPredictions={handleRetryPredictions}
+            onRetryCatchTimes={handleRetryCatchTimes}
             insights={insights}
             onViewInsights={() => router.push('/history')}
             areaRegulationNotices={areaRegulationNotices}
