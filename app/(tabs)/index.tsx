@@ -40,6 +40,7 @@ import { BOTTOM_SHEET_PEEK_HEIGHT, getSheetHeightForIndex } from '@/components/m
 import type { FlyToTarget } from '@/components/map/types';
 import { useDeviceLocation } from '@/hooks/useDeviceLocation';
 import { useLocalFishingData } from '@/hooks/useLocalFishingData';
+import { useNetworkStatus } from '@/providers/NetworkProvider';
 import { DEFAULT_RADIUS_METERS } from '@/lib/api/endpoints/localSpecies';
 import type { ActiveCoordinates, LocationSearchResult } from '@/lib/types/mapCoordinates';
 import { useCategorizedSpots } from '@/hooks/useCategorizedSpots';
@@ -129,11 +130,12 @@ export default function MapScreen() {
     sheetRef.current?.snapToIndex(0);
   }, [flyLatParam, flyLngParam]);
 
+  const { isOffline } = useNetworkStatus();
+
   const {
     species: localSpecies,
     isLoading: speciesLoading,
     isFetchingSpecies,
-    isOffline,
     refetchSpecies,
   } = useLocalFishingData(
     activeCoords?.latitude,

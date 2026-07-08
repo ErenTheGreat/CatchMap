@@ -17,15 +17,32 @@ export const queryClient = new QueryClient({
       retry: 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
+      networkMode: 'offlineFirst',
     },
   },
 });
 
 export const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
-  key: '@fishing_app_query_cache',
+  // v4: persist species + weather for offline spot detail
+  key: '@fishing_app_query_cache_v4',
   throttleTime: 1000,
 });
+
+const NON_PERSISTED_QUERY_KEYS = new Set([
+  'spotsBBox',
+  'spotDetails',
+  'localSpecies',
+  'categorizedSpots',
+  'catchActivity',
+]);
+
+const PERSISTED_QUERY_KEYS = new Set([
+  'nearbyFishingSpots',
+  'userLocation',
+  'speciesAvailability',
+  'weather',
+]);
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {
   persister: asyncStoragePersister,
@@ -33,7 +50,13 @@ export const persistOptions: PersistQueryClientProviderProps['persistOptions'] =
   dehydrateOptions: {
     shouldDehydrateQuery: (query) => {
       const key = query.queryKey[0];
-      return key === 'nearbyFishingSpots' || key === 'userLocation' || key === 'spotsBBox';
+      if (typeof key === 'string' && NON_PERSISTED_QUERY_KEYS.has(key)) {
+        return false;
+      }
+      if (typeof key === 'string' && PERSISTED_QUERY_KEYS.has(key)) {
+        return query.state.status === 'success';
+      }
+      return false;
     },
   },
 };

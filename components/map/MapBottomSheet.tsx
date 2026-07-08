@@ -10,11 +10,11 @@ import {
   ScrollView,
 } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { ChevronLeft, Database, Fish, MapPin, RefreshCw, WifiOff } from 'lucide-react-native';
+import { ChevronLeft, Database, Fish, MapPin, RefreshCw } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { BOTTOM_SHEET_SNAP_POINTS } from '@/components/map/mapSheetConstants';
 import { MAP_SIDE_PANEL_WIDTH } from '@/constants/layout';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, OfflineBanner } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 import MapSpotDetail from '@/components/map/MapSpotDetail';
@@ -202,6 +202,17 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
 
     const sheetBody = (
       <>
+          {isOffline ? (
+            <OfflineBanner
+              compact={!selectedSpot && sheetIndex === 0}
+              message={
+                selectedSpot
+                  ? 'Cached species and scores may be shown for this spot. Live lookups resume when you reconnect.'
+                  : 'Showing saved data where available. New lookups will resume when you reconnect.'
+              }
+            />
+          ) : null}
+
           <View style={styles.peekHeader}>
             <View style={styles.badgeRow}>
               <Database color={colors.brandAccent} size={14} />
@@ -260,25 +271,17 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
               </View>
             )}
 
-            {!selectedSpot && isOffline && (
-              <View style={[styles.notice, styles.offlineNotice]}>
-                <WifiOff color={colors.error} size={14} />
-                <Text style={styles.noticeText}>
-                  Network unavailable. Check your connection and try again.
-                </Text>
-                {onRetrySpecies ? (
-                  <Pressable
-                    style={styles.retryButton}
-                    onPress={onRetrySpecies}
-                    accessibilityRole="button"
-                    accessibilityLabel="Retry loading species"
-                  >
-                    <RefreshCw color={colors.accentForeground} size={14} />
-                    <Text style={styles.retryText}>Retry</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            )}
+            {!selectedSpot && isOffline && onRetrySpecies ? (
+              <Pressable
+                style={styles.retryButton}
+                onPress={onRetrySpecies}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading species"
+              >
+                <RefreshCw color={colors.accentForeground} size={14} />
+                <Text style={styles.retryText}>Retry when online</Text>
+              </Pressable>
+            ) : null}
 
             {!selectedSpot && !speciesLoading && species.length === 0 && !isOffline && (
               <View style={styles.emptySpecies}>
@@ -329,6 +332,7 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
                 predictionsLoading={speciesPredictionsLoading}
                 predictionsUpdating={speciesPredictionsUpdating}
                 predictionsError={speciesPredictionsError}
+                isOffline={isOffline}
                 skyCondition={speciesSkyCondition}
                 temperatureF={speciesTemperatureF}
                 contextSubtitle={speciesContextSubtitle}

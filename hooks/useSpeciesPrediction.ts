@@ -9,6 +9,7 @@ import {
 import { resolvePostgisLocationUuid } from '@/lib/api/bundledLocationIds';
 import type { PersonalSpeciesNear } from '@/lib/types/catchInsights';
 import type { TidePrediction } from '@/lib/api/endpoints/tides';
+import { useNetworkStatus } from '@/providers/NetworkProvider';
 
 interface UseSpeciesPredictionOptions {
   locationId: string | null;
@@ -36,6 +37,7 @@ export function useSpeciesPrediction({
   personalSpecies = [],
   tidesPredictions = null,
 }: UseSpeciesPredictionOptions) {
+  const { isOffline: networkOffline } = useNetworkStatus();
   const hasCoords = latitude != null && longitude != null;
   const parsedLocationId = resolvePostgisLocationUuid(locationId);
   const currentMonth = new Date().getMonth() + 1;
@@ -66,6 +68,7 @@ export function useSpeciesPrediction({
         staleTime: 5 * 60 * 1000,
         retry: 1,
         placeholderData: keepPreviousData,
+        networkMode: 'offlineFirst',
       },
       {
         queryKey: ['weather', latitude, longitude],
@@ -74,15 +77,17 @@ export function useSpeciesPrediction({
         staleTime: 15 * 60 * 1000,
         retry: 1,
         placeholderData: keepPreviousData,
+        networkMode: 'offlineFirst',
       },
       {
         queryKey: ['catchActivity', latitude, longitude],
         queryFn: ({ signal }) =>
           fishingApi.getCatchActivityNearPoint(latitude!, longitude!, 500, 90, signal),
-        enabled: hasCoords,
+        enabled: hasCoords && !networkOffline,
         staleTime: 5 * 60 * 1000,
         retry: 1,
         placeholderData: keepPreviousData,
+        networkMode: 'offlineFirst',
       },
     ],
   });

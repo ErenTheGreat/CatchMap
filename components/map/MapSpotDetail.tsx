@@ -13,7 +13,7 @@ import * as Linking from 'expo-linking';
 import { Anchor, ChevronRight, Clock, Fish, Navigation, Star, Trophy, Waves } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import RegulationNoticeCard from '@/components/map/RegulationNoticeCard';
-import { ErrorState, Skeleton } from '@/components/ui';
+import { ErrorState, Skeleton, OfflineBanner } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 import { NearbySpot, formatDistance, getWaterTypeIcon } from '@/utils/recommendations';
@@ -70,6 +70,7 @@ interface MapSpotDetailProps {
   predictionsLoading?: boolean;
   predictionsUpdating?: boolean;
   predictionsError?: boolean;
+  isOffline?: boolean;
   skyCondition?: SkyCondition | null;
   temperatureF?: number | null;
   contextSubtitle?: string | null;
@@ -91,6 +92,7 @@ export default memo(function MapSpotDetail({
   predictionsLoading = false,
   predictionsUpdating = false,
   predictionsError = false,
+  isOffline = false,
   skyCondition = null,
   temperatureF = null,
   contextSubtitle = null,
@@ -178,6 +180,13 @@ export default memo(function MapSpotDetail({
 
       <View style={styles.fishSection}>
         <Text style={styles.fishTitle}>Potential Catches</Text>
+        {isOffline && displayItems.length > 0 ? (
+          <OfflineBanner
+            compact
+            title="Offline — showing cached species"
+            message="Activity scores use the last saved weather when available."
+          />
+        ) : null}
         {weatherSubtitle ? (
           <Text style={styles.weatherSubtitle}>{weatherSubtitle}</Text>
         ) : null}
@@ -196,12 +205,18 @@ export default memo(function MapSpotDetail({
             <View style={styles.loadingRow}>
               <ActivityIndicator color={colors.accent} size="small" />
               <Text style={styles.loadingText}>
-                {speciesLookupSlow
-                  ? 'Looking up nearby species…'
-                  : 'Loading species…'}
+                {isOffline
+                  ? 'Loading cached species…'
+                  : speciesLookupSlow
+                    ? 'Looking up nearby species…'
+                    : 'Loading species…'}
               </Text>
             </View>
-            {speciesLookupSlow ? (
+            {isOffline ? (
+              <Text style={styles.loadingHint}>
+                If you've opened this spot before, saved species should appear shortly.
+              </Text>
+            ) : speciesLookupSlow ? (
               <Text style={styles.loadingHint}>
                 Checking regional fish records — this can take a few seconds the first time.
               </Text>
@@ -312,12 +327,18 @@ export default memo(function MapSpotDetail({
           predictionsError ? (
             <ErrorState
               title="Could not load species"
-              message="Species data is unavailable right now."
-              onRetry={onRetryPredictions}
+              message={
+                isOffline
+                  ? 'No saved species data for this spot yet. Connect to load documented species.'
+                  : 'Species data is unavailable right now.'
+              }
+              onRetry={isOffline ? undefined : onRetryPredictions}
             />
           ) : (
             <Text style={styles.noFishText}>
-              No species recorded for this location this month
+              {isOffline
+                ? 'No saved species for this spot yet. Connect to load documented species.'
+                : 'No species recorded for this location this month'}
             </Text>
           )
         ) : null}
