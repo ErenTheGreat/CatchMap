@@ -1,0 +1,182 @@
+[
+  {
+    "idx": 0,
+    "file": "batch_010_chunk_01.sql",
+    "path": "_mcp_queue/00_batch_010_chunk_01.sql.json"
+  },
+  {
+    "idx": 1,
+    "file": "batch_010_chunk_02.sql",
+    "path": "_mcp_queue/01_batch_010_chunk_02.sql.json"
+  },
+  {
+    "idx": 2,
+    "file": "batch_010_chunk_03.sql",
+    "path": "_mcp_queue/02_batch_010_chunk_03.sql.json"
+  },
+  {
+    "idx": 3,
+    "file": "batch_010_chunk_04.sql",
+    "path": "_mcp_queue/03_batch_010_chunk_04.sql.json"
+  },
+  {
+    "idx": 4,
+    "file": "batch_011_chunk_01.sql",
+    "path": "_mcp_queue/04_batch_011_chunk_01.sql.json"
+  },
+  {
+    "idx": 5,
+    "file": "batch_011_chunk_02.sql",
+    "path": "_mcp_queue/05_batch_011_chunk_02.sql.json"
+  },
+  {
+    "idx": 6,
+    "file": "batch_011_chunk_03.sql",
+    "path": "_mcp_queue/06_batch_011_chunk_03.sql.json"
+  },
+  {
+    "idx": 7,
+    "file": "batch_011_chunk_04.sql",
+    "path": "_mcp_queue/07_batch_011_chunk_04.sql.json"
+  },
+  {
+    "idx": 8,
+    "file": "batch_012_chunk_01.sql",
+    "path": "_mcp_queue/08_batch_012_chunk_01.sql.json"
+  },
+  {
+    "idx": 9,
+    "file": "batch_012_chunk_02.sql",
+    "path": "_mcp_queue/09_batch_012_chunk_02.sql.json"
+  },
+  {
+    "idx": 10,
+    "file": "batch_012_chunk_03.sql",
+    "path": "_mcp_queue/10_batch_012_chunk_03.sql.json"
+  },
+  {
+    "idx": 11,
+    "file": "batch_012_chunk_04.sql",
+    "path": "_mcp_queue/11_batch_012_chunk_04.sql.json"
+  },
+  {
+    "idx": 12,
+    "file": "batch_013_chunk_01.sql",
+    "path": "_mcp_queue/12_batch_013_chunk_01.sql.json"
+  },
+  {
+    "idx": 13,
+    "file": "batch_013_chunk_02.sql",
+    "path": "_mcp_queue/13_batch_013_chunk_02.sql.json"
+  },
+  {
+    "idx": 14,
+    "file": "batch_013_chunk_03.sql",
+    "path": "_mcp_queue/14_batch_013_chunk_03.sql.json"
+  },
+  {
+    "idx": 15,
+    "file": "batch_013_chunk_04.sql",
+    "path": "_mcp_queue/15_batch_013_chunk_04.sql.json"
+  },
+  {
+    "idx": 16,
+    "file": "batch_014_chunk_01.sql",
+    "path": "_mcp_queue/16_batch_014_chunk_01.sql.json"
+  },
+  {
+    "idx": 17,
+    "file": "batch_014_chunk_02.sql",
+    "path": "_mcp_queue/17_batch_014_chunk_02.sql.json"
+  },
+  {
+    "idx": 18,
+    "file": "batch_014_chunk_03.sql",
+    "path": "_mcp_queue/18_batch_014_chunk_03.sql.json"
+  },
+  {
+    "idx": 19,
+    "file": "batch_014_chunk_04.sql",
+    "path": "_mcp_queue/19_batch_014_chunk_04.sql.json"
+  },
+  {
+    "idx": 20,
+    "file": "batch_015_chunk_01.sql",
+    "path": "_mcp_queue/20_batch_015_chunk_01.sql.json"
+  },
+  {
+    "idx": 21,
+    "file": "batch_015_chunk_02.sql",
+    "path": "_mcp_queue/21_batch_015_chunk_02.sql.json"
+  },
+  {
+    "idx": 22,
+    "file": "batch_015_chunk_03.sql",
+    "path": "_mcp_queue/22_batch_015_chunk_03.sql.json"
+  },
+  {
+    "idx": 23,
+    "file": "batch_015_chunk_04.sql",
+    "path": "_mcp_queue/23_batch_015_chunk_04.sql.json"
+  },
+  {
+    "idx": 24,
+    "file": "batch_016_chunk_01.sql",
+    "path": "_mcp_queue/24_batch_016_chunk_01.sql.json"
+  },
+  {
+    "idx": 25,
+    "file": "batch_016_chunk_02.sql",
+    "path": "_mcp_queue/25_batch_016_chunk_02.sql.json"
+  },
+  {
+    "idx": 26,
+    "file": "batch_016_chunk_03.sql",
+    "path": "_mcp_queue/26_batch_016_chunk_03.sql.json"
+  },
+  {
+    "idx": 27,
+    "file": "batch_016_chunk_04.sql",
+    "path": "_mcp_queue/27_batch_016_chunk_04.sql.json"
+  },
+  {
+    "idx": 28,
+    "file": "batch_017_chunk_01.sql",
+    "path": "_mcp_queue/28_batch_017_chunk_01.sql.json"
+  },
+  {
+    "idx": 29,
+    "file": "batch_017_chunk_02.sql",
+    "path": "_mcp_queue/29_batch_017_chunk_02.sql.json"
+  },
+  {
+    "idx": 30,
+    "file": "batch_017_chunk_03.sql",
+    "path": "_mcp_queue/30_batch_017_chunk_03.sql.json"
+  },
+  {
+    "idx": 31,
+    "file": "batch_017_chunk_04.sql",
+    "path": "_mcp_queue/31_batch_017_chunk_04.sql.json"
+  },
+  {
+    "idx": 32,
+    "file": "batch_018_chunk_01.sql",
+    "path": "_mcp_queue/32_batch_018_chunk_01.sql.json"
+  },
+  {
+    "idx": 33,
+    "file": "batch_018_chunk_02.sql",
+    "path": "_mcp_queue/33_batch_018_chunk_02.sql.json"
+  },
+  {
+    "idx": 34,
+    "file": "batch_018_chunk_03.sql",
+    "path": "_mcp_queue/34_batch_018_chunk_03.sql.json"
+  },
+  {
+    "idx": 35,
+    "file": "batch_018_chunk_04.sql",
+    "path": "_mcp_queue/35_batch_018_chunk_04.sql.json"
+  }
+]

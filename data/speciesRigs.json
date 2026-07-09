@@ -1,0 +1,1271 @@
+[
+  {
+    "speciesId": "1",
+    "rigs": [
+      {
+        "id": "lmb-texas-rig",
+        "name": "Texas Rig — Worm",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Lift-and-fall along structure",
+        "components": [
+          { "role": "rod", "label": "6'6\"–7' medium", "detail": "Fast action" },
+          { "role": "reel", "label": "2500–3000 spinning" },
+          { "role": "line", "label": "12–15 lb fluorocarbon" },
+          { "role": "hook", "label": "3/0 EWG worm hook" },
+          { "role": "weight", "label": "1/4–3/8 oz bullet sinker" },
+          { "role": "lure", "label": "Soft plastic worm — green pumpkin" }
+        ],
+        "steps": [
+          "Slide bullet sinker on main line",
+          "Tie EWG hook; Texas-rig the worm",
+          "Cast to cover; let sink to bottom"
+        ],
+        "tip": "Best on weed edges and submerged timber."
+      },
+      {
+        "id": "lmb-topwater-popper",
+        "name": "Topwater Popper",
+        "rigType": "baitcasting",
+        "isPrimary": false,
+        "targetDepth": "surface",
+        "retrieve": "Pop-pause-pop along grass lines",
+        "components": [
+          { "role": "rod", "label": "6'6\" medium-heavy", "detail": "Moderate action" },
+          { "role": "reel", "label": "6.4:1 baitcaster" },
+          { "role": "line", "label": "30 lb braided main line" },
+          { "role": "leader", "label": "2 ft 15 lb fluorocarbon" },
+          { "role": "hook", "label": "Treble hooks on lure" },
+          { "role": "lure", "label": "Walking popper — bone or shad" }
+        ],
+        "steps": [
+          "Tie popper to fluorocarbon leader",
+          "Cast parallel to weed lines at dawn",
+          "Work with sharp pops and long pauses"
+        ],
+        "tip": "Prime at first light when bass are schooling on top."
+      }
+    ]
+  },
+  {
+    "speciesId": "2",
+    "rigs": [
+      {
+        "id": "rt-inline-spinner",
+        "name": "Inline Spinner",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Steady retrieve with occasional twitches",
+        "components": [
+          { "role": "rod", "label": "6'–7' light", "detail": "Fast action" },
+          { "role": "reel", "label": "1000–2000 spinning" },
+          { "role": "line", "label": "4–6 lb monofilament" },
+          { "role": "hook", "label": "#6–#8 single hook on spinner" },
+          { "role": "lure", "label": "Rooster tail or Mepps #2–#3" }
+        ],
+        "steps": [
+          "Tie spinner directly to main line",
+          "Cast upstream and across current",
+          "Retrieve just fast enough to spin the blade"
+        ],
+        "tip": "Match spinner size to water clarity — smaller in clear streams."
+      },
+      {
+        "id": "rt-drift-powerbait",
+        "name": "Drift Rig — PowerBait",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Dead drift with occasional slow drag",
+        "components": [
+          { "role": "rod", "label": "7'–9' light", "detail": "Soft tip for bite detection" },
+          { "role": "reel", "label": "2000–2500 spinning" },
+          { "role": "line", "label": "4–6 lb monofilament" },
+          { "role": "float", "label": "Slip float or fixed bobber" },
+          { "role": "weight", "label": "Split shot 12–18\" above hook" },
+          { "role": "hook", "label": "#10–#12 treble or single egg hook" },
+          { "role": "bait", "label": "PowerBait nugget on treble" }
+        ],
+        "steps": [
+          "Set float depth to 1–3 ft off bottom",
+          "Mold PowerBait around hook",
+          "Drift along stocking points and inlets"
+        ],
+        "tip": "Stocked lake trout often hold near boat ramps and inlets."
+      }
+    ]
+  },
+  {
+    "speciesId": "3",
+    "rigs": [
+      {
+        "id": "wal-jig-minnow",
+        "name": "Jig + Minnow",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Lift-drop along drop-offs at dusk",
+        "components": [
+          { "role": "rod", "label": "6'6\"–7' medium-light", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "2500 spinning" },
+          { "role": "line", "label": "6–8 lb fluorocarbon" },
+          { "role": "hook", "label": "1/4 oz jig head with #2 hook" },
+          { "role": "bait", "label": "Live fathead or shiner minnow" }
+        ],
+        "steps": [
+          "Hook minnow through lips or back",
+          "Cast to drop-off edges and structure",
+          "Jig vertically with short hops off bottom"
+        ],
+        "tip": "Walleye feed aggressively at dawn and dusk on transitions."
+      },
+      {
+        "id": "wal-lindy-rig",
+        "name": "Lindy Rig — Crawler",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Slow drift or troll along contours",
+        "components": [
+          { "role": "rod", "label": "7' medium", "detail": "Moderate action" },
+          { "role": "reel", "label": "3000 spinning" },
+          { "role": "line", "label": "8–10 lb monofilament" },
+          { "role": "swivel", "label": "Barrel swivel above sinker" },
+          { "role": "weight", "label": "1/2–1 oz walking sinker" },
+          { "role": "leader", "label": "3–4 ft 6 lb fluorocarbon" },
+          { "role": "hook", "label": "#4–#6 octopus hook" },
+          { "role": "bait", "label": "Nightcrawler on harness or single hook" }
+        ],
+        "steps": [
+          "Thread sinker on main line above swivel",
+          "Tie leader and baited crawler harness",
+          "Drift or slow-troll along 15–25 ft breaks"
+        ],
+        "tip": "Add a spinner blade on the harness for extra flash in stained water."
+      }
+    ]
+  },
+  {
+    "speciesId": "4",
+    "rigs": [
+      {
+        "id": "pike-spinnerbait",
+        "name": "Spinnerbait — Weed Edge",
+        "rigType": "baitcasting",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Steady retrieve with rod tip high",
+        "components": [
+          { "role": "rod", "label": "7' medium-heavy", "detail": "Fast action" },
+          { "role": "reel", "label": "6.3:1 baitcaster" },
+          { "role": "line", "label": "30 lb braided main line" },
+          { "role": "leader", "label": "12\" steel leader" },
+          { "role": "hook", "label": "4/0–5/0 treble on spinnerbait" },
+          { "role": "lure", "label": "1/2–3/4 oz white/chartreuse spinnerbait" }
+        ],
+        "steps": [
+          "Tie spinnerbait to steel leader",
+          "Cast parallel to weed lines",
+          "Retrieve steadily above submerged vegetation"
+        ],
+        "tip": "Always use a steel leader — pike will bite through mono."
+      },
+      {
+        "id": "pike-spoon",
+        "name": "Large Spoon",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Wide sweeps with pauses",
+        "components": [
+          { "role": "rod", "label": "7' heavy spinning", "detail": "Moderate action" },
+          { "role": "reel", "label": "4000 spinning" },
+          { "role": "line", "label": "30 lb braid" },
+          { "role": "leader", "label": "18\" titanium or steel leader" },
+          { "role": "lure", "label": "3/4–1 oz red/white spoon" }
+        ],
+        "steps": [
+          "Attach spoon to leader with snap swivel",
+          "Cast to shallow bays and points",
+          "Rip spoon with aggressive rod sweeps"
+        ],
+        "tip": "Follow up missed strikes with a figure-eight at the boat."
+      }
+    ]
+  },
+  {
+    "speciesId": "5",
+    "rigs": [
+      {
+        "id": "cat-bottom-cutbait",
+        "name": "Bottom Rig — Cut Bait",
+        "rigType": "bottom",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Anchor or drift; wait for slow pull",
+        "components": [
+          { "role": "rod", "label": "7'–8' medium-heavy", "detail": "Soft tip" },
+          { "role": "reel", "label": "4000–5000 spinning" },
+          { "role": "line", "label": "15–20 lb monofilament" },
+          { "role": "swivel", "label": "Barrel swivel above sinker" },
+          { "role": "weight", "label": "1–3 oz bank sinker" },
+          { "role": "leader", "label": "12–18\" 20 lb mono leader" },
+          { "role": "hook", "label": "3/0–5/0 circle or octopus hook" },
+          { "role": "bait", "label": "Fresh cut shad or skipjack chunk" }
+        ],
+        "steps": [
+          "Thread sinker on main line above swivel",
+          "Bait hook with palm-sized cut bait chunk",
+          "Cast to deep holes and channel edges"
+        ],
+        "tip": "Night fishing and overcast days produce the most action."
+      },
+      {
+        "id": "cat-stinkbait",
+        "name": "Stink Bait — Dip Worm",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Still-fish on bottom",
+        "components": [
+          { "role": "rod", "label": "7' medium", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "3500 spinning" },
+          { "role": "line", "label": "12 lb monofilament" },
+          { "role": "weight", "label": "1/2 oz egg sinker above swivel" },
+          { "role": "hook", "label": "#2 treble on sponge or dip worm" },
+          { "role": "bait", "label": "Prepared stink bait or chicken liver" }
+        ],
+        "steps": [
+          "Load dip worm with stink bait",
+          "Cast to eddies and tail-outs",
+          "Keep line tight and watch for subtle taps"
+        ],
+        "tip": "Chum the area with small bait balls to draw cats in."
+      }
+    ]
+  },
+  {
+    "speciesId": "6",
+    "rigs": [
+      {
+        "id": "bg-bobber-worm",
+        "name": "Bobber + Worm",
+        "rigType": "float",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Still-fish near beds and docks",
+        "components": [
+          { "role": "rod", "label": "5'6\"–6' ultralight", "detail": "Light action" },
+          { "role": "reel", "label": "500–1000 spinning" },
+          { "role": "line", "label": "4 lb monofilament" },
+          { "role": "float", "label": "Small fixed bobber" },
+          { "role": "weight", "label": "Split shot 6\" above hook" },
+          { "role": "hook", "label": "#8–#10 long-shank hook" },
+          { "role": "bait", "label": "Small piece of nightcrawler" }
+        ],
+        "steps": [
+          "Set bobber 2–4 ft deep near cover",
+          "Thread worm on hook leaving tip exposed",
+          "Cast to shallow beds and dock pilings"
+        ],
+        "tip": "Look for circular spawning beds in spring shallows."
+      },
+      {
+        "id": "bg-micro-jig",
+        "name": "Micro Jig",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Slow lift-and-drop",
+        "components": [
+          { "role": "rod", "label": "5'6\" ultralight" },
+          { "role": "reel", "label": "500 spinning" },
+          { "role": "line", "label": "2–4 lb monofilament" },
+          { "role": "hook", "label": "1/32–1/16 oz jig head #8" },
+          { "role": "lure", "label": "Tiny marabou or curly-tail jig" }
+        ],
+        "steps": [
+          "Tie jig directly to line",
+          "Cast to brush and weed edges",
+          "Hop jig slowly off bottom"
+        ],
+        "tip": "Great for kids — ultralight gear makes every fish feel huge."
+      }
+    ]
+  },
+  {
+    "speciesId": "7",
+    "rigs": [
+      {
+        "id": "crappie-vertical-jig",
+        "name": "Vertical Jig — Brush Pile",
+        "rigType": "jigging",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Vertical jig with 1–2 ft lifts",
+        "components": [
+          { "role": "rod", "label": "6'–7' light", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "1000–2000 spinning" },
+          { "role": "line", "label": "4–6 lb monofilament" },
+          { "role": "hook", "label": "1/16–1/8 oz jig head #4" },
+          { "role": "lure", "label": "Chartreuse/white tube jig" }
+        ],
+        "steps": [
+          "Position boat over submerged timber",
+          "Drop jig to brush top",
+          "Lift and pause; watch for light taps"
+        ],
+        "tip": "Crappie school tight — mark the spot when you get a bite."
+      },
+      {
+        "id": "crappie-minnow-float",
+        "name": "Minnow Under Float",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Still-fish at depth of brush",
+        "components": [
+          { "role": "rod", "label": "7' light spinning" },
+          { "role": "reel", "label": "2000 spinning" },
+          { "role": "line", "label": "6 lb monofilament" },
+          { "role": "float", "label": "Slip float set to depth" },
+          { "role": "hook", "label": "#4–#6 Aberdeen hook" },
+          { "role": "bait", "label": "Small live minnow" }
+        ],
+        "steps": [
+          "Hook minnow through lips",
+          "Set float to suspend bait at brush depth",
+          "Drift or anchor over structure"
+        ],
+        "tip": "Spring and fall produce the biggest schools near cover."
+      }
+    ]
+  },
+  {
+    "speciesId": "8",
+    "rigs": [
+      {
+        "id": "smb-tube-jig",
+        "name": "Tube Jig — Rocky Point",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Drag and hop along rock transitions",
+        "components": [
+          { "role": "rod", "label": "6'6\"–7' medium-light", "detail": "Fast action" },
+          { "role": "reel", "label": "2500 spinning" },
+          { "role": "line", "label": "8–10 lb fluorocarbon" },
+          { "role": "hook", "label": "1/4 oz tube jig head 2/0" },
+          { "role": "lure", "label": "3.5\" green pumpkin tube" }
+        ],
+        "steps": [
+          "Cast to rocky points and shoals",
+          "Let jig sink to bottom",
+          "Drag with short hops along gravel transitions"
+        ],
+        "tip": "Smallmouth love current — focus on eddies below riffles."
+      },
+      {
+        "id": "smb-topwater",
+        "name": "Topwater — Popper",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "surface",
+        "retrieve": "Pop and pause over shallow rock",
+        "components": [
+          { "role": "rod", "label": "6'6\" medium", "detail": "Moderate action" },
+          { "role": "reel", "label": "2500 spinning" },
+          { "role": "line", "label": "10 lb fluorocarbon" },
+          { "role": "lure", "label": "Small popper or walking bait" }
+        ],
+        "steps": [
+          "Cast to shallow flats at dawn",
+          "Work bait with sharp pops",
+          "Pause 2–3 seconds between twitches"
+        ],
+        "tip": "Explosive strikes on clear-water mornings are the reward."
+      }
+    ]
+  },
+  {
+    "speciesId": "9",
+    "rigs": [
+      {
+        "id": "perch-minnow-jig",
+        "name": "Minnow + Jig",
+        "rigType": "jigging",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Vertical jig near weed lines",
+        "components": [
+          { "role": "rod", "label": "6' light", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "1000 spinning" },
+          { "role": "line", "label": "4 lb monofilament" },
+          { "role": "hook", "label": "1/16 oz jig head #6" },
+          { "role": "bait", "label": "Small fathead minnow" }
+        ],
+        "steps": [
+          "Tip jig with live minnow",
+          "Fish 15–25 ft near weed edges",
+          "Jig with short lifts off bottom"
+        ],
+        "tip": "Perch school — when you catch one, stay in the area."
+      },
+      {
+        "id": "perch-ice-spoon",
+        "name": "Ice Fishing — Spoon",
+        "rigType": "jigging",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Aggressive jigging with pauses",
+        "components": [
+          { "role": "rod", "label": "24\"–28\" ultralight ice rod" },
+          { "role": "reel", "label": "Inline ice reel" },
+          { "role": "line", "label": "2–4 lb mono or fluorocarbon" },
+          { "role": "lure", "label": "1/16–1/8 oz gold/silver spoon" }
+        ],
+        "steps": [
+          "Drill holes along weed edge breaks",
+          "Jig spoon aggressively 1–2 ft off bottom",
+          "Pause and watch for schooling perch below"
+        ],
+        "tip": "Winter perch fishing on weed lines is a Midwest favorite."
+      }
+    ]
+  },
+  {
+    "speciesId": "10",
+    "rigs": [
+      {
+        "id": "muskie-bucktail",
+        "name": "Large Bucktail",
+        "rigType": "baitcasting",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Bulldog retrieve with figure-8 at boat",
+        "components": [
+          { "role": "rod", "label": "8'–9' heavy", "detail": "Fast action" },
+          { "role": "reel", "label": "High-capacity baitcaster" },
+          { "role": "line", "label": "65–80 lb braided main line" },
+          { "role": "leader", "label": "12\" 100 lb fluorocarbon or wire" },
+          { "role": "hook", "label": "6/0–7/0 single or treble on lure" },
+          { "role": "lure", "label": "10\"–12\" black/orange bucktail" }
+        ],
+        "steps": [
+          "Cast to weed points and rock bars",
+          "Retrieve with wide sweeps (bulldog)",
+          "Execute figure-8 beside boat on every cast"
+        ],
+        "tip": "The fish of 10,000 casts — cover water methodically."
+      },
+      {
+        "id": "muskie-jerkbait",
+        "name": "Jerkbaits — Suspending",
+        "rigType": "baitcasting",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Sharp jerks with long pauses",
+        "components": [
+          { "role": "rod", "label": "8' heavy", "detail": "Stiff backbone" },
+          { "role": "reel", "label": "6.4:1 baitcaster" },
+          { "role": "line", "label": "80 lb braid" },
+          { "role": "leader", "label": "18\" 130 lb fluorocarbon" },
+          { "role": "lure", "label": "8\"–10\" suspending jerkbait" }
+        ],
+        "steps": [
+          "Cast to open water adjacent to structure",
+          "Rip bait with 2–3 hard jerks",
+          "Pause 3–5 seconds between rip sequences"
+        ],
+        "tip": "Follows are common — never skip the figure-8."
+      }
+    ]
+  },
+  {
+    "speciesId": "11",
+    "rigs": [
+      {
+        "id": "striper-live-eel",
+        "name": "Live Eel — Inshore",
+        "rigType": "bottom",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Slow drift or anchor on channel edges",
+        "components": [
+          { "role": "rod", "label": "7'–8' medium-heavy", "detail": "Moderate action" },
+          { "role": "reel", "label": "5000 spinning" },
+          { "role": "line", "label": "30 lb braided main line" },
+          { "role": "leader", "label": "3 ft 30 lb fluorocarbon" },
+          { "role": "hook", "label": "4/0–5/0 circle hook" },
+          { "role": "weight", "label": "1–2 oz egg sinker above swivel" },
+          { "role": "bait", "label": "Live eel hooked through lips" }
+        ],
+        "steps": [
+          "Rig eel on fish-finder or Carolina rig",
+          "Drift rips and channel edges at night",
+          "Let eel swim naturally on bottom"
+        ],
+        "tip": "Follow bait schools — stripers hunt herring and menhaden."
+      },
+      {
+        "id": "striper-topwater",
+        "name": "Pencil Popper — Surface",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "surface",
+        "retrieve": "Walk-the-dog at dawn",
+        "components": [
+          { "role": "rod", "label": "7'6\" heavy spinning", "detail": "Fast action" },
+          { "role": "reel", "label": "6000 spinning" },
+          { "role": "line", "label": "40 lb braid" },
+          { "role": "leader", "label": "2 ft 40 lb fluorocarbon" },
+          { "role": "lure", "label": "2 oz pencil popper — white/yellow" }
+        ],
+        "steps": [
+          "Cast into busting schools at first light",
+          "Walk bait with rhythmic rod twitches",
+          "Keep hooks razor-sharp for hard mouths"
+        ],
+        "tip": "Blitzing fish on top is the ultimate striper experience."
+      }
+    ]
+  },
+  {
+    "speciesId": "12",
+    "rigs": [
+      {
+        "id": "carp-hair-rig",
+        "name": "Hair Rig — Boilie",
+        "rigType": "bottom",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Still-fish with bite alarms or tight line",
+        "components": [
+          { "role": "rod", "label": "10'–12' medium", "detail": "Soft tip" },
+          { "role": "reel", "label": "4000–5000 spinning" },
+          { "role": "line", "label": "12–15 lb monofilament" },
+          { "role": "weight", "label": "2–3 oz method feeder or lead" },
+          { "role": "hook", "label": "#6–#4 hair-rig hook" },
+          { "role": "bait", "label": "15 mm fruit-flavored boilie" }
+        ],
+        "steps": [
+          "Thread boilie on hair rig with stopper",
+          "Pack method mix or chum around hook",
+          "Cast to rolling fish and wait for slow take"
+        ],
+        "tip": "Pre-bait the swim for several days for best results."
+      },
+      {
+        "id": "carp-corn-float",
+        "name": "Corn — Float Rig",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Still-fish in margins",
+        "components": [
+          { "role": "rod", "label": "9' medium-light" },
+          { "role": "reel", "label": "3500 spinning" },
+          { "role": "line", "label": "10 lb monofilament" },
+          { "role": "float", "label": "Slip float" },
+          { "role": "hook", "label": "#8–#6 wide-gap hook" },
+          { "role": "bait", "label": "Sweet corn or maize on hook" }
+        ],
+        "steps": [
+          "Set float to fish just off bottom",
+          "Thread 3–4 kernels on hook",
+          "Cast to margins where carp roll"
+        ],
+        "tip": "Simple corn rig catches carp worldwide — great entry point."
+      }
+    ]
+  },
+  {
+    "speciesId": "13",
+    "rigs": [
+      {
+        "id": "steelhead-spawn-drift",
+        "name": "Spawn Sac — Drift",
+        "rigType": "float",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Dead drift through runs and pools",
+        "components": [
+          { "role": "rod", "label": "8'6\"–10'6\" medium", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "3000–4000 centerpin or spinning" },
+          { "role": "line", "label": "8–10 lb monofilament" },
+          { "role": "float", "label": "Centerpin float or drift bobber" },
+          { "role": "weight", "label": "Split shot spaced on leader" },
+          { "role": "hook", "label": "#6–#8 octopus or egg hook" },
+          { "role": "bait", "label": "Pink or orange spawn sac" }
+        ],
+        "steps": [
+          "Set float to tick bottom in the run",
+          "Mend line for natural drift",
+          "Fish tail-outs and holding pools"
+        ],
+        "tip": "Drift fishing is the go-to technique in Great Lakes tributaries."
+      },
+      {
+        "id": "steelhead-bead",
+        "name": "Bead Rig — Under Float",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Slow drift at current speed",
+        "components": [
+          { "role": "rod", "label": "9'6\" medium-light" },
+          { "role": "reel", "label": "3500 spinning" },
+          { "role": "line", "label": "8 lb fluorocarbon main" },
+          { "role": "float", "label": "Slip float" },
+          { "role": "hook", "label": "#10–#12 single egg hook" },
+          { "role": "bait", "label": "8–10 mm bead above hook" }
+        ],
+        "steps": [
+          "Peg bead 2\" above hook",
+          "Drift through tail-outs",
+          "Match bead color to local egg drift"
+        ],
+        "tip": "Beads mimic drifting salmon eggs — deadly in clear water."
+      }
+    ]
+  },
+  {
+    "speciesId": "14",
+    "rigs": [
+      {
+        "id": "chinook-troll-plug",
+        "name": "Trolling — Cut Plug",
+        "rigType": "trolling",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Troll 2–3 mph with downrigger or diver",
+        "components": [
+          { "role": "rod", "label": "8'6\"–10'6\" medium-heavy", "detail": "Roller guide" },
+          { "role": "reel", "label": "Line counter trolling reel" },
+          { "role": "line", "label": "25–30 lb monofilament" },
+          { "role": "leader", "label": "5 ft 25 lb fluorocarbon" },
+          { "role": "hook", "label": "2/0–4/0 single or double hook" },
+          { "role": "lure", "label": "Cut-plug herring or anchovy" }
+        ],
+        "steps": [
+          "Brine and cut herring for spin",
+          "Deploy behind flasher or downrigger",
+          "Troll along thermoclines and bait marks"
+        ],
+        "tip": "Kings hold deep in summer — follow bait on sonar."
+      },
+      {
+        "id": "chinook-river-roe",
+        "name": "River Rig — Roe",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Back-bounce or plunk in deep pools",
+        "components": [
+          { "role": "rod", "label": "9' heavy spinning" },
+          { "role": "reel", "label": "4500 spinning" },
+          { "role": "line", "label": "20 lb braid with mono top shot" },
+          { "role": "weight", "label": "3–6 oz pencil or slinky weight" },
+          { "role": "hook", "label": "3/0 octopus hook" },
+          { "role": "bait", "label": "Cured salmon roe cluster" }
+        ],
+        "steps": [
+          "Pack roe in mesh or on hook",
+          "Fish deep tail-outs during migration",
+          "Hold bottom in heavy current"
+        ],
+        "tip": "Migrating kings stack in the deepest pools."
+      }
+    ]
+  },
+  {
+    "speciesId": "15",
+    "rigs": [
+      {
+        "id": "coho-spinner",
+        "name": "Inline Spinner — Troll",
+        "rigType": "trolling",
+        "isPrimary": true,
+        "targetDepth": "surface",
+        "retrieve": "Troll 2–2.5 mph on surface or planer",
+        "components": [
+          { "role": "rod", "label": "8'6\" medium", "detail": "Moderate action" },
+          { "role": "reel", "label": "Line counter reel" },
+          { "role": "line", "label": "15–20 lb monofilament" },
+          { "role": "leader", "label": "18\" 15 lb fluorocarbon" },
+          { "role": "lure", "label": "#3–#5 silver/blue spinner" }
+        ],
+        "steps": [
+          "Tie spinner behind dodger or alone",
+          "Run 50–100 ft behind boat",
+          "Target surface-feeding silvers at dawn"
+        ],
+        "tip": "Coho are more aggressive than Chinook — they chase fast lures."
+      },
+      {
+        "id": "coho-float-fly",
+        "name": "Float + Fly",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Drift under float through runs",
+        "components": [
+          { "role": "rod", "label": "9'6\" medium-light" },
+          { "role": "reel", "label": "3500 spinning" },
+          { "role": "line", "label": "10 lb monofilament" },
+          { "role": "float", "label": "Slip float" },
+          { "role": "hook", "label": "#4 streamer or egg pattern" },
+          { "role": "lure", "label": "Chartreuse egg-sucking leech fly" }
+        ],
+        "steps": [
+          "Rig fly 3–4 ft below float",
+          "Drift through tail-outs",
+          "Mend for drag-free presentation"
+        ],
+        "tip": "River coho love bright flies in stained water."
+      }
+    ]
+  },
+  {
+    "speciesId": "16",
+    "rigs": [
+      {
+        "id": "redfish-gold-spoon",
+        "name": "Gold Spoon — Flats",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Steady retrieve over grass flats",
+        "components": [
+          { "role": "rod", "label": "7' medium-heavy", "detail": "Fast action" },
+          { "role": "reel", "label": "4000 spinning" },
+          { "role": "line", "label": "20 lb braided main line" },
+          { "role": "leader", "label": "2 ft 25 lb fluorocarbon" },
+          { "role": "lure", "label": "1/2 oz gold weedless spoon" }
+        ],
+        "steps": [
+          "Cast ahead of tailing fish on flats",
+          "Retrieve just fast enough to keep blade flashing",
+          "Set hook hard on the strike"
+        ],
+        "tip": "Sight-cast to tailing reds on shallow flats at low tide."
+      },
+      {
+        "id": "redfish-popping-cork",
+        "name": "Popping Cork + Shrimp",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Pop cork rhythmically on moving tide",
+        "components": [
+          { "role": "rod", "label": "7' medium" },
+          { "role": "reel", "label": "3500 spinning" },
+          { "role": "line", "label": "15 lb braid" },
+          { "role": "leader", "label": "2 ft 20 lb fluorocarbon" },
+          { "role": "float", "label": "Popping cork" },
+          { "role": "hook", "label": "2/0 circle hook" },
+          { "role": "bait", "label": "Live shrimp under cork" }
+        ],
+        "steps": [
+          "Hook shrimp through horn or tail",
+          "Suspend 2–3 ft under popping cork",
+          "Work cork with sharp pops on grass edges"
+        ],
+        "tip": "Moving tides over grass flats are prime redfish territory."
+      }
+    ]
+  },
+  {
+    "speciesId": "17",
+    "rigs": [
+      {
+        "id": "trout-soft-plastic",
+        "name": "Soft Plastic — Grass Flat",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Slow hop along grass edges",
+        "components": [
+          { "role": "rod", "label": "7' medium-light", "detail": "Fast tip" },
+          { "role": "reel", "label": "3000 spinning" },
+          { "role": "line", "label": "10 lb braided main line" },
+          { "role": "leader", "label": "18\" 15 lb fluorocarbon" },
+          { "role": "hook", "label": "1/4 oz jig head 2/0" },
+          { "role": "lure", "label": "3\" paddle-tail — pearl/chartreuse" }
+        ],
+        "steps": [
+          "Cast to grass flat edges on moving tide",
+          "Hop jig slowly along bottom",
+          "Watch for subtle thump on the fall"
+        ],
+        "tip": "Early morning topwater over grass is deadly in summer."
+      },
+      {
+        "id": "trout-topwater",
+        "name": "Topwater — Walk-the-Dog",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "surface",
+        "retrieve": "Walk-the-dog at first light",
+        "components": [
+          { "role": "rod", "label": "7' medium" },
+          { "role": "reel", "label": "3000 spinning" },
+          { "role": "line", "label": "10 lb braid" },
+          { "role": "leader", "label": "18\" 15 lb fluorocarbon" },
+          { "role": "lure", "label": "Zara Spook or walk-the-dog bait" }
+        ],
+        "steps": [
+          "Cast to grass potholes at dawn",
+          "Walk bait with rhythmic wrist snaps",
+          "Be ready for explosive surface strikes"
+        ],
+        "tip": "Trout crush topwater in low light over shallow grass."
+      }
+    ]
+  },
+  {
+    "speciesId": "18",
+    "rigs": [
+      {
+        "id": "trophy-swimbait",
+        "name": "Heavy Swimbait",
+        "rigType": "baitcasting",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Slow roll along deep structure",
+        "components": [
+          { "role": "rod", "label": "7'6\"–8' heavy", "detail": "Extra-fast tip" },
+          { "role": "reel", "label": "7.1:1 high-speed baitcaster" },
+          { "role": "line", "label": "65 lb braided main line" },
+          { "role": "leader", "label": "2 ft 25 lb fluorocarbon" },
+          { "role": "hook", "label": "5/0–6/0 weighted swimbait hook" },
+          { "role": "lure", "label": "6\"–8\" boot-tail swimbait — gizzard shad" }
+        ],
+        "steps": [
+          "Cast to offshore structure and ledges",
+          "Slow-roll swimbait just above bottom",
+          "Use electronics to find bait schools"
+        ],
+        "tip": "Florida-strain trophies hold on deep structure in winter spawn."
+      },
+      {
+        "id": "trophy-live-shiner",
+        "name": "Live Wild Shiner",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Still-fish near bedding areas",
+        "components": [
+          { "role": "rod", "label": "7'6\" heavy", "detail": "Soft tip" },
+          { "role": "reel", "label": "4000 spinning" },
+          { "role": "line", "label": "20 lb monofilament" },
+          { "role": "float", "label": "Large slip float" },
+          { "role": "hook", "label": "5/0–6/0 circle hook" },
+          { "role": "bait", "label": "Wild golden shiner 6\"–8\"" }
+        ],
+        "steps": [
+          "Hook shiner through lips or dorsal",
+          "Set float to suspend near beds",
+          "Let shiner swim naturally in spawning areas"
+        ],
+        "tip": "Live wild shiners are the trophy hunter's secret weapon."
+      }
+    ]
+  },
+  {
+    "speciesId": "19",
+    "rigs": [
+      {
+        "id": "laker-jigging-spoon",
+        "name": "Deep Jigging — Spoon",
+        "rigType": "jigging",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Aggressive jigging 60–120 ft down",
+        "components": [
+          { "role": "rod", "label": "6'6\" medium-heavy", "detail": "Fast action" },
+          { "role": "reel", "label": "Line counter or large spinning" },
+          { "role": "line", "label": "15–20 lb braided main line" },
+          { "role": "leader", "label": "3 ft 15 lb fluorocarbon" },
+          { "role": "lure", "label": "3/4–1.5 oz white/chartreuse spoon" }
+        ],
+        "steps": [
+          "Mark fish on sonar in deep basin",
+          "Drop spoon to bottom and rip upward",
+          "Pause and watch for followers on the fall"
+        ],
+        "tip": "Lake trout hug deep thermoclines in summer."
+      },
+      {
+        "id": "laker-troll-snapweight",
+        "name": "Trolling — Snap Weight",
+        "rigType": "trolling",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Troll 1.5–2 mph with snap weights",
+        "components": [
+          { "role": "rod", "label": "7'6\" medium-heavy trolling" },
+          { "role": "reel", "label": "Line counter reel" },
+          { "role": "line", "label": "20 lb monofilament" },
+          { "role": "weight", "label": "2–4 oz snap weight on line" },
+          { "role": "leader", "label": "10 ft 15 lb fluorocarbon" },
+          { "role": "lure", "label": "Slim trolling spoon or plug" }
+        ],
+        "steps": [
+          "Attach snap weight at target depth",
+          "Troll along main-lake basins",
+          "Watch rod tips for subtle lake trout strikes"
+        ],
+        "tip": "Trolling covers more water when fish are scattered deep."
+      }
+    ]
+  },
+  {
+    "speciesId": "20",
+    "rigs": [
+      {
+        "id": "flathead-live-sunfish",
+        "name": "Live Sunfish — River Hole",
+        "rigType": "bottom",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Anchor upstream of deep hole; still-fish",
+        "components": [
+          { "role": "rod", "label": "7'6\"–8' heavy", "detail": "Strong backbone" },
+          { "role": "reel", "label": "6000 spinning" },
+          { "role": "line", "label": "50 lb braided main line" },
+          { "role": "leader", "label": "18\" 50 lb mono leader" },
+          { "role": "weight", "label": "2–4 oz no-roll sinker" },
+          { "role": "hook", "label": "6/0–8/0 circle hook" },
+          { "role": "bait", "label": "Live bluegill or sunfish" }
+        ],
+        "steps": [
+          "Hook sunfish through back below dorsal",
+          "Cast to head of deep river hole",
+          "Fish at night when flatheads actively hunt"
+        ],
+        "tip": "Flatheads require live prey — cut bait rarely works."
+      },
+      {
+        "id": "flathead-drift-shad",
+        "name": "Drift — Live Shad",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Slow drift through channel bends",
+        "components": [
+          { "role": "rod", "label": "8' heavy" },
+          { "role": "reel", "label": "6500 spinning" },
+          { "role": "line", "label": "40 lb braid" },
+          { "role": "weight", "label": "1–2 oz egg sinker above swivel" },
+          { "role": "hook", "label": "5/0–7/0 circle hook" },
+          { "role": "bait", "label": "Live gizzard or threadfin shad" }
+        ],
+        "steps": [
+          "Hook shad through nostrils",
+          "Drift bends and outside channel edges",
+          "Use heavy tackle — flatheads grow enormous"
+        ],
+        "tip": "Target outside bends where current deposits bait."
+      }
+    ]
+  },
+  {
+    "speciesId": "21",
+    "rigs": [
+      {
+        "id": "kokanee-downrigger",
+        "name": "Downrigger — Hoochie",
+        "rigType": "trolling",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Troll 1.5–2 mph at 40–80 ft",
+        "components": [
+          { "role": "rod", "label": "7'6\" light trolling", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "Line counter reel" },
+          { "role": "line", "label": "10–15 lb monofilament" },
+          { "role": "leader", "label": "12–18\" 8 lb fluorocarbon" },
+          { "role": "hook", "label": "#4–#2 treble on hoochie" },
+          { "role": "lure", "label": "UV pink hoochie behind dodger" }
+        ],
+        "steps": [
+          "Clip line to downrigger at thermocline depth",
+          "Troll with 8\" dodger ahead of hoochie",
+          "Tip hooks with pink maggot or scented corn"
+        ],
+        "tip": "Follow plankton blooms — kokanee track food density."
+      },
+      {
+        "id": "kokanee-small-spoon",
+        "name": "Small Spoon — Lead Core",
+        "rigType": "trolling",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Troll lead-core at calculated depth",
+        "components": [
+          { "role": "rod", "label": "7'6\" light" },
+          { "role": "reel", "label": "Line counter with lead core" },
+          { "role": "line", "label": "Lead core + mono backing" },
+          { "role": "leader", "label": "10 ft 6 lb fluorocarbon" },
+          { "role": "lure", "label": "1.5\" silver/pink trolling spoon" }
+        ],
+        "steps": [
+          "Let out lead core to target depth",
+          "Troll without downriggers along main basin",
+          "Watch for subtle tip dips — kokanee hit light"
+        ],
+        "tip": "Early morning and late evening are peak trolling windows."
+      }
+    ]
+  },
+  {
+    "speciesId": "22",
+    "rigs": [
+      {
+        "id": "bcrappie-dock-jig",
+        "name": "Dock Jig — Vertical",
+        "rigType": "jigging",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Vertical jig beside dock pilings",
+        "components": [
+          { "role": "rod", "label": "6'6\" light", "detail": "Sensitive tip" },
+          { "role": "reel", "label": "1000 spinning" },
+          { "role": "line", "label": "4 lb monofilament" },
+          { "role": "hook", "label": "1/16 oz jig head #4" },
+          { "role": "lure", "label": "Black/chartreuse tube jig" }
+        ],
+        "steps": [
+          "Drop jig alongside dock pilings",
+          "Jig slowly at depth of brush",
+          "Use sonar to find suspended schools"
+        ],
+        "tip": "Black crappie love submerged timber and dock shade."
+      },
+      {
+        "id": "bcrappie-minnow-slip",
+        "name": "Slip Float — Minnow",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "mid",
+        "retrieve": "Still-fish at school depth",
+        "components": [
+          { "role": "rod", "label": "7' light" },
+          { "role": "reel", "label": "2000 spinning" },
+          { "role": "line", "label": "6 lb monofilament" },
+          { "role": "float", "label": "Slip float" },
+          { "role": "hook", "label": "#4 Aberdeen hook" },
+          { "role": "bait", "label": "Small minnow" }
+        ],
+        "steps": [
+          "Set float to depth of marked school",
+          "Hook minnow through lips",
+          "Fish brush piles and bridge pilings"
+        ],
+        "tip": "Slow vertical jigging near timber is highly effective."
+      }
+    ]
+  },
+  {
+    "speciesId": "23",
+    "rigs": [
+      {
+        "id": "gsun-beetle-spin",
+        "name": "Beetle Spin — Creek",
+        "rigType": "spinning",
+        "isPrimary": true,
+        "targetDepth": "mid",
+        "retrieve": "Steady retrieve through pools",
+        "components": [
+          { "role": "rod", "label": "5'6\" ultralight", "detail": "Light action" },
+          { "role": "reel", "label": "500 spinning" },
+          { "role": "line", "label": "2–4 lb monofilament" },
+          { "role": "hook", "label": "#8–#10 hook on spinner" },
+          { "role": "lure", "label": "1/16 oz beetle spin — chartreuse" }
+        ],
+        "steps": [
+          "Cast across shallow pools",
+          "Retrieve just fast enough to spin blade",
+          "Target undercut banks and root wads"
+        ],
+        "tip": "Green sunfish hit aggressively — ultralight tackle is ideal."
+      },
+      {
+        "id": "gsun-worm-bobber",
+        "name": "Worm + Bobber",
+        "rigType": "float",
+        "isPrimary": false,
+        "targetDepth": "surface",
+        "retrieve": "Still-fish in shallow coves",
+        "components": [
+          { "role": "rod", "label": "5' ultralight" },
+          { "role": "reel", "label": "500 spinning" },
+          { "role": "line", "label": "2 lb monofilament" },
+          { "role": "float", "label": "Tiny fixed bobber" },
+          { "role": "hook", "label": "#10–#12 hook" },
+          { "role": "bait", "label": "Small worm piece or cricket" }
+        ],
+        "steps": [
+          "Set bobber 1–2 ft deep in coves",
+          "Thread small worm on hook",
+          "Cast near bank cover and wait"
+        ],
+        "tip": "Perfect creek fishing rig for tight cover along banks."
+      }
+    ]
+  },
+  {
+    "speciesId": "24",
+    "rigs": [
+      {
+        "id": "halibut-live-bait",
+        "name": "Live Bait — Sliding Sinker",
+        "rigType": "bottom",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Drift sandy flats on moving tide",
+        "components": [
+          { "role": "rod", "label": "7'–8' medium-heavy", "detail": "Moderate action" },
+          { "role": "reel", "label": "4000 spinning" },
+          { "role": "line", "label": "20 lb braided main line" },
+          { "role": "leader", "label": "3 ft 20 lb fluorocarbon" },
+          { "role": "weight", "label": "1–2 oz torpedo or egg sinker" },
+          { "role": "hook", "label": "2/0–4/0 circle hook" },
+          { "role": "bait", "label": "Live anchovy or sardine" }
+        ],
+        "steps": [
+          "Hook bait through nose on sliding sinker rig",
+          "Drift sandy flats on incoming tide",
+          "Let bait bounce naturally along bottom"
+        ],
+        "tip": "Halibut ambush from sandy bottom — drift parallel to drop-offs."
+      },
+      {
+        "id": "halibut-swimbait-cast",
+        "name": "Swimbait — Cast & Retrieve",
+        "rigType": "spinning",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Slow drag along sandy bottom",
+        "components": [
+          { "role": "rod", "label": "7'6\" medium-heavy" },
+          { "role": "reel", "label": "4000 spinning" },
+          { "role": "line", "label": "20 lb braid" },
+          { "role": "leader", "label": "2 ft 25 lb fluorocarbon" },
+          { "role": "lure", "label": "4\"–6\" white swimbait on jig head" }
+        ],
+        "steps": [
+          "Cast to sandy flats and channels",
+          "Drag swimbait slowly along bottom",
+          "Set hook firmly — halibut have tough mouths"
+        ],
+        "tip": "Artificial swimbaits work well when bait is scarce."
+      }
+    ]
+  },
+  {
+    "speciesId": "25",
+    "rigs": [
+      {
+        "id": "batray-surf-finder",
+        "name": "Fish-Finder Surf Rig",
+        "rigType": "surf",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Cast and wait on sandy flats",
+        "components": [
+          { "role": "rod", "label": "10'–12' heavy surf", "detail": "Strong backbone" },
+          { "role": "reel", "label": "6000–8000 spinning" },
+          { "role": "line", "label": "50–65 lb braided main line" },
+          { "role": "leader", "label": "3 ft 60 lb mono leader" },
+          { "role": "weight", "label": "4–8 oz pyramid sinker" },
+          { "role": "hook", "label": "7/0–9/0 circle hook" },
+          { "role": "bait", "label": "Squid strip or whole mackerel" }
+        ],
+        "steps": [
+          "Cast heavy rig to sandy flat channels",
+          "Secure rod in holder; wait for slow take",
+          "Use heavy drag — rays run hard and long"
+        ],
+        "tip": "Anchor bait on bottom in bay channels during summer."
+      },
+      {
+        "id": "batray-carolina",
+        "name": "Carolina Rig — Ghost Shrimp",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Still-fish on bay flats",
+        "components": [
+          { "role": "rod", "label": "8'6\" heavy" },
+          { "role": "reel", "label": "6000 spinning" },
+          { "role": "line", "label": "40 lb braid" },
+          { "role": "swivel", "label": "Heavy barrel swivel" },
+          { "role": "weight", "label": "3–5 oz egg sinker" },
+          { "role": "leader", "label": "24\" 50 lb mono" },
+          { "role": "hook", "label": "8/0 circle hook" },
+          { "role": "bait", "label": "Ghost shrimp or squid" }
+        ],
+        "steps": [
+          "Thread sinker on main line above swivel",
+          "Bait circle hook with ghost shrimp",
+          "Fish shallow bay flats on calm days"
+        ],
+        "tip": "Bat rays put up a powerful fight — use heavy tackle."
+      }
+    ]
+  },
+  {
+    "speciesId": "26",
+    "rigs": [
+      {
+        "id": "leopard-surf-rig",
+        "name": "Surf Leader Rig",
+        "rigType": "surf",
+        "isPrimary": true,
+        "targetDepth": "bottom",
+        "retrieve": "Cast to channels; wait for run",
+        "components": [
+          { "role": "rod", "label": "9'–11' medium-heavy surf" },
+          { "role": "reel", "label": "5000–6000 spinning" },
+          { "role": "line", "label": "30–40 lb braided main line" },
+          { "role": "leader", "label": "18\" wire leader + 2 ft mono" },
+          { "role": "weight", "label": "2–4 oz pyramid sinker" },
+          { "role": "hook", "label": "5/0–7/0 circle hook" },
+          { "role": "bait", "label": "Fresh anchovy or mackerel fillet" }
+        ],
+        "steps": [
+          "Rig wire leader to prevent bite-offs",
+          "Cast to bay channels on incoming tide",
+          "Use fresh oily bait for scent trail"
+        ],
+        "tip": "Fish incoming tides on sandy flats and pier channels."
+      },
+      {
+        "id": "leopard-sliding-sinker",
+        "name": "Sliding Sinker — Sand Crab",
+        "rigType": "bottom",
+        "isPrimary": false,
+        "targetDepth": "bottom",
+        "retrieve": "Still-fish in surf zone",
+        "components": [
+          { "role": "rod", "label": "9' medium-heavy" },
+          { "role": "reel", "label": "5000 spinning" },
+          { "role": "line", "label": "30 lb braid" },
+          { "role": "leader", "label": "12\" coated wire leader" },
+          { "role": "weight", "label": "1–2 oz egg sinker" },
+          { "role": "hook", "label": "4/0 circle hook" },
+          { "role": "bait", "label": "Sand crab or squid strip" }
+        ],
+        "steps": [
+          "Thread sinker on main line above swivel",
+          "Hook sand crab through shell",
+          "Fish surf zone and estuary mouths"
+        ],
+        "tip": "Leopard sharks are excellent sport on medium-heavy tackle."
+      }
+    ]
+  }
+]

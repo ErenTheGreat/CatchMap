@@ -1,13 +1,31 @@
 import { bffRequest } from '@/lib/api/client';
 import { isBffEnabled } from '@/lib/api/config';
-import { NearbySpot } from '@/utils/osmFishingSpots';
+import { supabase } from '@/lib/supabase';
+import { fetchGbifOccurrencesInBBox } from '@/lib/species/gbifSpecies';
+import {
+  NearbySpot,
+  getSpotName,
+  inferFacilities,
+  inferWaterType,
+} from '@/utils/osmFishingSpots';
 import { calculateDistance } from '@/utils/geo';
+import { enrichNearbySpotFromLocation } from '@/utils/spotMetadata';
 
-/** [minLon, minLat, maxLon, maxLat] — GeoJSON bbox order */
+/** [minLng, minLat, maxLng, maxLat] — west/south/east/north viewport order */
 export type BBox = [number, number, number, number];
 
 /** Grid size in degrees for spatial tile snapping (~17 mi at the equator) */
 const TILE_GRID_DEGREES = 0.25;
+
+/** Build a square viewport (~city zoom) centered on a lat/lng pair. */
+export function bboxAroundCenter(
+  lat: number,
+  lng: number,
+  spanDegrees = 0.2
+): BBox {
+  const half = spanDegrees / 2;
+  return [lng - half, lat - half, lng + half, lat + half];
+}
 
 /** Max bbox span sent upstream — protects Overpass/GBIF from continent-size queries */
 const MAX_BBOX_SPAN_DEGREES = 2;
@@ -30,31 +48,154 @@ export function snapBBoxToTileGrid(bbox: BBox): BBox {
 
 /** Clamp an oversized bbox to its center region so upstream queries stay sane */
 export function clampBBox(bbox: BBox): BBox {
-  const [minLon, minLat, maxLon, maxLat] = bbox;
-  const centerLon = (minLon + maxLon) / 2;
+  const [minLng, minLat, maxLng, maxLat] = bbox;
+  const centerLng = (minLng + maxLng) / 2;
   const centerLat = (minLat + maxLat) / 2;
   const halfSpan = MAX_BBOX_SPAN_DEGREES / 2;
 
   return [
-    Math.max(minLon, centerLon - halfSpan),
+    Math.max(minLng, centerLng - halfSpan),
     Math.max(minLat, centerLat - halfSpan),
-    Math.min(maxLon, centerLon + halfSpan),
+    Math.min(maxLng, centerLng + halfSpan),
     Math.min(maxLat, centerLat + halfSpan),
   ];
 }
 
+/** Serialize viewport bounds for TanStack Query: `${minLng},${minLat},${maxLng},${maxLat}` */
 export function bboxCacheKey(bbox: BBox): string {
-  return bbox.map((v) => v.toFixed(2)).join(',');
+  const [minLng, minLat, maxLng, maxLat] = bbox;
+  return [minLng, minLat, maxLng, maxLat].map((v) => v.toFixed(2)).join(',');
+}
+
+/** Parse a query cache key back into four float viewport bounds. */
+export function parseBboxCacheKey(cacheKey: string): BBox | null {
+  const parts = cacheKey.split(',').map((part) => parseFloat(part.trim()));
+  if (parts.length !== 4 || parts.some((value) => !Number.isFinite(value))) {
+    return null;
+  }
+
+  const [minLng, minLat, maxLng, maxLat] = parts;
+  if (maxLng <= minLng || maxLat <= minLat) {
+    return null;
+  }
+
+  return [minLng, minLat, maxLng, maxLat];
+}
+
+function isValidBBox(bbox: BBox): boolean {
+  const [minLng, minLat, maxLng, maxLat] = bbox;
+  return (
+    [minLng, minLat, maxLng, maxLat].every(Number.isFinite) &&
+    maxLng > minLng &&
+    maxLat > minLat
+  );
+}
+
+/**
+ * Normalize raw map viewport bounds into [minLng, minLat, maxLng, maxLat].
+ *
+ * MapLibre LngLatBounds / getBounds() order: [west, south, east, north]
+ * (= minLng, minLat, maxLng, maxLat). We min/max defensively in case a
+ * provider returns corners out of order.
+ */
+export function normalizeViewportBounds(raw: unknown): BBox | null {
+  let candidate = raw;
+
+  if (
+    candidate &&
+    typeof candidate === 'object' &&
+    !Array.isArray(candidate) &&
+    'bounds' in (candidate as Record<string, unknown>)
+  ) {
+    candidate = (candidate as { bounds: unknown }).bounds;
+  }
+
+  if (!Array.isArray(candidate) || candidate.length !== 4) {
+    return null;
+  }
+
+  const values = candidate.map(Number);
+  if (values.some((value) => !Number.isFinite(value))) {
+    return null;
+  }
+
+  const [first, second, third, fourth] = values;
+
+  // Detect [minLat, minLng, maxLat, maxLng] mistake (lat values in ±90, lng in ±180)
+  const looksLikeLatLngOrder =
+    Math.abs(first) <= 90 &&
+    Math.abs(second) <= 180 &&
+    Math.abs(third) <= 90 &&
+    Math.abs(fourth) <= 180 &&
+    (Math.abs(first) > 20 || Math.abs(third) > 20) &&
+    Math.abs(second) > Math.abs(first) &&
+    Math.abs(fourth) > Math.abs(third);
+
+  let minLng: number;
+  let minLat: number;
+  let maxLng: number;
+  let maxLat: number;
+
+  if (looksLikeLatLngOrder) {
+    if (__DEV__) {
+      console.warn(
+        '[normalizeViewportBounds] Detected [minLat, minLng, maxLat, maxLng] — swapping to [minLng, minLat, maxLng, maxLat]',
+        candidate
+      );
+    }
+    minLat = Math.min(first, third);
+    maxLat = Math.max(first, third);
+    minLng = Math.min(second, fourth);
+    maxLng = Math.max(second, fourth);
+  } else {
+    // Standard MapLibre [west, south, east, north]
+    minLng = Math.min(first, third);
+    maxLng = Math.max(first, third);
+    minLat = Math.min(second, fourth);
+    maxLat = Math.max(second, fourth);
+  }
+
+  const bbox: BBox = [minLng, minLat, maxLng, maxLat];
+  return isValidBBox(bbox) ? bbox : null;
+}
+
+/** Map viewport bounds to Supabase get_locations_in_bbox RPC parameters. */
+export function bboxToRpcParams(bbox: BBox): {
+  min_lng: number;
+  min_lat: number;
+  max_lng: number;
+  max_lat: number;
+} {
+  const [minLng, minLat, maxLng, maxLat] = bbox;
+  return {
+    min_lng: minLng,
+    min_lat: minLat,
+    max_lng: maxLng,
+    max_lat: maxLat,
+  };
 }
 
 interface BffSpotsResponse {
   spots: NearbySpot[];
 }
 
+function isAbortError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return (
+    error.name === 'AbortError' ||
+    error.name === 'CancelledError' ||
+    /aborted|cancel/i.test(error.message)
+  );
+}
+
+function logSpatialFetchWarning(source: string, error: unknown): void {
+  if (isAbortError(error)) return;
+  if (__DEV__) console.warn(`${source} bbox fetch failed:`, error);
+}
+
 /**
- * Global spatial fetch — documented fishing spots inside a bounding box,
- * anywhere in the world. BFF's Global Spatial Router first (aggregated
- * Overpass + GBIF with server caching); direct sources as fallback.
+ * Viewport spatial fetch — PostGIS locations first (deployed RPC), then optional
+ * Overpass/GBIF only when the viewport has no curated database rows.
  */
 export async function fetchSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<NearbySpot[]> {
   const clamped = clampBBox(bbox);
@@ -67,22 +208,102 @@ export async function fetchSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promis
       });
       return data.spots ?? [];
     } catch (error) {
-      console.warn('BFF spatial router unavailable, falling back to direct fetch:', error);
+      if (__DEV__ && !isAbortError(error)) {
+        console.warn('BFF spatial router unavailable, falling back to direct fetch:', error);
+      }
     }
   }
 
+  if (signal?.aborted) return [];
+
+  const postgisSpots = await fetchPostgisLocationsInBBox(clamped, signal).catch((error) => {
+    logSpatialFetchWarning('PostGIS', error);
+    return [] as NearbySpot[];
+  });
+
+  if (signal?.aborted) return postgisSpots;
+
+  if (postgisSpots.length > 0) {
+    return dedupeSpots(postgisSpots, clamped);
+  }
+
+  // External APIs are rate-limited — only hit them when PostGIS has no viewport rows.
   const [osmSpots, gbifSpots] = await Promise.all([
     fetchOsmSpotsInBBox(clamped, signal).catch((error) => {
-      console.warn('Overpass bbox fetch failed:', error);
+      logSpatialFetchWarning('Overpass', error);
       return [] as NearbySpot[];
     }),
     fetchGbifSpotsInBBox(clamped, signal).catch((error) => {
-      console.warn('GBIF bbox fetch failed:', error);
+      logSpatialFetchWarning('GBIF', error);
       return [] as NearbySpot[];
     }),
   ]);
 
-  return dedupeSpots([...osmSpots, ...gbifSpots], clamped);
+  return dedupeSpots([...postgisSpots, ...osmSpots, ...gbifSpots], clamped);
+}
+
+// ---------------------------------------------------------------------------
+// Direct source: Supabase PostGIS locations table (viewport envelope query)
+// ---------------------------------------------------------------------------
+
+interface PostgisLocationRow {
+  id: string;
+  name: string;
+  water_type: string;
+  latitude: number;
+  longitude: number;
+}
+
+async function fetchPostgisLocationsInBBox(
+  bbox: BBox,
+  signal?: AbortSignal
+): Promise<NearbySpot[]> {
+  const [minLng, minLat, maxLng, maxLat] = bbox;
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+
+  const rpcCall = supabase.rpc(
+    'get_locations_in_bbox',
+    bboxToRpcParams([minLng, minLat, maxLng, maxLat])
+  );
+
+  if (signal) {
+    signal.addEventListener('abort', () => void rpcCall, { once: true });
+  }
+
+  const { data, error } = await rpcCall;
+
+  if (error) {
+    if (
+      error.code === 'PGRST202' ||
+      error.message.includes('Could not find the function')
+    ) {
+      return [];
+    }
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as PostgisLocationRow[]).map((row) =>
+    enrichNearbySpotFromLocation({
+      id: `postgis-${row.id}`,
+      name: row.name,
+      description: null,
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude),
+      water_type: row.water_type ?? 'freshwater',
+      species: [],
+      facilities: [],
+      best_months: [],
+      rating: 4.0,
+      created_at: new Date().toISOString(),
+      distance:
+        Math.round(
+          calculateDistance(centerLat, centerLng, Number(row.latitude), Number(row.longitude)) * 10
+        ) / 10,
+      matchedSpecies: [],
+      isPeakSeason: false,
+    })
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -127,22 +348,27 @@ async function fetchOsmSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<Ne
     const lon = element.lon ?? element.center?.lon;
     if (lat == null || lon == null || !element.tags) continue;
 
-    spots.push({
-      id: `osm-${element.type}-${element.id}`,
-      name: element.tags.name ?? element.tags['name:en'] ?? 'Fishing Spot',
-      description: element.tags.description ?? null,
-      latitude: lat,
-      longitude: lon,
-      water_type: element.tags['man_made'] === 'pier' ? 'coastal' : 'lake',
-      species: [],
-      facilities: element.tags['man_made'] === 'pier' ? ['pier'] : [],
-      best_months: [],
-      rating: 4.0,
-      created_at: new Date().toISOString(),
-      distance: Math.round(calculateDistance(centerLat, centerLon, lat, lon) * 10) / 10,
-      matchedSpecies: [],
-      isPeakSeason: false,
-    });
+    const tags = element.tags;
+    const waterType = inferWaterType(tags);
+
+    spots.push(
+      enrichNearbySpotFromLocation({
+        id: `osm-${element.type}-${element.id}`,
+        name: getSpotName(tags),
+        description: tags.description ?? tags.note ?? null,
+        latitude: lat,
+        longitude: lon,
+        water_type: waterType,
+        species: [],
+        facilities: inferFacilities(tags),
+        best_months: [],
+        rating: tags['fishing:rating'] ? parseFloat(tags['fishing:rating']) : 4.0,
+        created_at: new Date().toISOString(),
+        distance: Math.round(calculateDistance(centerLat, centerLon, lat, lon) * 10) / 10,
+        matchedSpecies: [],
+        isPeakSeason: false,
+      })
+    );
   }
 
   return spots;
@@ -152,110 +378,46 @@ async function fetchOsmSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<Ne
 // Direct source: GBIF occurrence API (documented fish observations worldwide)
 // ---------------------------------------------------------------------------
 
-/**
- * Legacy GBIF backbone key for Actinopterygii (ray-finned fishes). GBIF's
- * 2025 checklist migration replaced the old small integer keys, so we resolve
- * the current key at runtime and only use this as a last-resort fallback.
- */
-const GBIF_FISH_TAXON_KEY_FALLBACK = 204;
-
-let cachedFishTaxonKey: number | null = null;
-
-async function resolveGbifFishTaxonKey(signal?: AbortSignal): Promise<number> {
-  if (cachedFishTaxonKey != null) return cachedFishTaxonKey;
-
-  // 1. Backbone name match (works on the classic API)
-  try {
-    const response = await fetch(
-      'https://api.gbif.org/v1/species/match?name=Actinopterygii&rank=class',
-      { signal }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      // Old API shape: { usageKey } — new checklist API shape: { usage: { key } }
-      const key = data.usageKey ?? data.usage?.key;
-      if (typeof key === 'number') {
-        cachedFishTaxonKey = key;
-        return key;
-      }
-    }
-  } catch {
-    // try next strategy
-  }
-
-  // 2. Derive the live classKey from a known fish occurrence record
-  try {
-    const response = await fetch(
-      'https://api.gbif.org/v1/occurrence/search?scientificName=Perca%20fluviatilis&limit=1',
-      { signal }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      const classKey = data.results?.[0]?.classKey;
-      if (typeof classKey === 'number') {
-        cachedFishTaxonKey = classKey;
-        return classKey;
-      }
-    }
-  } catch {
-    // fall through to legacy key
-  }
-
-  cachedFishTaxonKey = GBIF_FISH_TAXON_KEY_FALLBACK;
-  return cachedFishTaxonKey;
-}
-
 async function fetchGbifSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<NearbySpot[]> {
   const [minLon, minLat, maxLon, maxLat] = bbox;
-  const taxonKey = await resolveGbifFishTaxonKey(signal);
-
-  const url =
-    `https://api.gbif.org/v1/occurrence/search?taxonKey=${taxonKey}` +
-    `&decimalLatitude=${minLat},${maxLat}&decimalLongitude=${minLon},${maxLon}` +
-    `&hasCoordinate=true&limit=200`;
-
-  const response = await fetch(url, { signal });
-  if (!response.ok) throw new Error(`GBIF error: ${response.status}`);
-
-  const data = await response.json();
+  const occurrences = await fetchGbifOccurrencesInBBox(bbox, 200, signal);
   const centerLat = (minLat + maxLat) / 2;
   const centerLon = (minLon + maxLon) / 2;
 
-  // Group individual occurrence records into per-location spots
   const grouped = new Map<string, { lat: number; lon: number; species: Set<string> }>();
 
-  for (const occurrence of data.results ?? []) {
-    const lat = occurrence.decimalLatitude;
-    const lon = occurrence.decimalLongitude;
+  for (const occurrence of occurrences) {
+    const lat = occurrence.latitude;
+    const lon = occurrence.longitude;
     if (lat == null || lon == null) continue;
 
     const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
     const entry = grouped.get(key) ?? { lat, lon, species: new Set<string>() };
-    const name = occurrence.vernacularName ?? occurrence.species;
+    const name = occurrence.vernacularName ?? occurrence.scientificName;
     if (name) entry.species.add(name);
     grouped.set(key, entry);
   }
 
-  return Array.from(grouped.entries()).map(([key, entry]) => ({
-    id: `gbif-${key}`,
-    name:
-      entry.species.size > 0
-        ? `Documented: ${Array.from(entry.species)[0]}`
-        : 'Documented Fish Location',
-    description: 'Documented fish occurrence (GBIF)',
-    latitude: entry.lat,
-    longitude: entry.lon,
-    water_type: 'lake',
-    species: [],
-    facilities: [],
-    best_months: [],
-    rating: 3.5,
-    created_at: new Date().toISOString(),
-    distance:
-      Math.round(calculateDistance(centerLat, centerLon, entry.lat, entry.lon) * 10) / 10,
-    matchedSpecies: Array.from(entry.species).slice(0, 3),
-    isPeakSeason: false,
-  }));
+  return Array.from(grouped.entries()).map(([key, entry]) => {
+    const speciesNames = Array.from(entry.species).slice(0, 3);
+    return enrichNearbySpotFromLocation({
+      id: `gbif-${key}`,
+      name: 'Documented Fish Location',
+      description: 'Documented fish occurrence (GBIF)',
+      latitude: entry.lat,
+      longitude: entry.lon,
+      water_type: 'lake',
+      species: [],
+      facilities: [],
+      best_months: [],
+      rating: 3.5,
+      created_at: new Date().toISOString(),
+      distance:
+        Math.round(calculateDistance(centerLat, centerLon, entry.lat, entry.lon) * 10) / 10,
+      matchedSpecies: speciesNames,
+      isPeakSeason: false,
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------

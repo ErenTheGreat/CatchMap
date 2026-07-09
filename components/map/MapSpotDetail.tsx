@@ -1,41 +1,57 @@
 import React, { useMemo, memo } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   ActivityIndicator,
   Image,
   Pressable,
 } from 'react-native';
-import * as Linking from 'expo-linking';
-import { Anchor, ChevronRight, Clock, Fish, Navigation, Star, Trophy, Waves } from 'lucide-react-native';
+import { openSpotInMaps } from '@/utils/openSpotInMaps';
+import { hapticLight } from '@/utils/haptics';
+import { Anchor, Bookmark, ChevronRight, Clock, Fish, Navigation, Star, Trophy, Waves } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import RegulationNoticeCard from '@/components/map/RegulationNoticeCard';
-import { ErrorState, Skeleton, OfflineBanner } from '@/components/ui';
+import BiteScoreBreakdown from '@/components/map/BiteScoreBreakdown';
+import FishingNowCard from '@/components/map/FishingNowCard';
+import TripPlannerCard from '@/components/map/TripPlannerCard';
+import CommunityCatchIntelCard from '@/components/map/CommunityCatchIntelCard';
+import { ErrorState, Skeleton, OfflineBanner, ThemedText } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 import { NearbySpot, formatDistance, getWaterTypeIcon } from '@/utils/recommendations';
 import { getSpotRegulationNotices } from '@/utils/fishingRegulations';
 import type { SpotDetails, CatchTimeSlot } from '@/lib/types/spotDetails';
 import type { PersonalSpeciesNear } from '@/lib/types/catchInsights';
+import { scoreSpotForDiscovery } from '@/utils/spotDiscoveryScore';
+import type { CommunityCatchSummary } from '@/utils/communityCatchIntel';
+import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
+import SpotDnaCard from '@/components/map/SpotDnaCard';
+import { buildSpotDnaProfile } from '@/utils/spotDna';
+import type { CatchRecord } from '@/utils/storage';
+import type { TidePrediction } from '@/lib/api/endpoints/tides';
+import type { WeatherSnapshot } from '@/lib/api/endpoints/weather';
+import type { BestTimeNowResult } from '@/utils/bestTimeNow';
 import type { AvailableSpecies, SpeciesPrediction, SkyCondition, DataConfidence, SpeciesSource } from '@/lib/types/speciesPrediction';
 import {
   formatSkyConditionLabel,
   getActivityRatingColor,
 } from '@/lib/types/speciesPrediction';
+import { dedupeAvailableSpecies } from '@/lib/api/endpoints/speciesPrediction';
 import { spotLikelyNeedsGbifLookup } from '@/lib/species/spotGbifLookup';
 
-function getProbabilityColor(probability: number): string {
-  if (probability >= 70) return '#10B981';
-  if (probability >= 40) return '#F59E0B';
-  return '#94A3B8';
+function getProbabilityColor(probability: number, colors: ThemeColors): string {
+  if (probability >= 70) return colors.activityHigh;
+  if (probability >= 40) return colors.activityMedium;
+  return colors.activityLow;
 }
 
 function getConfidenceLabel(confidence?: DataConfidence, source?: SpeciesSource): string | null {
   if (source === 'gbif') {
-    return 'Documented nearby';
+    return 'Verified from GBIF';
+  }
+  if (source === 'gbif_discovered') {
+    return 'Discovered in this region';
   }
 
   switch (confidence) {
@@ -54,14 +70,16 @@ function speciesToFallbackPrediction(species: AvailableSpecies): SpeciesPredicti
   return {
     ...species,
     activityRating: 'Moderate',
-    score: 3,
-    probability: 50,
+    score: 0,
+    probability: 0,
     factors: [],
   };
 }
 
 interface MapSpotDetailProps {
   spot: NearbySpot;
+  bestTime?: BestTimeNowResult | null;
+  showFishingNowCard?: boolean;
   spotDetails?: SpotDetails | null;
   spotDetailsLoading?: boolean;
   spotDetailsError?: boolean;
@@ -80,10 +98,22 @@ interface MapSpotDetailProps {
   personalSpeciesNear?: PersonalSpeciesNear[];
   onRetryPredictions?: () => void;
   onRetryCatchTimes?: () => void;
+  weather?: WeatherSnapshot | null;
+  tides?: TidePrediction[] | null;
+  isSaved?: boolean;
+  onToggleSaved?: (spot: NearbySpot) => void;
+  communityCatchSummary?: CommunityCatchSummary;
+  communityCatchLoading?: boolean;
+  communityCatchError?: boolean;
+  onCommunityCatchRetry?: () => void;
+  fingerprint?: PersonalBiteFingerprint;
+  catches?: CatchRecord[];
 }
 
 export default memo(function MapSpotDetail({
   spot,
+  bestTime = null,
+  showFishingNowCard = false,
   spotDetails,
   spotDetailsLoading = false,
   spotDetailsError = false,
@@ -102,13 +132,37 @@ export default memo(function MapSpotDetail({
   personalSpeciesNear = [],
   onRetryPredictions,
   onRetryCatchTimes,
+  weather = null,
+  tides = null,
+  isSaved = false,
+  onToggleSaved,
+  communityCatchSummary,
+  communityCatchLoading = false,
+  communityCatchError = false,
+  onCommunityCatchRetry,
+  fingerprint,
+  catches = [],
 }: MapSpotDetailProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const bestCatchTimes = spotDetails?.bestCatchTimes ?? [];
-  const displayItems = useMemo(() => {
-    if (predictions.length > 0) return predictions;
-    return availableSpecies.map(speciesToFallbackPrediction);
+  const absoluteDiscoveryScore = useMemo(
+    () =>
+      scoreSpotForDiscovery(spot, {
+        weather,
+        tides,
+      }),
+    [spot, weather, tides]
+  );
+  const breakdownScore = absoluteDiscoveryScore;
+  const displayItems = useMemo((): SpeciesPrediction[] => {
+    const source: SpeciesPrediction[] =
+      predictions.length > 0
+        ? predictions
+        : availableSpecies.length > 0
+          ? availableSpecies.map(speciesToFallbackPrediction)
+          : [];
+    return dedupeAvailableSpecies(source) as SpeciesPrediction[];
   }, [predictions, availableSpecies]);
   const usingSpeciesFallback = predictions.length === 0 && availableSpecies.length > 0;
   const speciesLookupSlow = useMemo(
@@ -118,7 +172,18 @@ export default memo(function MapSpotDetail({
 
   const regulationNotices = useMemo(
     () => getSpotRegulationNotices(spot),
-    [spot.id, spot.latitude, spot.longitude, spot.water_type]
+    [spot]
+  );
+
+  const spotDna = useMemo(
+    () =>
+      buildSpotDnaProfile(
+        spot,
+        catches,
+        communityCatchSummary ?? null,
+        regulationNotices
+      ),
+    [spot, catches, communityCatchSummary, regulationNotices]
   );
 
   const weatherSubtitle =
@@ -136,58 +201,111 @@ export default memo(function MapSpotDetail({
           <Anchor color={colors.accent} size={20} />
         </View>
         <View style={styles.info}>
-          <Text style={styles.name}>{spot.name}</Text>
+          <ThemedText style={styles.name}>{spot.name}</ThemedText>
           <View style={styles.meta}>
             <Waves color={colors.textMuted} size={12} />
-            <Text style={styles.type}>{getWaterTypeIcon(spot.water_type)}</Text>
-            <Text style={styles.distance}>{formatDistance(spot.distance)}</Text>
+            <ThemedText style={styles.type}>{getWaterTypeIcon(spot.water_type)}</ThemedText>
+            <ThemedText style={styles.distance}>{formatDistance(spot.distance)}</ThemedText>
             <Star color={colors.warning} size={12} fill={colors.warning} />
-            <Text style={styles.rating}>{spot.rating.toFixed(1)}</Text>
+            <ThemedText style={styles.rating}>{spot.rating.toFixed(1)}</ThemedText>
           </View>
         </View>
         {spot.isPeakSeason && (
           <View style={styles.peakBadge}>
             <Trophy color={colors.background} size={10} />
-            <Text style={styles.peakText}>PEAK</Text>
+            <ThemedText style={styles.peakText}>PEAK</ThemedText>
           </View>
         )}
+        {onToggleSaved ? (
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => {
+              hapticLight();
+              onToggleSaved(spot);
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? `Remove ${spot.name} from saved waters` : `Save ${spot.name}`}
+          >
+            <Bookmark
+              color={isSaved ? colors.accent : colors.textMuted}
+              size={20}
+              fill={isSaved ? colors.accent : 'transparent'}
+            />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      <Text style={styles.description}>{spot.description}</Text>
+      <ThemedText style={styles.description}>{spot.description}</ThemedText>
 
       {(spot.avgDepthFeet != null || spot.bestSeason) && (
         <View style={styles.facilities}>
-          <Text style={styles.facilitiesTitle}>Conditions: </Text>
-          <Text style={styles.facilitiesList}>
+          <ThemedText style={styles.facilitiesTitle}>Conditions: </ThemedText>
+          <ThemedText style={styles.facilitiesList}>
             {[
               spot.avgDepthFeet != null ? `Avg depth ${spot.avgDepthFeet} ft` : null,
               spot.bestSeason ? `Best in ${spot.bestSeason}` : null,
             ]
               .filter(Boolean)
               .join(' · ')}
-          </Text>
+          </ThemedText>
         </View>
       )}
 
       {spot.underwaterStructure && spot.underwaterStructure.length > 0 && (
         <View style={styles.facilities}>
-          <Text style={styles.facilitiesTitle}>Structure: </Text>
-          <Text style={styles.facilitiesList}>{spot.underwaterStructure.join(', ')}</Text>
+          <ThemedText style={styles.facilitiesTitle}>Structure: </ThemedText>
+          <ThemedText style={styles.facilitiesList}>{spot.underwaterStructure.join(', ')}</ThemedText>
         </View>
       )}
 
       <RegulationNoticeCard notices={regulationNotices} />
 
+      <SpotDnaCard profile={spotDna} />
+
+      {showFishingNowCard && bestTime ? (
+        <View style={styles.fishingNowSection}>
+          <FishingNowCard bestTime={bestTime} weather={weather} />
+        </View>
+      ) : null}
+
+      <CommunityCatchIntelCard
+        summary={
+          communityCatchSummary ?? {
+            totalCatches: 0,
+            speciesBreakdown: [],
+            topLures: [],
+            daysBack: 90,
+          }
+        }
+        isLoading={communityCatchLoading}
+        isError={communityCatchError}
+        onRetry={onCommunityCatchRetry}
+      />
+
+      {breakdownScore ? (
+        <BiteScoreBreakdown
+          score={breakdownScore}
+          spotName={spot.name}
+          defaultExpanded
+          contextLabel="Conditions at this spot"
+        />
+      ) : null}
+
+      {breakdownScore && (breakdownScore.hourlyForecast?.length ?? 0) > 0 ? (
+        <TripPlannerCard
+          hourlyForecast={breakdownScore.hourlyForecast ?? []}
+          spotName={spot.name}
+          latitude={spot.latitude}
+          longitude={spot.longitude}
+          fingerprint={fingerprint}
+          weather={weather}
+        />
+      ) : null}
+
       <View style={styles.fishSection}>
-        <Text style={styles.fishTitle}>Potential Catches</Text>
-        {isOffline && displayItems.length > 0 && displayItems.every((item) => item.source === 'category') ? (
-          <OfflineBanner
-            compact
-            title="Offline category estimate"
-            message="Typical species for this water type when live lookups are unavailable."
-          />
-        ) : null}
-        {isOffline && displayItems.length > 0 && !displayItems.every((item) => item.source === 'category') ? (
+        <ThemedText style={styles.fishTitle}>Potential Catches</ThemedText>
+        {isOffline && displayItems.length > 0 ? (
           <OfflineBanner
             compact
             title="Offline — showing cached species"
@@ -195,38 +313,38 @@ export default memo(function MapSpotDetail({
           />
         ) : null}
         {weatherSubtitle ? (
-          <Text style={styles.weatherSubtitle}>{weatherSubtitle}</Text>
+          <ThemedText style={styles.weatherSubtitle}>{weatherSubtitle}</ThemedText>
         ) : null}
         {usingSpeciesFallback ? (
-          <Text style={styles.fallbackHint}>
-            Activity scores unavailable — showing documented species for this spot
-          </Text>
+          <ThemedText style={styles.fallbackHint}>
+            Activity scores unavailable — showing documented species only
+          </ThemedText>
         ) : null}
 
         {predictionsUpdating && !predictionsLoading && displayItems.length > 0 ? (
-          <Text style={styles.updatingHint}>Updating species and activity scores…</Text>
+          <ThemedText style={styles.updatingHint}>Updating species and activity scores…</ThemedText>
         ) : null}
 
         {predictionsLoading ? (
           <View style={styles.loadingBlock}>
             <View style={styles.loadingRow}>
               <ActivityIndicator color={colors.accent} size="small" />
-              <Text style={styles.loadingText}>
+              <ThemedText style={styles.loadingText}>
                 {isOffline
                   ? 'Loading cached species…'
                   : speciesLookupSlow
                     ? 'Looking up nearby species…'
                     : 'Loading species…'}
-              </Text>
+              </ThemedText>
             </View>
             {isOffline ? (
-              <Text style={styles.loadingHint}>
-                If you've opened this spot before, saved species should appear shortly.
-              </Text>
+              <ThemedText style={styles.loadingHint}>
+                {"If you've opened this spot before, saved species should appear shortly."}
+              </ThemedText>
             ) : speciesLookupSlow ? (
-              <Text style={styles.loadingHint}>
+              <ThemedText style={styles.loadingHint}>
                 Checking regional fish records — this can take a few seconds the first time.
-              </Text>
+              </ThemedText>
             ) : null}
             <View style={styles.speciesSkeletonList}>
               {[0, 1, 2, 3].map((index) => (
@@ -255,9 +373,10 @@ export default memo(function MapSpotDetail({
         {!predictionsLoading && displayItems.length > 0 ? (
           <View style={styles.predictionsList}>
             {displayItems.map((item) => {
-              const probability = item.probability ?? 0;
+              const hasActivityScore = !usingSpeciesFallback;
+              const probability = hasActivityScore ? (item.probability ?? 0) : 0;
               const activityRating = item.activityRating ?? 'Moderate';
-              const barColor = getProbabilityColor(probability);
+              const barColor = getProbabilityColor(probability, colors);
               const rowConfidenceLabel = getConfidenceLabel(item.dataConfidence, item.source);
 
               return (
@@ -278,51 +397,57 @@ export default memo(function MapSpotDetail({
                   </View>
                   <View style={styles.predictionTextBlock}>
                     <View style={styles.predictionNameRow}>
-                      <Text style={styles.predictionName} numberOfLines={1}>
+                      <ThemedText style={styles.predictionName} numberOfLines={1}>
                         {item.name}
-                      </Text>
-                      <Text style={[styles.probabilityLabel, { color: barColor }]}>
-                        {probability}%
-                      </Text>
+                      </ThemedText>
+                      {hasActivityScore ? (
+                        <ThemedText style={[styles.probabilityLabel, { color: barColor }]}>
+                          {probability}%
+                        </ThemedText>
+                      ) : null}
                     </View>
                     {rowConfidenceLabel ? (
                       <View style={styles.rowConfidenceChip}>
-                        <Text style={styles.rowConfidenceText}>{rowConfidenceLabel}</Text>
+                        <ThemedText style={styles.rowConfidenceText}>{rowConfidenceLabel}</ThemedText>
                       </View>
                     ) : null}
                     {item.scientificName ? (
-                      <Text style={styles.predictionMeta} numberOfLines={1}>
+                      <ThemedText style={styles.predictionMeta} numberOfLines={1}>
                         {item.scientificName}
-                      </Text>
+                      </ThemedText>
                     ) : null}
-                    <View style={styles.probabilityBarTrack}>
-                      <View
-                        style={[
-                          styles.probabilityBarFill,
-                          { width: `${probability}%`, backgroundColor: barColor },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.predictionMeta} numberOfLines={1}>
+                    {hasActivityScore ? (
+                      <View style={styles.probabilityBarTrack}>
+                        <View
+                          style={[
+                            styles.probabilityBarFill,
+                            { width: `${probability}%`, backgroundColor: barColor },
+                          ]}
+                        />
+                      </View>
+                    ) : null}
+                    <ThemedText style={styles.predictionMeta} numberOfLines={1}>
                       {item.feedingZone} · months {item.monthStart}–{item.monthEnd}
-                    </Text>
+                    </ThemedText>
                   </View>
-                  <View
-                    style={[
-                      styles.activityBadge,
-                      { borderColor: getActivityRatingColor(activityRating) },
-                    ]}
-                    accessibilityLabel={`Activity rating: ${activityRating}`}
-                  >
-                    <Text
+                  {hasActivityScore ? (
+                    <View
                       style={[
-                        styles.activityBadgeText,
-                        { color: getActivityRatingColor(activityRating) },
+                        styles.activityBadge,
+                        { borderColor: getActivityRatingColor(activityRating) },
                       ]}
+                      accessibilityLabel={`Activity rating: ${activityRating}`}
                     >
-                      {activityRating}
-                    </Text>
-                  </View>
+                      <ThemedText
+                        style={[
+                          styles.activityBadgeText,
+                          { color: getActivityRatingColor(activityRating) },
+                        ]}
+                      >
+                        {activityRating}
+                      </ThemedText>
+                    </View>
+                  ) : null}
                   {onSpeciesPress ? (
                     <ChevronRight color={colors.textMuted} size={16} />
                   ) : null}
@@ -342,17 +467,29 @@ export default memo(function MapSpotDetail({
               onRetry={isOffline ? undefined : onRetryPredictions}
             />
           ) : (
-            <Text style={styles.noFishText}>
-              {isOffline
-                ? 'No saved species for this spot yet. Connect to load documented species.'
-                : 'No species recorded for this location this month'}
-            </Text>
+            <View>
+              <ThemedText style={styles.noFishText}>
+                {isOffline
+                  ? 'No saved species for this spot yet. Connect to load documented species.'
+                  : 'No documented species here yet. Log a catch to help build the record.'}
+              </ThemedText>
+              {onLogFish && !isOffline ? (
+                <TouchableOpacity
+                  style={styles.logFishLink}
+                  onPress={() => onLogFish(spot)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Log a catch at this spot"
+                >
+                  <ThemedText style={styles.logFishLinkText}>Log a catch</ThemedText>
+                </TouchableOpacity>
+              ) : null}
+            </View>
           )
         ) : null}
       </View>
 
       <View style={styles.catchTimesSection}>
-        <Text style={styles.fishTitle}>Best Catch Times:</Text>
+        <ThemedText style={styles.fishTitle}>Best Catch Times:</ThemedText>
         {spotDetailsLoading ? (
           <View style={styles.catchTimesSkeletonList}>
             {[0, 1, 2].map((index) => (
@@ -369,10 +506,10 @@ export default memo(function MapSpotDetail({
             {bestCatchTimes.map((slot) => (
               <View key={slot.hour} style={styles.catchTimeChip}>
                 <Clock color={colors.accent} size={12} />
-                <Text style={styles.catchTimeText}>
+                <ThemedText style={styles.catchTimeText}>
                   {slot.label} — {slot.catchCount} logged{' '}
                   {slot.catchCount === 1 ? 'catch' : 'catches'}
-                </Text>
+                </ThemedText>
               </View>
             ))}
           </View>
@@ -384,24 +521,24 @@ export default memo(function MapSpotDetail({
               onRetry={onRetryCatchTimes}
             />
           ) : (
-            <Text style={styles.noFishText}>
+            <ThemedText style={styles.noFishText}>
               No logged catch times yet near this spot
-            </Text>
+            </ThemedText>
           )
         )}
       </View>
 
       {personalSpeciesNear.length > 0 && (
         <View style={styles.catchTimesSection}>
-          <Text style={styles.fishTitle}>Your catches here:</Text>
+          <ThemedText style={styles.fishTitle}>Your catches here:</ThemedText>
           <View style={styles.catchTimesList}>
             {personalSpeciesNear.map((item) => (
               <View key={item.species} style={styles.personalCatchTimeChip}>
                 <Fish color={colors.success} size={12} />
-                <Text style={styles.personalCatchTimeText}>
+                <ThemedText style={styles.personalCatchTimeText}>
                   {item.species} — {item.count} of your{' '}
                   {item.count === 1 ? 'catch' : 'catches'}
-                </Text>
+                </ThemedText>
               </View>
             ))}
           </View>
@@ -410,15 +547,15 @@ export default memo(function MapSpotDetail({
 
       {personalCatchTimes.length > 0 && (
         <View style={styles.catchTimesSection}>
-          <Text style={styles.fishTitle}>Your catch times here:</Text>
+          <ThemedText style={styles.fishTitle}>Your catch times here:</ThemedText>
           <View style={styles.catchTimesList}>
             {personalCatchTimes.map((slot) => (
               <View key={`personal-${slot.hour}`} style={styles.personalCatchTimeChip}>
                 <Clock color={colors.success} size={12} />
-                <Text style={styles.personalCatchTimeText}>
+                <ThemedText style={styles.personalCatchTimeText}>
                   {slot.label} — {slot.catchCount} of your{' '}
                   {slot.catchCount === 1 ? 'catch' : 'catches'}
-                </Text>
+                </ThemedText>
               </View>
             ))}
           </View>
@@ -426,32 +563,38 @@ export default memo(function MapSpotDetail({
       )}
 
       <View style={styles.facilities}>
-        <Text style={styles.facilitiesTitle}>Facilities: </Text>
-        <Text style={styles.facilitiesList}>
+        <ThemedText style={styles.facilitiesTitle}>Facilities: </ThemedText>
+        <ThemedText style={styles.facilitiesList}>
           {spot.facilities.map((f) => f.replace('_', ' ')).join(', ') || 'None listed'}
-        </Text>
+        </ThemedText>
       </View>
 
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.directionsButton}
-          onPress={() => {
-            const url = `https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}`;
-            if (Platform.OS === 'web') {
-              window.open(url, '_blank');
-            } else {
-              Linking.openURL(url);
-            }
-          }}
+          onPress={() =>
+            void openSpotInMaps({
+              latitude: spot.latitude,
+              longitude: spot.longitude,
+              name: spot.name,
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`Navigate to ${spot.name}`}
         >
           <Navigation color={colors.background} size={14} />
-          <Text style={styles.directionsText}>Directions</Text>
+          <ThemedText style={styles.directionsText}>Navigate</ThemedText>
         </TouchableOpacity>
 
         {displayItems.length > 0 && onLogFish && (
-          <TouchableOpacity style={styles.logButton} onPress={() => onLogFish(spot)}>
+          <TouchableOpacity
+            style={styles.logButton}
+            onPress={() => onLogFish(spot)}
+            accessibilityRole="button"
+            accessibilityLabel={`Log a catch at ${spot.name}`}
+          >
             <Fish color={colors.accent} size={14} />
-            <Text style={styles.logText}>Log Fish</Text>
+            <ThemedText style={styles.logText}>Log Fish</ThemedText>
           </TouchableOpacity>
         )}
       </View>
@@ -518,6 +661,10 @@ function createStyles(colors: ThemeColors) {
     fontSize: 10,
     fontWeight: FontWeights.bold,
   },
+  saveButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.xs,
+  },
   description: {
     color: colors.textSecondary,
     fontSize: FontSizes.sm,
@@ -529,6 +676,9 @@ function createStyles(colors: ThemeColors) {
   },
   catchTimesSection: {
     marginBottom: Spacing.sm,
+  },
+  fishingNowSection: {
+    marginBottom: Spacing.md,
   },
   loadingRow: {
     flexDirection: 'row',
@@ -733,6 +883,15 @@ function createStyles(colors: ThemeColors) {
     color: colors.textMuted,
     fontSize: FontSizes.sm,
     fontStyle: 'italic',
+  },
+  logFishLink: {
+    marginTop: Spacing.sm,
+    alignSelf: 'flex-start',
+  },
+  logFishLinkText: {
+    color: colors.accent,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
   },
   facilities: {
     flexDirection: 'row',

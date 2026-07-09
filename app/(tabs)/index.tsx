@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Alert,
   Platform,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -24,20 +23,27 @@ import {
   getSpeciesRecommendations,
   RecommendedSpecies,
   NearbySpot,
+  calculateDistance,
 } from '@/utils/recommendations';
 import { getBestTimeNow } from '@/utils/bestTimeNow';
+import { summarizeCommunityCatchActivity } from '@/utils/communityCatchIntel';
+import { confirmDiscardUnsavedChanges } from '@/utils/unsavedChanges';
 import { buildLocationSpeciesGuide } from '@/utils/speciesGuide';
+import { buildCatchCoachAdvice } from '@/utils/catchCoach';
 import { getPrimaryLureLabel } from '@/utils/speciesRigs';
 import speciesData from '@/data/species.json';
 import FishingMap from '@/components/FishingMap';
+import { MAP_LEGEND_ESTIMATED_HEIGHT } from '@/components/map/MapLegend';
 import MapBottomSheet, { type MapBottomSheetHandle } from '@/components/map/MapBottomSheet';
 import SpeciesGuideSheet from '@/components/map/SpeciesGuideSheet';
 import MapLocationSearchBar, {
   type MapLocationSearchBarHandle,
 } from '@/components/map/MapLocationSearchBar';
 import MapOverlayControls from '@/components/map/MapOverlayControls';
+import MapLayerSheet from '@/components/map/MapLayerSheet';
+import WaypointSaveModal from '@/components/map/WaypointSaveModal';
 import { BOTTOM_SHEET_PEEK_HEIGHT, getSheetHeightForIndex } from '@/components/map/mapSheetConstants';
-import type { FlyToTarget } from '@/components/map/types';
+import type { FlyToTarget, MapLongPressCoords } from '@/components/map/types';
 import { useDeviceLocation } from '@/hooks/useDeviceLocation';
 import { useLocalFishingData } from '@/hooks/useLocalFishingData';
 import { useNetworkStatus } from '@/providers/NetworkProvider';
@@ -46,27 +52,41 @@ import type { ActiveCoordinates, LocationSearchResult } from '@/lib/types/mapCoo
 import { useCategorizedSpots } from '@/hooks/useCategorizedSpots';
 import type { DiscoveryDashboardStatus } from '@/components/map/DiscoveryDashboard';
 import { useOfflineMap } from '@/hooks/useOfflineMap';
-import { useSaveCatch } from '@/hooks/useCatches';
+import { useSaveCatch, useSyncCatches } from '@/hooks/useCatches';
 import { useCatchInsights } from '@/hooks/useCatchInsights';
 import { getAreaRegulationNotices } from '@/utils/fishingRegulations';
 import { useWeather } from '@/hooks/useWeather';
 import { useTides } from '@/hooks/useTides';
 import { useSpotDetails } from '@/hooks/useSpotDetails';
 import { useSpeciesPrediction } from '@/hooks/useSpeciesPrediction';
+import { useViewportSpotScores } from '@/hooks/useViewportSpotScores';
+import { useRegionEnrichment } from '@/hooks/useRegionEnrichment';
+import { useWaypoints } from '@/hooks/useWaypoints';
+import type { WaypointRecord } from '@/lib/types/waypoint';
+import { useMapLayers } from '@/hooks/useMapLayers';
+import type { MapLayerState } from '@/lib/mapLayers/config';
+import { useSavedSpots } from '@/providers/SavedSpotsProvider';
+import { savedSpotToNearbySpot, type SavedSpotSnapshot } from '@/lib/types/savedSpot';
 import { getSpotLogSpeciesOptions } from '@/lib/species/spotLogSpecies';
 import { prefetchSpotData } from '@/lib/species/prefetchSpotData';
 import { queryClient } from '@/lib/queryClient';
 import { searchResultToNearbySpot } from '@/lib/api/endpoints/locationsSearch';
 import type { LocationSpeciesGuide } from '@/lib/types/speciesGuide';
+import type { CatchCoachAdvice } from '@/lib/types/catchCoach';
+import type { CatchCoachContext } from '@/hooks/useCatchCoachAdvice';
 import type { AvailableSpecies, SpeciesPrediction } from '@/lib/types/speciesPrediction';
 import LogCatchForm, { type LogCatchFormValues } from '@/components/catch/LogCatchForm';
 import { resolveCatchLocationFromMap } from '@/utils/catchLocation';
+import { isPersonalBiteEnabled, isCloudSyncEnabled } from '@/constants/features';
 import { buildCatchConditions } from '@/utils/catchConditions';
+import { buildBiteHeatmapGeoJson, getBiteHeatmapStatus } from '@/utils/biteHeatmap';
+import { computePersonalBiteBoost } from '@/utils/personalBiteFingerprint';
 import { useToast } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { useTheme } from '@/providers/ThemeProvider';
 import { hapticLight, hapticSuccess, hapticWarning, hapticError } from '@/utils/haptics';
+import { showCatchSavedFeedback } from '@/utils/catchSaveFeedback';
 
 export default function MapScreen() {
   const { colors } = useTheme();
@@ -80,6 +100,8 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const { isWide, mapPanelWidth, modalMaxWidth } = useResponsiveLayout();
   const sheetRef = useRef<MapBottomSheetHandle>(null);
+  const recentMapTapRef = useRef(false);
+  const mapTapResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchBarRef = useRef<MapLocationSearchBarHandle>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sheetIndex, setSheetIndex] = useState(0);
@@ -96,6 +118,9 @@ export default function MapScreen() {
   const [activeCoords, setActiveCoords] = useState<ActiveCoordinates | null>(null);
   const [mapCenterKey, setMapCenterKey] = useState(0);
   const [showLegend, setShowLegend] = useState(true);
+  const [layerSheetVisible, setLayerSheetVisible] = useState(false);
+  const [waypointModalVisible, setWaypointModalVisible] = useState(false);
+  const [pendingWaypointCoords, setPendingWaypointCoords] = useState<MapLongPressCoords | null>(null);
   const [flyToTarget, setFlyToTarget] = useState<FlyToTarget | null>(null);
   const [fabBottomOffset, setFabBottomOffset] = useState(BOTTOM_SHEET_PEEK_HEIGHT);
 
@@ -143,14 +168,50 @@ export default function MapScreen() {
     DEFAULT_RADIUS_METERS
   );
 
-  const location = activeCoords
-    ? { latitude: activeCoords.latitude, longitude: activeCoords.longitude }
-    : null;
+  const location = useMemo(
+    () =>
+      activeCoords
+        ? { latitude: activeCoords.latitude, longitude: activeCoords.longitude }
+        : null,
+    [activeCoords]
+  );
+
+  const userMarkerLocation = useMemo(() => {
+    if (
+      activeCoords?.source === 'search' &&
+      deviceLocation &&
+      !deviceLocation.isDefault &&
+      !deviceLocation.permissionDenied
+    ) {
+      return {
+        latitude: deviceLocation.latitude,
+        longitude: deviceLocation.longitude,
+      };
+    }
+    return location;
+  }, [activeCoords?.source, deviceLocation, location]);
+
+  /** Keep the map camera anchor at GPS while search uses flyToTarget for animation. */
+  const mapCameraAnchor = useMemo(() => {
+    if (!location) return null;
+    if (
+      activeCoords?.source === 'search' &&
+      deviceLocation &&
+      !deviceLocation.isDefault
+    ) {
+      return {
+        latitude: deviceLocation.latitude,
+        longitude: deviceLocation.longitude,
+      };
+    }
+    return location;
+  }, [activeCoords?.source, deviceLocation, location]);
 
   const permissionDenied = deviceLocation?.permissionDenied ?? false;
   const isSearchingLocation = activeCoords?.source === 'search';
 
   const handleSelectSearchLocation = useCallback((result: LocationSearchResult) => {
+    hapticLight();
     const spot = searchResultToNearbySpot(result);
 
     setActiveCoords({
@@ -167,7 +228,6 @@ export default function MapScreen() {
       key: Date.now(),
       zoom: 14,
     });
-    setMapCenterKey((key) => key + 1);
     sheetRef.current?.snapToIndex(1);
   }, []);
 
@@ -184,6 +244,7 @@ export default function MapScreen() {
     });
     setSelectedSpotId(null);
     setSelectedSpotSnapshot(null);
+    setFlyToTarget(null);
     setMapCenterKey((key) => key + 1);
   }, [refetchDeviceLocation, deviceLocation]);
 
@@ -195,7 +256,22 @@ export default function MapScreen() {
     zoomedOutTooFar,
     hasViewport,
     usingCachedDiscovery,
+    viewportBBox,
   } = useCategorizedSpots(location?.latitude, location?.longitude);
+
+  const viewportCenter = useMemo(() => {
+    if (!viewportBBox) return null;
+    return {
+      latitude: (viewportBBox[1] + viewportBBox[3]) / 2,
+      longitude: (viewportBBox[0] + viewportBBox[2]) / 2,
+    };
+  }, [viewportBBox]);
+
+  useRegionEnrichment({
+    latitude: viewportCenter?.latitude ?? null,
+    longitude: viewportCenter?.longitude ?? null,
+    enabled: hasViewport && !zoomedOutTooFar,
+  });
 
   const discoveryStatus = useMemo((): DiscoveryDashboardStatus => {
     if (!hasViewport) return 'waiting-for-map';
@@ -226,10 +302,63 @@ export default function MapScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  const currentHour = useMemo(() => {
+    void timeTick;
+    return new Date().getHours();
+  }, [timeTick]);
+
   const offlineMap = useOfflineMap(location?.latitude, location?.longitude);
   const { data: weather } = useWeather(location?.latitude, location?.longitude);
   const { data: tidesData } = useTides(location?.latitude, location?.longitude);
-  const { getPersonalCatchTimesNear, getPersonalSpeciesNear, insights } = useCatchInsights();
+  const { getPersonalCatchTimesNear, getPersonalSpeciesNear, insights, fingerprint, catches } = useCatchInsights();
+  const { savedSpots, recentSpots, isSaved, toggleSaved, recordRecent } = useSavedSpots();
+  const {
+    waypoints,
+    saveWaypoint,
+    deleteWaypoint,
+    saving: savingWaypoint,
+  } = useWaypoints();
+  const { layers, radarTileUrl, radarLoading, radarError, toggleLayer } = useMapLayers();
+
+  const personalBoost = useMemo(() => {
+    if (!isPersonalBiteEnabled() || !fingerprint.unlocked || !weather) return 0;
+    const conditions = buildCatchConditions(weather);
+    const { boost } = computePersonalBiteBoost(fingerprint, {
+      hour: currentHour,
+      conditions,
+    });
+    return boost;
+  }, [fingerprint, weather, currentHour]);
+
+  const {
+    scoresBySpotId,
+    topSpots: topDiscoverySpots,
+    isScoring: discoveryScoring,
+    isEnriching: discoveryEnriching,
+  } = useViewportSpotScores({
+    spots: discoverySpots,
+    weather: weather ?? null,
+    tides: tidesData?.predictions ?? null,
+    enabled: discoveryStatus === 'ready' && discoverySpots.length > 0,
+    personalBoost,
+  });
+
+  const heatmapStatus = useMemo(
+    () => getBiteHeatmapStatus(discoverySpots, scoresBySpotId),
+    [discoverySpots, scoresBySpotId]
+  );
+
+  const biteHeatmapGeoJson = useMemo(() => {
+    if (!layers.heatmap) return null;
+    return buildBiteHeatmapGeoJson(discoverySpots, scoresBySpotId);
+  }, [layers.heatmap, discoverySpots, scoresBySpotId]);
+
+  const handleToggleLayer = useCallback(
+    (layer: keyof MapLayerState) => {
+      toggleLayer(layer);
+    },
+    [toggleLayer]
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
   const [formKey, setFormKey] = useState(0);
@@ -247,6 +376,11 @@ export default function MapScreen() {
       selectedSpotSnapshot
     );
   }, [selectedSpotId, discoverySpots, selectedSpotSnapshot]);
+
+  const fishingNowLatitude = selectedSpot?.latitude ?? location?.latitude ?? null;
+  const fishingNowLongitude = selectedSpot?.longitude ?? location?.longitude ?? null;
+  const { data: fishingWeather } = useWeather(fishingNowLatitude, fishingNowLongitude);
+  const { data: fishingTidesData } = useTides(fishingNowLatitude, fishingNowLongitude);
 
   // All viewport spots become map pins; keep the selected spot pinned even if
   // the user pans to a viewport that no longer contains it.
@@ -275,10 +409,13 @@ export default function MapScreen() {
 
   const {
     data: speciesPredictionData,
+    catchActivity,
     isLoading: speciesPredictionsLoading,
     isUpdating: speciesPredictionsUpdating,
     isError: speciesPredictionsError,
+    isCatchActivityError,
     refetch: refetchSpeciesPredictions,
+    refetchCatchActivity,
   } = useSpeciesPrediction({
     locationId: selectedSpotId,
     latitude: selectedSpot?.latitude ?? location?.latitude,
@@ -286,7 +423,7 @@ export default function MapScreen() {
     spotName: selectedSpot?.name ?? null,
     spotWaterType: selectedSpot?.water_type ?? null,
     personalSpecies: spotPersonalSpecies,
-    tidesPredictions: tidesData?.predictions ?? null,
+    tidesPredictions: fishingTidesData?.predictions ?? null,
   });
 
   const personalCatchTimes = useMemo(() => {
@@ -310,42 +447,161 @@ export default function MapScreen() {
   const areaRegulationNotices = useMemo(() => {
     if (!location) return [];
     return getAreaRegulationNotices(location.latitude, location.longitude);
-  }, [location?.latitude, location?.longitude]);
+  }, [location]);
+
+  const communityCatchSummary = useMemo(
+    () => summarizeCommunityCatchActivity(catchActivity),
+    [catchActivity]
+  );
+
+  const speciesCoachAdvice = useMemo((): CatchCoachAdvice | null => {
+    if (!speciesGuide || !selectedSpot) return null;
+    const spotBestTime = getBestTimeNow({
+      latitude: selectedSpot.latitude,
+      longitude: selectedSpot.longitude,
+      weather: fishingWeather ?? null,
+      spotCatchTimes: spotDetails?.bestCatchTimes,
+      personalCatchTimes: spotPersonalCatchTimes,
+      tides: fishingTidesData?.predictions ?? null,
+      spotSpecies: speciesPredictionData?.predictions,
+      communityCatchActivity: catchActivity,
+    });
+    return buildCatchCoachAdvice({
+      speciesName: speciesGuide.species.name,
+      guide: speciesGuide,
+      prediction: speciesGuide.prediction,
+      bestTime: spotBestTime,
+      communityRows: catchActivity,
+      catches,
+      latitude: selectedSpot.latitude,
+      longitude: selectedSpot.longitude,
+    });
+  }, [
+    speciesGuide,
+    selectedSpot,
+    fishingWeather,
+    spotDetails?.bestCatchTimes,
+    spotPersonalCatchTimes,
+    fishingTidesData?.predictions,
+    speciesPredictionData?.predictions,
+    catchActivity,
+    catches,
+  ]);
+
+  const bestTimeAsOf = useMemo(() => {
+    void currentHour;
+    return new Date();
+  }, [currentHour]);
 
   const bestTime = useMemo(
     () =>
       getBestTimeNow({
-        latitude: location?.latitude ?? null,
-        longitude: location?.longitude ?? null,
-        weather: weather ?? null,
+        latitude: fishingNowLatitude,
+        longitude: fishingNowLongitude,
+        weather: fishingWeather ?? null,
+        date: bestTimeAsOf,
         spotCatchTimes: spotDetails?.bestCatchTimes,
-        personalCatchTimes,
-        tides: tidesData?.predictions ?? null,
+        personalCatchTimes: selectedSpot ? spotPersonalCatchTimes : personalCatchTimes,
+        tides: fishingTidesData?.predictions ?? null,
         spotSpecies: speciesPredictionData?.predictions,
+        communityCatchActivity: catchActivity,
       }),
     [
-      location?.latitude,
-      location?.longitude,
-      weather,
+      fishingNowLatitude,
+      fishingNowLongitude,
+      fishingWeather,
+      bestTimeAsOf,
       spotDetails?.bestCatchTimes,
+      selectedSpot,
+      spotPersonalCatchTimes,
       personalCatchTimes,
-      tidesData?.predictions,
+      fishingTidesData?.predictions,
       speciesPredictionData?.predictions,
-      timeTick,
+      catchActivity,
     ]
   );
 
+  const modalCoachContext = useMemo((): CatchCoachContext | undefined => {
+    if (!selectedSpot) return undefined;
+    return {
+      bestTime,
+      communityRows: catchActivity,
+      spot: selectedSpot,
+    };
+  }, [selectedSpot, bestTime, catchActivity]);
+
   const saveCatchMutation = useSaveCatch();
+  const syncCatchesMutation = useSyncCatches();
   const saving = saveCatchMutation.isPending;
   const { showToast } = useToast();
   const loading = gpsLoading && activeCoords === null;
 
   const handleMapPress = useCallback(() => {
+    recentMapTapRef.current = true;
+    if (mapTapResetTimerRef.current) clearTimeout(mapTapResetTimerRef.current);
+    mapTapResetTimerRef.current = setTimeout(() => {
+      recentMapTapRef.current = false;
+    }, 500);
     searchBarRef.current?.dismiss();
   }, []);
 
+  const handleMapLongPress = useCallback((coords: MapLongPressCoords) => {
+    if (recentMapTapRef.current) return;
+    hapticLight();
+    setPendingWaypointCoords(coords);
+    setWaypointModalVisible(true);
+  }, []);
+
+  const handleSaveWaypoint = useCallback(
+    async (values: { name: string; notes: string }) => {
+      if (!pendingWaypointCoords) return;
+      try {
+        await saveWaypoint({
+          name: values.name.trim() || 'My spot',
+          notes: values.notes.trim(),
+          latitude: pendingWaypointCoords.latitude,
+          longitude: pendingWaypointCoords.longitude,
+        });
+        hapticSuccess();
+        showToast({ message: 'Private waypoint saved', variant: 'success' });
+        setWaypointModalVisible(false);
+        setPendingWaypointCoords(null);
+      } catch (error) {
+        if (__DEV__) console.warn('[waypoints] save failed:', error);
+        hapticError();
+        showToast({ message: 'Could not save waypoint', variant: 'error' });
+      }
+    },
+    [pendingWaypointCoords, saveWaypoint, showToast]
+  );
+
+  const handleWaypointPress = useCallback((waypoint: WaypointRecord) => {
+    hapticLight();
+    setFlyToTarget({
+      lat: waypoint.latitude,
+      lng: waypoint.longitude,
+      key: Date.now(),
+      zoom: 15,
+    });
+    sheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleDeleteWaypoint = useCallback(
+    async (waypointId: string) => {
+      try {
+        await deleteWaypoint(waypointId);
+        hapticLight();
+      } catch (error) {
+        if (__DEV__) console.warn('[waypoints] delete failed:', error);
+        showToast({ message: 'Could not delete waypoint', variant: 'error' });
+      }
+    },
+    [deleteWaypoint, showToast]
+  );
+
   const handleSpotPress = useCallback((spot: NearbySpot) => {
     hapticLight();
+    recordRecent(spot);
     prefetchSpotData(queryClient, spot);
     setSelectedSpotId(spot.id);
     setSelectedSpotSnapshot(spot);
@@ -355,13 +611,61 @@ export default function MapScreen() {
       key: Date.now(),
       zoom: 14,
     });
-    sheetRef.current?.snapToIndex(1);
-  }, []);
+    sheetRef.current?.snapToIndex(2);
+  }, [recordRecent]);
+
+  const handleSavedSpotPress = useCallback(
+    (snapshot: SavedSpotSnapshot) => {
+      const origin = activeCoords ?? deviceLocation;
+      const distance =
+        origin != null
+          ? calculateDistance(
+              origin.latitude,
+              origin.longitude,
+              snapshot.latitude,
+              snapshot.longitude
+            )
+          : 0;
+      handleSpotPress(savedSpotToNearbySpot(snapshot, distance));
+    },
+    [activeCoords, deviceLocation, handleSpotPress]
+  );
+
+  const handleGoToBestSpot = useCallback(
+    (spot: NearbySpot) => {
+      hapticLight();
+      handleSpotPress(spot);
+    },
+    [handleSpotPress]
+  );
 
   const handleClearSelection = useCallback(() => {
     setSelectedSpotId(null);
     setSelectedSpotSnapshot(null);
   }, []);
+
+  const heroCollapseLevel: HeroCollapseLevel = useMemo(() => {
+    if (searchFocused) return 'compact';
+    if (sheetIndex >= 1) return 'minimal';
+    return 'full';
+  }, [searchFocused, sheetIndex]);
+
+  const effectiveHeaderHeight = useMemo(
+    () =>
+      Math.max(
+        heroHeaderHeight,
+        estimateHeroHeaderHeight(heroCollapseLevel, insets.top)
+      ),
+    [heroHeaderHeight, heroCollapseLevel, insets.top]
+  );
+
+  const showMapLegend = showLegend && sheetIndex === 0 && !searchFocused && !isWide;
+  const legendTopOffset = effectiveHeaderHeight + Spacing.xs;
+  const sheetHeaderInset = isWide ? 0 : effectiveHeaderHeight + Spacing.md;
+  const bannerTopOffset = isWide
+    ? 110
+    : effectiveHeaderHeight +
+      (showMapLegend ? MAP_LEGEND_ESTIMATED_HEIGHT + Spacing.sm : Spacing.xs);
 
   const handleSheetIndexChange = useCallback(
     (index: number) => {
@@ -370,16 +674,12 @@ export default function MapScreen() {
         setFabBottomOffset(Spacing.lg);
         return;
       }
-      setFabBottomOffset(getSheetHeightForIndex(index, windowHeight) || BOTTOM_SHEET_PEEK_HEIGHT);
+      setFabBottomOffset(
+        getSheetHeightForIndex(index, windowHeight, sheetHeaderInset) || BOTTOM_SHEET_PEEK_HEIGHT
+      );
     },
-    [windowHeight, isWide]
+    [windowHeight, isWide, sheetHeaderInset]
   );
-
-  const heroCollapseLevel: HeroCollapseLevel = useMemo(() => {
-    if (searchFocused) return 'compact';
-    if (sheetIndex >= 1) return 'minimal';
-    return 'full';
-  }, [searchFocused, sheetIndex]);
 
   const handleHeroHeaderLayout = useCallback((height: number) => {
     setHeroHeaderHeight((prev) => (Math.abs(prev - height) < 1 ? prev : height));
@@ -391,7 +691,13 @@ export default function MapScreen() {
     }
   }, [isWide]);
 
-  const handleOpenModal = (
+  useEffect(() => {
+    if (searchFocused && !isWide) {
+      sheetRef.current?.snapToIndex(0);
+    }
+  }, [searchFocused, isWide]);
+
+  const handleOpenModal = useCallback((
     initialValues: Partial<LogCatchFormValues> = {},
     speciesOptions?: string[]
   ) => {
@@ -400,7 +706,7 @@ export default function MapScreen() {
     setFormKey((k) => k + 1);
     setFormDirty(false);
     setModalVisible(true);
-  };
+  }, []);
 
   const resetModalForm = () => {
     setModalInitialValues({});
@@ -425,37 +731,31 @@ export default function MapScreen() {
         lure: values.lure,
         notes: values.notes,
         photoUri: values.photoUri,
-        conditions: buildCatchConditions(weather, { tideNote: bestTime.tideNote }),
+        conditions: buildCatchConditions(fishingWeather ?? weather, { tideNote: bestTime.tideNote }),
         latitude: logCatchLocation.latitude,
         longitude: logCatchLocation.longitude,
         locationName: logCatchLocation.locationName,
         caughtAt: values.caughtAt,
         date: new Date(values.caughtAt).toLocaleDateString(),
+        sharedAnonymously: values.sharedAnonymously,
       },
       {
         onSuccess: (result) => {
           setModalVisible(false);
           resetModalForm();
-          if (result.synced) {
-            hapticSuccess();
-            showToast({
-              message: 'Your catch has been logged!',
-              variant: 'success',
-              actionLabel: 'View in History',
-              onAction: () => router.push('/history'),
-            });
-          } else {
-            hapticWarning();
-            showToast({
-              message: 'Saved on this device — will sync when online',
-              variant: 'warning',
-              actionLabel: 'View in History',
-              onAction: () => router.push('/history'),
-            });
-          }
+          showCatchSavedFeedback({
+            result,
+            showToast,
+            router,
+            isOnline: !isOffline,
+            cloudSyncEnabled: isCloudSyncEnabled(),
+            onRetrySync: () => syncCatchesMutation.mutate(),
+            onSuccessHaptic: hapticSuccess,
+            onWarningHaptic: hapticWarning,
+          });
         },
         onError: (error) => {
-          console.error('Save catch error:', error);
+          if (__DEV__) console.error('Save catch error:', error);
           hapticError();
           showToast({ message: 'Failed to save catch. Please try again.', variant: 'error' });
         },
@@ -464,62 +764,57 @@ export default function MapScreen() {
   };
 
   const closeModal = () => {
-    if (formDirty) {
-      Alert.alert('Discard changes?', 'You have unsaved changes. Discard them?', [
-        { text: 'Keep editing', style: 'cancel' },
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            setModalVisible(false);
-            resetModalForm();
-          },
-        },
-      ]);
-      return;
-    }
-    setModalVisible(false);
-    resetModalForm();
+    confirmDiscardUnsavedChanges({
+      isDirty: formDirty,
+      onDiscard: () => {
+        setModalVisible(false);
+        resetModalForm();
+      },
+    });
   };
 
   const useRecommendation = (rec: RecommendedSpecies) => {
     handleOpenModal({ species: rec.name, lure: rec.recommendedLure });
   };
 
-  const useSpotSpecies = (spot: NearbySpot, speciesName?: string) => {
+  const openLogForSpotSpecies = useCallback((
+    spot: NearbySpot,
+    speciesName?: string,
+    coachAdvice?: CatchCoachAdvice
+  ) => {
     const spotSpeciesNames =
       spot.id === selectedSpotId
         ? getSpotLogSpeciesOptions(
             speciesPredictionData?.predictions ?? [],
             speciesPredictionData?.species ?? []
           )
-        : getSpotLogSpeciesOptions(
-            spot.matchedSpecies.map((name) => ({ name })),
-            spot.matchedSpecies.map((name) => ({ name }))
-          );
+        : [];
 
-    const targetSpecies =
-      speciesName ??
-      spotSpeciesNames[0] ??
-      (spot.matchedSpecies.length > 0 ? spot.matchedSpecies[0] : '');
+    const targetSpecies = speciesName ?? spotSpeciesNames[0] ?? '';
 
     const speciesInfo = targetSpecies
       ? speciesData.find((s) => s.name === targetSpecies)
       : undefined;
     const lure =
+      coachAdvice?.setup.lureLabel ??
       (speciesInfo && getPrimaryLureLabel(speciesInfo.id)) ??
       (speciesInfo && speciesInfo.lures.length > 0 ? speciesInfo.lures[0] : '') ??
       '';
+
+    const coachNotes = [coachAdvice?.setup.tip, coachAdvice?.technique]
+      .filter(Boolean)
+      .join(' ');
 
     handleOpenModal(
       {
         species: targetSpecies,
         lure,
+        notes: coachNotes || undefined,
       },
       spotSpeciesNames.length > 0 ? spotSpeciesNames : undefined
     );
     setSpeciesGuide(null);
-  };
+  }, [selectedSpotId, speciesPredictionData, handleOpenModal]);
 
   const handleSpeciesPress = useCallback(
     (species: AvailableSpecies, prediction?: SpeciesPrediction) => {
@@ -537,11 +832,11 @@ export default function MapScreen() {
   );
 
   const handleLogFromGuide = useCallback(
-    (speciesName: string) => {
+    (speciesName: string, advice?: CatchCoachAdvice) => {
       if (!selectedSpot) return;
-      useSpotSpecies(selectedSpot, speciesName);
+      openLogForSpotSpecies(selectedSpot, speciesName, advice);
     },
-    [selectedSpot]
+    [selectedSpot, openLogForSpotSpecies]
   );
 
   const handleRetryPredictions = useCallback(() => {
@@ -566,21 +861,31 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      {location && (
+      {mapCameraAnchor && (
         <View style={styles.mapScreen}>
           <View style={[styles.mapColumn, isWide && { marginRight: mapPanelWidth }]}>
             <FishingMap
-            latitude={location.latitude}
-            longitude={location.longitude}
+            latitude={mapCameraAnchor.latitude}
+            longitude={mapCameraAnchor.longitude}
+            userLatitude={userMarkerLocation?.latitude}
+            userLongitude={userMarkerLocation?.longitude}
             nearbySpots={mapPinSpots}
+            spotScores={scoresBySpotId}
             onSpotPress={handleSpotPress}
             onRegionChange={onViewportChange}
-            recenterOnLocationChange
+            recenterOnLocationChange={activeCoords?.source !== 'search'}
             centerRequestKey={mapCenterKey}
             selectedSpotId={selectedSpotId}
             flyToTarget={flyToTarget}
             onMapPress={handleMapPress}
-            showLegend={showLegend}
+            showLegend={showMapLegend}
+            legendTopOffset={legendTopOffset}
+            waypoints={waypoints}
+            onWaypointPress={handleWaypointPress}
+            onMapLongPress={handleMapLongPress}
+            mapLayers={layers}
+            radarTileUrl={radarTileUrl}
+            biteHeatmapGeoJson={biteHeatmapGeoJson}
           />
 
           {!isWide ? (
@@ -609,6 +914,8 @@ export default function MapScreen() {
             recenterDisabled={gpsLoading}
             showLegend={showLegend}
             onToggleLegend={() => setShowLegend((prev) => !prev)}
+            onLayersPress={() => setLayerSheetVisible(true)}
+            mapLayersActive={layers.depth || layers.radar || layers.heatmap || layers.community}
             bottomOffset={fabBottomOffset}
           />
 
@@ -616,7 +923,7 @@ export default function MapScreen() {
             <View
               style={[
                 styles.bannerContainer,
-                { top: isWide ? 110 : heroHeaderHeight + Spacing.xs },
+                { top: bannerTopOffset },
               ]}
               pointerEvents="box-none"
             >
@@ -674,6 +981,9 @@ export default function MapScreen() {
             onSheetIndexChange={handleSheetIndexChange}
             bestTime={bestTime}
             weather={weather ?? null}
+            tides={tidesData?.predictions ?? null}
+            fishingWeather={fishingWeather ?? null}
+            fishingTides={fishingTidesData?.predictions ?? null}
             recommendations={recommendations}
             categorizedSpots={categorizedSpots}
             discoveryStatus={discoveryStatus}
@@ -683,15 +993,46 @@ export default function MapScreen() {
             onClearSelection={handleClearSelection}
             selectedSpotId={selectedSpotId}
             onUseRecommendation={useRecommendation}
-            onLogSpotFish={useSpotSpecies}
+            onLogSpotFish={openLogForSpotSpecies}
             onSpeciesPress={handleSpeciesPress}
             personalCatchTimes={spotPersonalCatchTimes}
             onRetryPredictions={handleRetryPredictions}
             onRetryCatchTimes={handleRetryCatchTimes}
             insights={insights}
+            fingerprint={fingerprint}
             onViewInsights={() => router.push('/history')}
             areaRegulationNotices={areaRegulationNotices}
             personalSpeciesNear={spotPersonalSpecies}
+            scoresBySpotId={scoresBySpotId}
+            topDiscoverySpots={topDiscoverySpots}
+            discoveryScoring={discoveryScoring}
+            discoveryEnriching={discoveryEnriching}
+            onGoToBestSpot={handleGoToBestSpot}
+            onPlanTrip={() => {
+              const lat = location?.latitude;
+              const lng = location?.longitude;
+              router.push({
+                pathname: '/trip-planner',
+                params: {
+                  ...(lat != null ? { lat: String(lat) } : {}),
+                  ...(lng != null ? { lng: String(lng) } : {}),
+                },
+              });
+            }}
+            savedSpots={savedSpots}
+            recentSpots={recentSpots}
+            isSpotSaved={isSaved}
+            onToggleSpotSaved={toggleSaved}
+            onSavedSpotPress={handleSavedSpotPress}
+            headerInset={sheetHeaderInset}
+            communityCatchSummary={communityCatchSummary}
+            communityCatchLoading={speciesPredictionsLoading && selectedSpot != null}
+            communityCatchError={isCatchActivityError && selectedSpot != null}
+            onCommunityCatchRetry={refetchCatchActivity}
+            waypoints={waypoints}
+            onWaypointPress={handleWaypointPress}
+            onDeleteWaypoint={handleDeleteWaypoint}
+            catches={catches}
           />
         </View>
       )}
@@ -699,8 +1040,31 @@ export default function MapScreen() {
       <SpeciesGuideSheet
         guide={speciesGuide}
         spotName={selectedSpot?.name}
+        coachAdvice={speciesCoachAdvice}
         onClose={() => setSpeciesGuide(null)}
         onLogFish={selectedSpot ? handleLogFromGuide : undefined}
+      />
+
+      <MapLayerSheet
+        visible={layerSheetVisible}
+        layers={layers}
+        radarLoading={radarLoading}
+        radarError={radarError}
+        heatmapStatus={heatmapStatus}
+        onToggle={handleToggleLayer}
+        onClose={() => setLayerSheetVisible(false)}
+      />
+
+      <WaypointSaveModal
+        visible={waypointModalVisible}
+        latitude={pendingWaypointCoords?.latitude ?? null}
+        longitude={pendingWaypointCoords?.longitude ?? null}
+        saving={savingWaypoint}
+        onSave={handleSaveWaypoint}
+        onClose={() => {
+          setWaypointModalVisible(false);
+          setPendingWaypointCoords(null);
+        }}
       />
 
       <TouchableOpacity
@@ -753,6 +1117,7 @@ export default function MapScreen() {
                 location={logCatchLocation}
                 speciesOptions={modalSpeciesOptions}
                 speciesOptionsHint="Based on species documented or predicted for this spot."
+                coachContext={modalCoachContext}
                 onSubmit={handleSaveCatch}
                 saving={saving}
                 onDirtyChange={setFormDirty}
@@ -869,6 +1234,7 @@ function createStyles(colors: ThemeColors) {
       maxHeight: '85%',
       padding: Spacing.lg,
       width: '100%',
+      zIndex: 1,
     },
     modalHeader: {
       flexDirection: 'row',

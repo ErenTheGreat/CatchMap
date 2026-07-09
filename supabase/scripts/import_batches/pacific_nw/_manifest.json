@@ -1,0 +1,8 @@
+{
+  "source": "data/us/pacific_nw_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/pacific_nw",
+  "rows": 1507,
+  "batches": 4,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-07T02:43:54.077Z"
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveIsOnline } from '@/lib/network/setupOnlineManager';
+import { resolveIsOnline } from '@/lib/network/resolveIsOnline';
 
 describe('resolveIsOnline', () => {
   it('returns false when disconnected', () => {

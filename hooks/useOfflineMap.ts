@@ -5,6 +5,7 @@ import {
   isOfflineMapsAvailable,
   removeOfflineRegion,
 } from '@/lib/offline/offlineTiles';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export type OfflineMapState =
   | 'unavailable'
@@ -14,6 +15,7 @@ export type OfflineMapState =
   | 'error';
 
 export function useOfflineMap(latitude?: number | null, longitude?: number | null) {
+  const { isDark } = useTheme();
   const [state, setState] = useState<OfflineMapState>(
     isOfflineMapsAvailable() ? 'idle' : 'unavailable'
   );
@@ -59,9 +61,10 @@ export function useOfflineMap(latitude?: number | null, longitude?: number | nul
       (message) => {
         setErrorMessage(message);
         setState('error');
-      }
+      },
+      isDark
     );
-  }, [latitude, longitude, state]);
+  }, [latitude, longitude, state, isDark]);
 
   const remove = useCallback(async () => {
     await removeOfflineRegion();

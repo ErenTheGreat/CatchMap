@@ -1,0 +1,8 @@
+{
+  "source": "data/us/intermountain_west_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/intermountain_west",
+  "rows": 1882,
+  "batches": 4,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T11:23:04.582Z"
+}

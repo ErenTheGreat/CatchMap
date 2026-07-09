@@ -12,7 +12,7 @@ export async function getCurrentLocation(): Promise<UserLocation | null> {
   }
 
   const position = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.Balanced,
+    accuracy: Location.Accuracy.High,
   });
 
   return {

@@ -17,6 +17,7 @@ export function prefetchSpotData(queryClient: QueryClient, spot: NearbySpot): vo
       spot.latitude,
       spot.longitude,
       spot.name,
+      spot.water_type,
       currentMonth,
     ],
     queryFn: ({ signal }) =>
@@ -26,7 +27,8 @@ export function prefetchSpotData(queryClient: QueryClient, spot: NearbySpot): vo
         spot.longitude,
         currentMonth,
         signal,
-        spot.name
+        spot.name,
+        spot.water_type
       ),
     staleTime: SPECIES_STALE_MS,
   });

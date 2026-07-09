@@ -43,7 +43,7 @@ export async function fetchNearbyFishingSpots({
       });
       remoteSpots = data.spots ?? [];
     } catch (error) {
-      console.warn('BFF fishing spots unavailable, falling back to direct fetch:', error);
+      if (__DEV__) console.warn('BFF fishing spots unavailable, falling back to direct fetch:', error);
       remoteSpots = await fetchNearbyFishingSpotsDirect(latitude, longitude, radiusMiles);
     }
   } else {
@@ -63,7 +63,17 @@ async function fetchNearbyFishingSpotsDirect(
 
   let supabaseSpots: NearbySpot[] = [];
   try {
-    const { data, error } = await supabase.from('fishing_spots').select('*');
+    const latDelta = radiusMiles / 69;
+    const lngDelta = radiusMiles / (69 * Math.cos((latitude * Math.PI) / 180));
+
+    const { data, error } = await supabase
+      .from('fishing_spots')
+      .select('*')
+      .gte('latitude', latitude - latDelta)
+      .lte('latitude', latitude + latDelta)
+      .gte('longitude', longitude - lngDelta)
+      .lte('longitude', longitude + lngDelta)
+      .limit(100);
 
     if (!error && data) {
       supabaseSpots = data.map((spot: FishingSpot) => {
@@ -81,7 +91,7 @@ async function fetchNearbyFishingSpotsDirect(
       }).filter((spot) => spot.distance <= radiusMiles);
     }
   } catch (error) {
-    console.error('Error fetching Supabase fishing spots:', error);
+    if (__DEV__) console.error('Error fetching Supabase fishing spots:', error);
   }
 
   const combined = mergeFishingSpots(osmSpots, supabaseSpots);

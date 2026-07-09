@@ -1,0 +1,37 @@
+{
+  "project_id": "cpzwvlpqdzjjsdlnmfgg",
+  "final_total": 2778,
+  "by_category": {
+    "Bay": 4,
+    "Creek": 1291,
+    "Lake": 1483,
+    "Other": 0
+  },
+  "analyzed": true,
+  "source_rows": 17164,
+  "coverage_pct": 16.2,
+  "limited": true,
+  "limit_reason": "Partial chunk import via parallel MCP execute_sql; minimum 2,500 target met (2,778). Full 17k import not completed.",
+  "parallel_streams": [
+    "batches 001-009 (subagent 004-009)",
+    "batches 010-018 (prepared, partial)",
+    "batches 019-027 (batch_019 complete)",
+    "batches 028-035 (batch_028, batch_035 complete)"
+  ],
+  "batches_confirmed_complete": [
+    "batch_001",
+    "batch_019",
+    "batch_028",
+    "batch_035"
+  ],
+  "batches_partial": [
+    "batch_004",
+    "batch_005",
+    "batch_029"
+  ],
+  "chunks_tracked_done": 15,
+  "chunks_total": 136,
+  "errors": [],
+  "updated_at": "2026-07-06T14:30:00+00:00",
+  "next_steps": "Run parallel MCP waves (4 chunks) for remaining ~121 chunks, or SUPABASE_ACCESS_TOKEN + run_parallel_import.py run --min-total 5000"
+}

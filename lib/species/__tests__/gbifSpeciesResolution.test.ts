@@ -5,16 +5,26 @@ vi.mock('@/lib/species/gbifCatalogPresence', () => ({
   fetchCatalogSpeciesPresenceNearPoint: vi.fn(),
 }));
 
-import { fetchSpeciesAvailabilityWithContext, getGbifSearchRadiusKm } from '@/lib/api/endpoints/speciesPrediction';
+import { fetchSpeciesAvailabilityWithContext, getGbifSearchRadiusKm, filterVerifiedAvailabilityRows, isVerifiedSpeciesSource } from '@/lib/api/endpoints/speciesPrediction';
 import { fetchCatalogSpeciesPresenceNearPoint } from '@/lib/species/gbifCatalogPresence';
 import {
+  buildGbifSpeciesList,
   findCatalogEntryByScientificName,
-  matchGbifOccurrencesToCatalog,
+  matchGbifOccurrences,
+  MAX_DISCOVERED_GBIF_SPECIES,
   normalizeScientificName,
 } from '@/lib/species/matchGbifToCatalog';
 
 const mockRpc = vi.mocked(supabase.rpc);
 const mockFetchCatalogPresence = vi.mocked(fetchCatalogSpeciesPresenceNearPoint);
+
+/** Cast vitest RPC mock results to Supabase's chainable builder type. */
+function mockRpcResult(
+  data: unknown,
+  error: null | { message?: string } = null
+): ReturnType<typeof supabase.rpc> {
+  return Promise.resolve({ data, error }) as unknown as ReturnType<typeof supabase.rpc>;
+}
 
 describe('normalizeScientificName', () => {
   it('matches subspecies variants to binomial form', () => {
@@ -28,9 +38,9 @@ describe('normalizeScientificName', () => {
   });
 });
 
-describe('matchGbifOccurrencesToCatalog', () => {
+describe('matchGbifOccurrences', () => {
   it('maps GBIF occurrences to catalog species with gbif source', () => {
-    const species = matchGbifOccurrencesToCatalog([
+    const result = matchGbifOccurrences([
       {
         scientificName: 'Oncorhynchus mykiss',
         vernacularName: 'Rainbow Trout',
@@ -47,24 +57,84 @@ describe('matchGbifOccurrencesToCatalog', () => {
       },
     ]);
 
-    const names = species.map((item) => item.name).sort();
+    const names = result.catalog.map((item) => item.name).sort();
     expect(names).toEqual(['Largemouth Bass', 'Rainbow Trout']);
-    expect(species.every((item) => item.source === 'gbif')).toBe(true);
-    expect(species.every((item) => item.dataConfidence === 'medium')).toBe(true);
+    expect(result.catalog.every((item) => item.source === 'gbif')).toBe(true);
+    expect(result.catalog.every((item) => item.dataConfidence === 'medium')).toBe(true);
+    expect(result.catalog.every((item) => item.inCatalog === true)).toBe(true);
+    expect(result.discovered).toEqual([]);
   });
 
-  it('skips GBIF species not present in the app catalog', () => {
-    const species = matchGbifOccurrencesToCatalog([
+  it('includes undocumented GBIF species as gbif_discovered', () => {
+    const result = matchGbifOccurrences([
       {
-        scientificName: 'Unknownus fishus',
-        vernacularName: 'Mystery Fish',
+        scientificName: 'Ptychocheilus oregonensis',
+        vernacularName: 'Northern Pikeminnow',
         speciesKey: 999,
         latitude: 37.5,
         longitude: -122.1,
       },
     ]);
 
-    expect(species).toEqual([]);
+    expect(result.catalog).toEqual([]);
+    expect(result.discovered).toHaveLength(1);
+    expect(result.discovered[0]?.name).toBe('Northern Pikeminnow');
+    expect(result.discovered[0]?.source).toBe('gbif_discovered');
+    expect(result.discovered[0]?.dataConfidence).toBe('low');
+    expect(result.discovered[0]?.inCatalog).toBe(false);
+  });
+
+  it('caps undocumented species at MAX_DISCOVERED_GBIF_SPECIES', () => {
+    const result = matchGbifOccurrences([
+      {
+        scientificName: 'Ptychocheilus oregonensis',
+        vernacularName: 'Northern Pikeminnow',
+        speciesKey: 1,
+        latitude: 37.5,
+        longitude: -122.1,
+      },
+      {
+        scientificName: 'Catostomus macrocheilus',
+        vernacularName: 'Largescale Sucker',
+        speciesKey: 2,
+        latitude: 37.5,
+        longitude: -122.1,
+      },
+      {
+        scientificName: 'Acrocheilus alutaceus',
+        vernacularName: 'Chiselmouth',
+        speciesKey: 3,
+        latitude: 37.5,
+        longitude: -122.1,
+      },
+    ]);
+
+    expect(result.discovered).toHaveLength(MAX_DISCOVERED_GBIF_SPECIES);
+  });
+
+  it('buildGbifSpeciesList returns catalog matches before discoveries', () => {
+    const list = buildGbifSpeciesList(
+      matchGbifOccurrences([
+        {
+          scientificName: 'Ptychocheilus oregonensis',
+          vernacularName: 'Northern Pikeminnow',
+          speciesKey: 999,
+          latitude: 37.5,
+          longitude: -122.1,
+        },
+        {
+          scientificName: 'Micropterus salmoides',
+          vernacularName: 'Largemouth Bass',
+          speciesKey: 456,
+          latitude: 37.5,
+          longitude: -122.1,
+        },
+      ])
+    );
+
+    expect(list.map((item) => item.name)).toEqual(['Largemouth Bass', 'Northern Pikeminnow']);
+    expect(list[0]?.source).toBe('gbif');
+    expect(list[1]?.source).toBe('gbif_discovered');
   });
 });
 
@@ -83,6 +153,53 @@ describe('getGbifSearchRadiusKm', () => {
   });
 });
 
+describe('verified species source helpers', () => {
+  it('treats documented sources as verified', () => {
+    expect(isVerifiedSpeciesSource('location')).toBe(true);
+    expect(isVerifiedSpeciesSource('bundled')).toBe(true);
+    expect(isVerifiedSpeciesSource('presence')).toBe(true);
+    expect(isVerifiedSpeciesSource('gbif')).toBe(true);
+    expect(isVerifiedSpeciesSource('gbif_discovered')).toBe(true);
+  });
+
+  it('rejects synthetic category sources', () => {
+    expect(isVerifiedSpeciesSource('category')).toBe(false);
+    expect(isVerifiedSpeciesSource(undefined)).toBe(false);
+  });
+
+  it('filters category rows out of RPC results', () => {
+    const filtered = filterVerifiedAvailabilityRows([
+      {
+        species_id: '1',
+        species_name: 'Largemouth Bass',
+        scientific_name: 'Micropterus salmoides',
+        image_url: null,
+        feeding_zone: 'surface',
+        ideal_temp_min: null,
+        ideal_temp_max: null,
+        month_start: 3,
+        month_end: 10,
+        source: 'category',
+      },
+      {
+        species_id: '2',
+        species_name: 'Green Sunfish',
+        scientific_name: 'Lepomis cyanellus',
+        image_url: null,
+        feeding_zone: 'surface',
+        ideal_temp_min: null,
+        ideal_temp_max: null,
+        month_start: 4,
+        month_end: 10,
+        source: 'presence',
+      },
+    ]);
+
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.species_name).toBe('Green Sunfish');
+  });
+});
+
 describe('fetchSpeciesAvailabilityWithContext', () => {
   beforeEach(() => {
     mockRpc.mockReset();
@@ -92,8 +209,7 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
   it('uses RPC results directly when sources are not category-only', async () => {
     mockRpc.mockImplementation((fnName: string) => {
       if (fnName === 'get_species_availability_for_location') {
-        return Promise.resolve({
-          data: [
+        return mockRpcResult([
             {
               species_id: '11111111-1111-4111-8111-000000000099',
               species_name: 'Green Sunfish',
@@ -103,12 +219,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
               month_end: 10,
               source: 'location',
             },
-          ],
-          error: null,
-        });
+          ]);
       }
 
-      return Promise.resolve({ data: [], error: null });
+      return mockRpcResult([]);
     });
 
     const result = await fetchSpeciesAvailabilityWithContext(
@@ -127,8 +241,7 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
   it('uses GBIF when RPC returns only category fallback rows', async () => {
     mockRpc.mockImplementation((fnName: string) => {
       if (fnName === 'get_species_availability_for_location') {
-        return Promise.resolve({
-          data: [
+        return mockRpcResult([
             {
               species_id: 'cat-1',
               species_name: 'Largemouth Bass',
@@ -147,12 +260,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
               month_end: 12,
               source: 'category',
             },
-          ],
-          error: null,
-        });
+          ]);
       }
 
-      return Promise.resolve({ data: [], error: null });
+      return mockRpcResult([]);
     });
 
     mockFetchCatalogPresence.mockResolvedValue([
@@ -178,11 +289,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
     expect(mockFetchCatalogPresence).toHaveBeenCalledWith(41.2, -73.1, 5, undefined);
   });
 
-  it('falls back to category rows when GBIF returns no matches', async () => {
+  it('returns empty when GBIF returns no matches and RPC has only category rows', async () => {
     mockRpc.mockImplementation((fnName: string) => {
       if (fnName === 'get_species_availability_for_location') {
-        return Promise.resolve({
-          data: [
+        return mockRpcResult([
             {
               species_id: 'cat-1',
               species_name: 'Largemouth Bass',
@@ -192,12 +302,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
               month_end: 10,
               source: 'category',
             },
-          ],
-          error: null,
-        });
+          ]);
       }
 
-      return Promise.resolve({ data: [], error: null });
+      return mockRpcResult([]);
     });
 
     mockFetchCatalogPresence.mockResolvedValue([]);
@@ -209,16 +317,14 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
       7
     );
 
-    expect(result.species.map((item) => item.name)).toEqual(['Largemouth Bass']);
-    expect(result.species[0]?.source).toBe('category');
-    expect(result.species[0]?.dataConfidence).toBe('low');
+    expect(result.species).toEqual([]);
+    expect(result.spotContext).toBeNull();
   });
 
   it('uses GBIF with an 8km radius for lakes when category fallback is returned', async () => {
     mockRpc.mockImplementation((fnName: string) => {
       if (fnName === 'get_species_availability_for_location') {
-        return Promise.resolve({
-          data: [
+        return mockRpcResult([
             {
               species_id: 'lake-cat-1',
               species_name: 'Largemouth Bass',
@@ -237,12 +343,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
               month_end: 10,
               source: 'category',
             },
-          ],
-          error: null,
-        });
+          ]);
       }
 
-      return Promise.resolve({ data: [], error: null });
+      return mockRpcResult([]);
     });
 
     mockFetchCatalogPresence.mockResolvedValue([
@@ -272,8 +376,7 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
   it('expands GBIF search radius when the first pass returns nothing', async () => {
     mockRpc.mockImplementation((fnName: string) => {
       if (fnName === 'get_species_availability_for_location') {
-        return Promise.resolve({
-          data: [
+        return mockRpcResult([
             {
               species_id: 'lake-cat-1',
               species_name: 'Striped Bass',
@@ -283,12 +386,10 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
               month_end: 11,
               source: 'category',
             },
-          ],
-          error: null,
-        });
+          ]);
       }
 
-      return Promise.resolve({ data: [], error: null });
+      return mockRpcResult([]);
     });
 
     mockFetchCatalogPresence
@@ -316,5 +417,46 @@ describe('fetchSpeciesAvailabilityWithContext', () => {
     expect(result.species[0]?.source).toBe('gbif');
     expect(mockFetchCatalogPresence).toHaveBeenNthCalledWith(1, 38.0, -121.5, 8, undefined);
     expect(mockFetchCatalogPresence).toHaveBeenNthCalledWith(2, 38.0, -121.5, 16, undefined);
+  });
+
+  it('returns discovered GBIF species when nothing is in the catalog', async () => {
+    mockRpc.mockImplementation((fnName: string) => {
+      if (fnName === 'get_species_availability_for_location') {
+        return mockRpcResult([
+            {
+              species_id: 'cat-1',
+              species_name: 'Largemouth Bass',
+              scientific_name: 'Micropterus salmoides',
+              feeding_zone: 'surface',
+              month_start: 3,
+              month_end: 10,
+              source: 'category',
+            },
+          ]);
+      }
+
+      return mockRpcResult([]);
+    });
+
+    mockFetchCatalogPresence.mockResolvedValue([
+      {
+        scientificName: 'Ptychocheilus oregonensis',
+        vernacularName: 'Northern Pikeminnow',
+        speciesKey: 888,
+        latitude: 45.0,
+        longitude: -122.0,
+      },
+    ]);
+
+    const result = await fetchSpeciesAvailabilityWithContext(
+      'postgis-66666666-6666-4666-8666-000000000006',
+      45.0,
+      -122.0,
+      7
+    );
+
+    expect(result.species.map((item) => item.name)).toEqual(['Northern Pikeminnow']);
+    expect(result.species[0]?.source).toBe('gbif_discovered');
+    expect(result.species[0]?.dataConfidence).toBe('low');
   });
 });

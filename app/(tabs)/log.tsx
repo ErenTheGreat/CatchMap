@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import React, { useState, useMemo } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -15,22 +14,25 @@ import { Fish, Trophy, Clock } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { getSpeciesRecommendations, getMonthName, getCurrentMonth } from '@/utils/recommendations';
 import { getBestTimeNow } from '@/utils/bestTimeNow';
+import { useCommunityCatchActivity } from '@/hooks/useCommunityCatchActivity';
 import FishingNowCard from '@/components/map/FishingNowCard';
 import { useDeviceLocation } from '@/hooks/useDeviceLocation';
 import { useWeather } from '@/hooks/useWeather';
 import speciesData from '@/data/species.json';
-import { useSaveCatch } from '@/hooks/useCatches';
+import { useSaveCatch, useSyncCatches } from '@/hooks/useCatches';
 import LogCatchForm, { type LogCatchFormValues } from '@/components/catch/LogCatchForm';
 import { resolveCatchLocationFromDevice } from '@/utils/catchLocation';
 import { buildCatchConditions } from '@/utils/catchConditions';
 import PersonalInsightsCard from '@/components/map/PersonalInsightsCard';
-import { Skeleton, OfflineBanner, useToast, ResponsiveScreen, AppScreenHeader } from '@/components/ui';
+import { Skeleton, OfflineBanner, useToast, ResponsiveScreen, AppScreenHeader, SettingsButton, ThemeToggleButton, ThemedText } from '@/components/ui';
 import { useNetworkStatus } from '@/providers/NetworkProvider';
 import { hapticSuccess, hapticWarning, hapticError } from '@/utils/haptics';
 import { useLogFormGuard } from '@/providers/LogFormGuardProvider';
 import { useCatchInsights } from '@/hooks/useCatchInsights';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { showCatchSavedFeedback } from '@/utils/catchSaveFeedback';
+import { isCloudSyncEnabled } from '@/constants/features';
 import { useTheme } from '@/providers/ThemeProvider';
 
 function createStyles(colors: ThemeColors) {
@@ -188,6 +190,7 @@ export default function LogScreen() {
   const { isOffline } = useNetworkStatus();
 
   const saveCatchMutation = useSaveCatch();
+  const syncCatchesMutation = useSyncCatches();
   const saving = saveCatchMutation.isPending;
   const { showToast } = useToast();
 
@@ -196,6 +199,11 @@ export default function LogScreen() {
     deviceLocation?.latitude,
     deviceLocation?.longitude
   );
+  const { rows: communityCatchActivity } = useCommunityCatchActivity({
+    latitude: deviceLocation?.latitude,
+    longitude: deviceLocation?.longitude,
+    enabled: !isOffline,
+  });
 
   const recommendations = useMemo(() => getSpeciesRecommendations(null, null), []);
   const bestTime = useMemo(
@@ -204,8 +212,9 @@ export default function LogScreen() {
         latitude: deviceLocation?.latitude ?? null,
         longitude: deviceLocation?.longitude ?? null,
         weather: weather ?? null,
+        communityCatchActivity,
       }),
-    [deviceLocation?.latitude, deviceLocation?.longitude, weather]
+    [deviceLocation?.latitude, deviceLocation?.longitude, weather, communityCatchActivity]
   );
 
   const logCatchLocation = useMemo(
@@ -230,29 +239,23 @@ export default function LogScreen() {
         locationName: logCatchLocation.locationName,
         caughtAt: values.caughtAt,
         date: new Date(values.caughtAt).toLocaleDateString(),
+        sharedAnonymously: values.sharedAnonymously,
       },
       {
         onSuccess: (result) => {
           setFormKey((k) => k + 1);
           setInitialValues({});
           setFormDirty(false);
-          if (result.synced) {
-            hapticSuccess();
-            showToast({
-              message: 'Catch logged successfully!',
-              variant: 'success',
-              actionLabel: 'View in History',
-              onAction: () => router.push('/history'),
-            });
-          } else {
-            hapticWarning();
-            showToast({
-              message: 'Saved on this device — will sync when online',
-              variant: 'warning',
-              actionLabel: 'View in History',
-              onAction: () => router.push('/history'),
-            });
-          }
+          showCatchSavedFeedback({
+            result,
+            showToast,
+            router,
+            isOnline: !isOffline,
+            cloudSyncEnabled: isCloudSyncEnabled(),
+            onRetrySync: () => syncCatchesMutation.mutate(),
+            onSuccessHaptic: hapticSuccess,
+            onWarningHaptic: hapticWarning,
+          });
         },
         onError: () => {
           hapticError();
@@ -285,12 +288,22 @@ export default function LogScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <ResponsiveScreen>
           <AppScreenHeader
             variant="compact"
             title="Log Catch"
             subtitle="Record your catch"
+            actions={
+              <>
+                <SettingsButton />
+                <ThemeToggleButton />
+              </>
+            }
           />
 
           {isOffline ? (
@@ -305,7 +318,7 @@ export default function LogScreen() {
           <View style={styles.timeCard}>
             <View style={styles.timeHeader}>
               <Clock color={colors.accent} size={18} />
-              <Text style={styles.timeTitle}>Fishing Now</Text>
+              <ThemedText style={styles.timeTitle}>Fishing Now</ThemedText>
             </View>
             {locationLoading || weatherLoading ? (
               <View style={styles.inlineLoading}>
@@ -319,9 +332,9 @@ export default function LogScreen() {
           <View style={styles.recommendationSection}>
             <View style={styles.recommendationHeader}>
               <Trophy color={colors.warning} size={18} />
-              <Text style={styles.recommendationTitle}>
+              <ThemedText style={styles.recommendationTitle}>
                 Top Catches for {getMonthName(getCurrentMonth())}
-              </Text>
+              </ThemedText>
             </View>
             <ScrollView
               horizontal={!isWide}
@@ -340,14 +353,14 @@ export default function LogScreen() {
                   {rec.isPeak && (
                     <View style={styles.peakBadge}>
                       <Trophy color={colors.accentForeground} size={10} />
-                      <Text style={styles.peakText}>PEAK</Text>
+                      <ThemedText style={styles.peakText}>PEAK</ThemedText>
                     </View>
                   )}
                   <Fish color={colors.accent} size={24} />
-                  <Text style={styles.quickRecName} numberOfLines={1}>{rec.name}</Text>
-                  <Text style={styles.quickRecWeight}>{rec.averageWeight}</Text>
+                  <ThemedText style={styles.quickRecName} numberOfLines={1}>{rec.name}</ThemedText>
+                  <ThemedText style={styles.quickRecWeight}>{rec.averageWeight}</ThemedText>
                   <View style={styles.quickRecLure}>
-                    <Text style={styles.quickRecLureText} numberOfLines={1}>{rec.recommendedLure}</Text>
+                    <ThemedText style={styles.quickRecLureText} numberOfLines={1}>{rec.recommendedLure}</ThemedText>
                   </View>
                 </TouchableOpacity>
               ))}

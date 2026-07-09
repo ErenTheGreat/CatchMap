@@ -1,0 +1,33 @@
+{
+  "chunks_run": 7,
+  "chunks_total": 24,
+  "completed": [
+    "batch_004_chunk_01.sql",
+    "batch_004_chunk_02.sql",
+    "batch_004_chunk_03.sql",
+    "batch_004_chunk_04.sql",
+    "batch_005_chunk_01.sql",
+    "batch_005_chunk_02.sql",
+    "batch_005_chunk_03.sql"
+  ],
+  "pending": [
+    "batch_005_chunk_04.sql",
+    "batch_006_chunk_01.sql",
+    "batch_006_chunk_02.sql",
+    "batch_006_chunk_03.sql",
+    "batch_006_chunk_04.sql",
+    "batch_007_chunk_01.sql",
+    "batch_007_chunk_02.sql",
+    "batch_007_chunk_03.sql",
+    "batch_007_chunk_04.sql",
+    "batch_008_chunk_01.sql",
+    "batch_008_chunk_02.sql",
+    "batch_008_chunk_03.sql",
+    "batch_008_chunk_04.sql",
+    "batch_009_chunk_01.sql",
+    "batch_009_chunk_02.sql",
+    "batch_009_chunk_03.sql",
+    "batch_009_chunk_04.sql"
+  ],
+  "errors": []
+}

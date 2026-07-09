@@ -1,0 +1,149 @@
+{
+  "states": {
+    "CA": {
+      "name": "California",
+      "agency": "CDFW",
+      "regulationsUrl": "https://wildlife.ca.gov/Fishing",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "A valid California sport fishing license is required for anglers 16+.",
+        "coastal": "Check Marine Protected Area rules before fishing coastal or bay waters."
+      }
+    },
+    "OR": {
+      "name": "Oregon",
+      "agency": "ODFW",
+      "regulationsUrl": "https://myodfw.com/fishing",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "An Oregon angling license is required for anglers 12+.",
+        "coastal": "Marine zone regulations apply — check the current Oregon Sport Fishing Regulations."
+      }
+    },
+    "WA": {
+      "name": "Washington",
+      "agency": "WDFW",
+      "regulationsUrl": "https://wdfw.wa.gov/fishing",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "A Washington fishing license is required for anglers 15+.",
+        "coastal": "Marine Area rules and catch record cards may apply for certain species."
+      }
+    },
+    "TX": {
+      "name": "Texas",
+      "agency": "TPWD",
+      "regulationsUrl": "https://tpwd.texas.gov/regulations/outdoor-annual/fishing",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "A Texas fishing license is required for anglers 17+.",
+        "coastal": "Saltwater stamp may be required for coastal fishing."
+      }
+    },
+    "FL": {
+      "name": "Florida",
+      "agency": "FWC",
+      "regulationsUrl": "https://myfwc.com/fishing/saltwater/recreational",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "A Florida freshwater fishing license is required for anglers 16+.",
+        "coastal": "Saltwater regulations and seasonal closures apply — check FWC before fishing."
+      }
+    },
+    "NY": {
+      "name": "New York",
+      "agency": "DEC",
+      "regulationsUrl": "https://www.dec.ny.gov/outdoor/fishing.html",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "A New York fishing license is required for anglers 16+.",
+        "coastal": "Marine registry may be required for saltwater fishing."
+      }
+    },
+    "AK": {
+      "name": "Alaska",
+      "agency": "ADF&G",
+      "regulationsUrl": "https://www.adfg.alaska.gov/sf/Fishing",
+      "licenseRequired": true,
+      "notes": {
+        "freshwater": "An Alaska sport fishing license is required for residents 18+ and non-residents 16+.",
+        "coastal": "Check area-specific closures and bag limits before fishing."
+      }
+    }
+  },
+  "protectedAreas": [
+    {
+      "id": "fitzgerald-marine-reserve",
+      "name": "Fitzgerald Marine Reserve",
+      "state": "CA",
+      "lat": 37.518,
+      "lon": -122.514,
+      "radiusKm": 1.5,
+      "severity": "closed",
+      "message": "Fishing is prohibited in Fitzgerald Marine Reserve (San Mateo County)."
+    },
+    {
+      "id": "duxbury-reef-sma",
+      "name": "Duxbury Reef State Marine Conservation Area",
+      "state": "CA",
+      "lat": 37.901,
+      "lon": -122.689,
+      "radiusKm": 2,
+      "severity": "warning",
+      "message": "Duxbury Reef has restricted take rules — check CDFW MPA regulations before fishing."
+    },
+    {
+      "id": "point-reyes-smr",
+      "name": "Point Reyes State Marine Reserve",
+      "state": "CA",
+      "lat": 38.023,
+      "lon": -122.978,
+      "radiusKm": 3,
+      "severity": "closed",
+      "message": "Fishing is prohibited in Point Reyes State Marine Reserve."
+    }
+  ],
+  "speciesRules": [
+    {
+      "states": ["CA"],
+      "waterTypes": ["lake", "pond", "river", "stream", "freshwater", "creek"],
+      "speciesName": "Largemouth Bass",
+      "speciesAliases": ["Black Bass", "Bass"],
+      "closedMonths": [],
+      "minSizeInches": 12,
+      "bagLimit": 5,
+      "bagLimitNote": "Statewide general limit — only 2 may be under 12 in. District rules may differ.",
+      "message": "Check CDFW district rules for special bass limits on this water."
+    },
+    {
+      "states": ["CA"],
+      "waterTypes": ["lake", "pond", "river", "stream", "freshwater", "creek"],
+      "speciesName": "Rainbow Trout",
+      "speciesAliases": ["Trout", "Steelhead"],
+      "closedMonths": [],
+      "minSizeInches": 10,
+      "bagLimit": 5,
+      "bagLimitNote": "Trout limits vary by water — many streams are catch-and-release only.",
+      "message": "Trout regulations vary by county and water. Confirm on CDFW before keeping fish."
+    },
+    {
+      "states": ["OR"],
+      "waterTypes": ["river", "stream", "freshwater"],
+      "speciesName": "Steelhead",
+      "closedMonths": [4, 5, 6, 7, 8, 9, 10],
+      "message": "Steelhead seasons vary by zone — check ODFW for open dates and bag limits."
+    },
+    {
+      "states": ["WA", "OR"],
+      "waterTypes": ["coastal", "bay", "saltwater"],
+      "speciesName": "Dungeness Crab",
+      "closedMonths": [7, 8, 9],
+      "message": "Dungeness crab has a summer closure period — verify WDFW/ODFW marine schedules."
+    }
+  ],
+  "fallback": {
+    "title": "Verify local regulations",
+    "message": "Fishing rules vary by location. Confirm licenses, seasons, and bag limits before fishing.",
+    "regulationsUrl": "https://www.fishwildlife.org/fishing"
+  }
+}

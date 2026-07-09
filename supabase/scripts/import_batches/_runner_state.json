@@ -1,0 +1,45 @@
+{
+  "next": 2,
+  "batches": [
+    {
+      "n": 2,
+      "chars": 73854,
+      "file": "batch_002.sql"
+    },
+    {
+      "n": 3,
+      "chars": 73503,
+      "file": "batch_003.sql"
+    },
+    {
+      "n": 4,
+      "chars": 73708,
+      "file": "batch_004.sql"
+    },
+    {
+      "n": 5,
+      "chars": 73514,
+      "file": "batch_005.sql"
+    },
+    {
+      "n": 6,
+      "chars": 73941,
+      "file": "batch_006.sql"
+    },
+    {
+      "n": 7,
+      "chars": 74531,
+      "file": "batch_007.sql"
+    },
+    {
+      "n": 8,
+      "chars": 74564,
+      "file": "batch_008.sql"
+    },
+    {
+      "n": 9,
+      "chars": 73996,
+      "file": "batch_009.sql"
+    }
+  ]
+}

@@ -8,13 +8,48 @@
     "averageWeight": "2-5 lbs",
     "maxWeight": "22 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [3, 4, 5, 6, 7, 8, 9, 10],
-    "peakMonths": [4, 5, 6],
-    "regions": ["northwest", "southeast", "midwest", "northeast", "southwest", "west"],
-    "waterTypes": ["lake", "pond", "river"],
-    "lures": ["Crankbaits", "Soft plastics", "Jigs", "Topwater lures"],
+    "bestMonths": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      4,
+      5,
+      6
+    ],
+    "regions": [
+      "northwest",
+      "southeast",
+      "midwest",
+      "northeast",
+      "southwest",
+      "west"
+    ],
+    "waterTypes": [
+      "lake",
+      "pond",
+      "river"
+    ],
+    "lures": [
+      "Crankbaits",
+      "Soft plastics",
+      "Jigs",
+      "Topwater lures"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Best caught early morning or late evening. Look for structure like fallen trees and weed beds."
+    "tips": "Best caught early morning or late evening. Look for structure like fallen trees and weed beds.",
+    "hookSize": "2/0\u20134/0",
+    "bait": [
+      "Live shiners",
+      "Nightcrawlers",
+      "Crawfish"
+    ]
   },
   {
     "id": "2",
@@ -25,13 +60,52 @@
     "averageWeight": "1-3 lbs",
     "maxWeight": "11 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [3, 4, 5, 9, 10],
-    "regions": ["northwest", "west", "northeast", "midwest"],
-    "waterTypes": ["river", "lake", "stream"],
-    "lures": ["Spinners", "Spoons", "Flies", "Powerbait"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      3,
+      4,
+      5,
+      9,
+      10
+    ],
+    "regions": [
+      "northwest",
+      "west",
+      "northeast",
+      "midwest"
+    ],
+    "waterTypes": [
+      "river",
+      "lake",
+      "stream"
+    ],
+    "lures": [
+      "Spinners",
+      "Spoons",
+      "Flies",
+      "Powerbait"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Prefer cold, oxygen-rich water. Stocked trout are easier to catch in lakes."
+    "tips": "Prefer cold, oxygen-rich water. Stocked trout are easier to catch in lakes.",
+    "hookSize": "#6\u2013#10",
+    "bait": [
+      "PowerBait",
+      "Salmon eggs",
+      "Worms"
+    ]
   },
   {
     "id": "3",
@@ -42,13 +116,50 @@
     "averageWeight": "2-4 lbs",
     "maxWeight": "25 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [5, 6, 9, 10],
-    "regions": ["midwest", "northeast", "northwest", "southeast"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Jigs", "Crankbaits", "Live bait", "Spinner rigs"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      5,
+      6,
+      9,
+      10
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "northwest",
+      "southeast"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Jigs",
+      "Crankbaits",
+      "Live bait",
+      "Spinner rigs"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Most active at dawn and dusk. Troll along drop-offs and structure."
+    "tips": "Most active at dawn and dusk. Troll along drop-offs and structure.",
+    "hookSize": "#2\u20132/0",
+    "bait": [
+      "Minnows",
+      "Nightcrawlers",
+      "Leeches"
+    ]
   },
   {
     "id": "4",
@@ -59,13 +170,50 @@
     "averageWeight": "3-8 lbs",
     "maxWeight": "40 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [5, 6, 9, 10],
-    "regions": ["midwest", "northeast", "northwest", "southeast"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Large spoons", "Swimbaits", "Spinnerbaits", "Live bait"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      5,
+      6,
+      9,
+      10
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "northwest",
+      "southeast"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Large spoons",
+      "Swimbaits",
+      "Spinnerbaits",
+      "Live bait"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Use steel leaders to prevent bite-offs. Focus on weed edges and shallow bays."
+    "tips": "Use steel leaders to prevent bite-offs. Focus on weed edges and shallow bays.",
+    "hookSize": "3/0\u20136/0",
+    "bait": [
+      "Large minnows",
+      "Suckers",
+      "Live baitfish"
+    ]
   },
   {
     "id": "5",
@@ -76,13 +224,54 @@
     "averageWeight": "2-5 lbs",
     "maxWeight": "58 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [5, 6, 7, 8, 9],
-    "regions": ["southeast", "midwest", "southwest", "northeast", "south"],
-    "waterTypes": ["lake", "river", "pond"],
-    "lures": ["Cut bait", "Stink bait", "Worms", "Chicken liver"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "regions": [
+      "southeast",
+      "midwest",
+      "southwest",
+      "northeast",
+      "south"
+    ],
+    "waterTypes": [
+      "lake",
+      "river",
+      "pond"
+    ],
+    "lures": [
+      "Cut bait",
+      "Stink bait",
+      "Worms",
+      "Chicken liver"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Best at night or during overcast days. Fish near bottom in deeper holes."
+    "tips": "Best at night or during overcast days. Fish near bottom in deeper holes.",
+    "hookSize": "2/0\u20135/0",
+    "bait": [
+      "Cut bait",
+      "Chicken liver",
+      "Stink bait",
+      "Worms"
+    ]
   },
   {
     "id": "6",
@@ -93,13 +282,47 @@
     "averageWeight": "0.25-0.5 lbs",
     "maxWeight": "4.75 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [4, 5, 6, 7, 8, 9, 10],
-    "peakMonths": [5, 6, 7],
-    "regions": ["southeast", "midwest", "northeast", "southwest", "south", "northwest"],
-    "waterTypes": ["lake", "pond", "river"],
-    "lures": ["Small jigs", "Worms", "Crickets", "Small poppers"],
+    "bestMonths": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      5,
+      6,
+      7
+    ],
+    "regions": [
+      "southeast",
+      "midwest",
+      "northeast",
+      "southwest",
+      "south",
+      "northwest"
+    ],
+    "waterTypes": [
+      "lake",
+      "pond",
+      "river"
+    ],
+    "lures": [
+      "Small jigs",
+      "Worms",
+      "Crickets",
+      "Small poppers"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Look for beds in shallow water during spawning season. Great for kids."
+    "tips": "Look for beds in shallow water during spawning season. Great for kids.",
+    "hookSize": "#6\u2013#10",
+    "bait": [
+      "Worms",
+      "Crickets",
+      "Grubs"
+    ]
   },
   {
     "id": "7",
@@ -110,13 +333,48 @@
     "averageWeight": "0.5-1 lbs",
     "maxWeight": "5 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [3, 4, 5, 6, 7, 8, 9, 10, 11],
-    "peakMonths": [4, 5, 10, 11],
-    "regions": ["southeast", "midwest", "northeast", "southwest", "south", "west"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Small jigs", "Minnows", "Small spinners", "Tube baits"],
+    "bestMonths": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "regions": [
+      "southeast",
+      "midwest",
+      "northeast",
+      "southwest",
+      "south",
+      "west"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Small jigs",
+      "Minnows",
+      "Small spinners",
+      "Tube baits"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Fish around brush piles and submerged timber. Vertical jigging works well."
+    "tips": "Fish around brush piles and submerged timber. Vertical jigging works well.",
+    "hookSize": "#2\u2013#6",
+    "bait": [
+      "Minnows",
+      "Small jigs tipped with minnows"
+    ]
   },
   {
     "id": "8",
@@ -127,13 +385,44 @@
     "averageWeight": "1-3 lbs",
     "maxWeight": "12 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [4, 5, 6, 7, 8, 9, 10],
-    "peakMonths": [5, 6, 9],
-    "regions": ["midwest", "northeast", "northwest", "southeast"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Crankbaits", "Tube jigs", "Soft plastics", "Topwater"],
+    "bestMonths": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      5,
+      6,
+      9
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "northwest",
+      "southeast"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Crankbaits",
+      "Tube jigs",
+      "Soft plastics",
+      "Topwater"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Target rocky points and transition areas. They love clear water."
+    "tips": "Target rocky points and transition areas. They love clear water.",
+    "hookSize": "1/0\u20133/0",
+    "bait": [
+      "Crawfish",
+      "Minnows",
+      "Leeches"
+    ]
   },
   {
     "id": "9",
@@ -144,13 +433,50 @@
     "averageWeight": "0.25-0.5 lbs",
     "maxWeight": "3 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [3, 4, 5, 12],
-    "regions": ["midwest", "northeast", "northwest", "southeast"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Small jigs", "Minnows", "Spoons", "Worms"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      3,
+      4,
+      5,
+      12
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "northwest",
+      "southeast"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Small jigs",
+      "Minnows",
+      "Spoons",
+      "Worms"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Ice fishing favorite. Look for them near weed lines in 15-25 feet of water."
+    "tips": "Ice fishing favorite. Look for them near weed lines in 15-25 feet of water.",
+    "hookSize": "#4\u2013#8",
+    "bait": [
+      "Minnows",
+      "Worms",
+      "Small maggots"
+    ]
   },
   {
     "id": "10",
@@ -161,13 +487,43 @@
     "averageWeight": "15-30 lbs",
     "maxWeight": "70 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [5, 6, 7, 8, 9, 10, 11],
-    "peakMonths": [6, 9, 10],
-    "regions": ["midwest", "northeast", "northwest", "southeast"],
-    "waterTypes": ["lake", "river"],
-    "lures": ["Large bucktails", "Swimbaits", "Crankbaits", "Jerkbaits"],
+    "bestMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      6,
+      9,
+      10
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "northwest",
+      "southeast"
+    ],
+    "waterTypes": [
+      "lake",
+      "river"
+    ],
+    "lures": [
+      "Large bucktails",
+      "Swimbaits",
+      "Crankbaits",
+      "Jerkbaits"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Cast to likely spots multiple times. Use figure-8 technique at boat side."
+    "tips": "Cast to likely spots multiple times. Use figure-8 technique at boat side.",
+    "hookSize": "4/0\u20137/0",
+    "bait": [
+      "Large suckers",
+      "Live baitfish"
+    ]
   },
   {
     "id": "11",
@@ -178,13 +534,47 @@
     "averageWeight": "5-15 lbs",
     "maxWeight": "70 lbs",
     "season": "Spring-Fall",
-    "bestMonths": [4, 5, 6, 7, 8, 9, 10, 11],
-    "peakMonths": [4, 5, 10, 11],
-    "regions": ["northeast", "southeast", "west", "southwest"],
-    "waterTypes": ["lake", "river", "coastal"],
-    "lures": ["Swimbaits", "Spoons", "Pencil poppers", "Live eels"],
+    "bestMonths": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "regions": [
+      "northeast",
+      "southeast",
+      "west",
+      "southwest"
+    ],
+    "waterTypes": [
+      "lake",
+      "river",
+      "coastal"
+    ],
+    "lures": [
+      "Swimbaits",
+      "Spoons",
+      "Pencil poppers",
+      "Live eels"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Follow bait fish schools. Dawn and dusk are prime times."
+    "tips": "Follow bait fish schools. Dawn and dusk are prime times.",
+    "hookSize": "2/0\u20135/0",
+    "bait": [
+      "Live eels",
+      "Herring",
+      "Bloodworms"
+    ]
   },
   {
     "id": "12",
@@ -195,13 +585,56 @@
     "averageWeight": "5-15 lbs",
     "maxWeight": "75 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [5, 6, 7, 8, 9],
-    "regions": ["midwest", "northeast", "southeast", "southwest", "northwest", "south", "west"],
-    "waterTypes": ["lake", "river", "pond"],
-    "lures": ["Boilies", "Corn", "Bread", "Pellets"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "regions": [
+      "midwest",
+      "northeast",
+      "southeast",
+      "southwest",
+      "northwest",
+      "south",
+      "west"
+    ],
+    "waterTypes": [
+      "lake",
+      "river",
+      "pond"
+    ],
+    "lures": [
+      "Boilies",
+      "Corn",
+      "Bread",
+      "Pellets"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Use chum to attract them. Look for rolling fish near the surface."
+    "tips": "Use chum to attract them. Look for rolling fish near the surface.",
+    "hookSize": "#6\u2013#2",
+    "bait": [
+      "Corn",
+      "Boilies",
+      "Bread",
+      "Dough balls"
+    ]
   },
   {
     "id": "13",
@@ -212,13 +645,47 @@
     "averageWeight": "5-10 lbs",
     "maxWeight": "42 lbs",
     "season": "Fall-Spring",
-    "bestMonths": [10, 11, 12, 1, 2, 3, 4, 5],
-    "peakMonths": [11, 12, 3, 4],
-    "regions": ["northwest", "west", "northeast", "midwest"],
-    "waterTypes": ["river", "lake", "coastal"],
-    "lures": ["Spawn sacs", "Beads", "Spoons", "Flies"],
+    "bestMonths": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "peakMonths": [
+      11,
+      12,
+      3,
+      4
+    ],
+    "regions": [
+      "northwest",
+      "west",
+      "northeast",
+      "midwest"
+    ],
+    "waterTypes": [
+      "river",
+      "lake",
+      "coastal"
+    ],
+    "lures": [
+      "Spawn sacs",
+      "Beads",
+      "Spoons",
+      "Flies"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Focus on holding pools and runs. Drift fishing is highly effective."
+    "tips": "Focus on holding pools and runs. Drift fishing is highly effective.",
+    "hookSize": "#4\u2013#8",
+    "bait": [
+      "Spawn sacs",
+      "Salmon eggs",
+      "Sand shrimp"
+    ]
   },
   {
     "id": "14",
@@ -229,13 +696,43 @@
     "averageWeight": "10-20 lbs",
     "maxWeight": "126 lbs",
     "season": "Summer-Fall",
-    "bestMonths": [6, 7, 8, 9, 10, 11],
-    "peakMonths": [7, 8, 9],
-    "regions": ["northwest", "west", "northeast"],
-    "waterTypes": ["river", "coastal", "lake"],
-    "lures": ["Spoons", "Plugs", "Roe", "Herring"],
+    "bestMonths": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      7,
+      8,
+      9
+    ],
+    "regions": [
+      "northwest",
+      "west",
+      "northeast"
+    ],
+    "waterTypes": [
+      "river",
+      "coastal",
+      "lake"
+    ],
+    "lures": [
+      "Spoons",
+      "Plugs",
+      "Roe",
+      "Herring"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Troll deep in open water. In rivers, target deep pools during migration."
+    "tips": "Troll deep in open water. In rivers, target deep pools during migration.",
+    "hookSize": "2/0\u20134/0",
+    "bait": [
+      "Herring",
+      "Roe",
+      "Anchovies"
+    ]
   },
   {
     "id": "15",
@@ -246,13 +743,43 @@
     "averageWeight": "5-10 lbs",
     "maxWeight": "33 lbs",
     "season": "Summer-Fall",
-    "bestMonths": [7, 8, 9, 10, 11],
-    "peakMonths": [8, 9, 10],
-    "regions": ["northwest", "west", "northeast", "midwest"],
-    "waterTypes": ["river", "coastal", "lake"],
-    "lures": ["Spoons", "Spinners", "Flies", "Plugs"],
+    "bestMonths": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      8,
+      9,
+      10
+    ],
+    "regions": [
+      "northwest",
+      "west",
+      "northeast",
+      "midwest"
+    ],
+    "waterTypes": [
+      "river",
+      "coastal",
+      "lake"
+    ],
+    "lures": [
+      "Spoons",
+      "Spinners",
+      "Flies",
+      "Plugs"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "More willing to bite than Chinook. Look for surface-feeding fish."
+    "tips": "More willing to bite than Chinook. Look for surface-feeding fish.",
+    "hookSize": "1/0\u20133/0",
+    "bait": [
+      "Roe",
+      "Anchovies",
+      "Spawn sacs"
+    ]
   },
   {
     "id": "16",
@@ -263,13 +790,48 @@
     "averageWeight": "5-15 lbs",
     "maxWeight": "94 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [8, 9, 10, 11],
-    "regions": ["southeast", "south", "southwest"],
-    "waterTypes": ["coastal"],
-    "lures": ["Gold spoons", "Soft plastics", "Topwater", "Live bait"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "regions": [
+      "southeast",
+      "south",
+      "southwest"
+    ],
+    "waterTypes": [
+      "coastal"
+    ],
+    "lures": [
+      "Gold spoons",
+      "Soft plastics",
+      "Topwater",
+      "Live bait"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Look for tailing fish on shallow flats. Sight fishing is exciting."
+    "tips": "Look for tailing fish on shallow flats. Sight fishing is exciting.",
+    "hookSize": "2/0\u20134/0",
+    "bait": [
+      "Live shrimp",
+      "Mullet",
+      "Crab"
+    ]
   },
   {
     "id": "17",
@@ -280,13 +842,48 @@
     "averageWeight": "1-3 lbs",
     "maxWeight": "17 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [4, 5, 10, 11],
-    "regions": ["southeast", "south", "southwest"],
-    "waterTypes": ["coastal"],
-    "lures": ["Soft plastics", "Mirror lures", "Topwater", "Live shrimp"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "regions": [
+      "southeast",
+      "south",
+      "southwest"
+    ],
+    "waterTypes": [
+      "coastal"
+    ],
+    "lures": [
+      "Soft plastics",
+      "Mirror lures",
+      "Topwater",
+      "Live shrimp"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Fish grass flats during moving tides. Early morning topwater is deadly."
+    "tips": "Fish grass flats during moving tides. Early morning topwater is deadly.",
+    "hookSize": "1/0\u20133/0",
+    "bait": [
+      "Live shrimp",
+      "Pilchards",
+      "Mullet"
+    ]
   },
   {
     "id": "18",
@@ -297,13 +894,49 @@
     "averageWeight": "5-10 lbs",
     "maxWeight": "22 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [1, 2, 3, 12],
-    "regions": ["south", "southeast", "southwest"],
-    "waterTypes": ["lake", "pond"],
-    "lures": ["Large swimbaits", "Big worms", "Jigs", "Hollow body frogs"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      1,
+      2,
+      3,
+      12
+    ],
+    "regions": [
+      "south",
+      "southeast",
+      "southwest"
+    ],
+    "waterTypes": [
+      "lake",
+      "pond"
+    ],
+    "lures": [
+      "Large swimbaits",
+      "Big worms",
+      "Jigs",
+      "Hollow body frogs"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Winter spawn produces giants. Use live wild shiners for best results."
+    "tips": "Winter spawn produces giants. Use live wild shiners for best results.",
+    "hookSize": "4/0\u20136/0",
+    "bait": [
+      "Wild shiners",
+      "Large golden shiners",
+      "Live bluegill"
+    ]
   },
   {
     "id": "19",
@@ -314,13 +947,48 @@
     "averageWeight": "5-15 lbs",
     "maxWeight": "72 lbs",
     "season": "Year-round",
-    "bestMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "peakMonths": [5, 6, 9, 10],
-    "regions": ["northwest", "northeast", "midwest"],
-    "waterTypes": ["lake"],
-    "lures": ["Spoons", "Jigging lures", "Trolling plugs", "Live bait"],
+    "bestMonths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peakMonths": [
+      5,
+      6,
+      9,
+      10
+    ],
+    "regions": [
+      "northwest",
+      "northeast",
+      "midwest"
+    ],
+    "waterTypes": [
+      "lake"
+    ],
+    "lures": [
+      "Spoons",
+      "Jigging lures",
+      "Trolling plugs",
+      "Live bait"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Troll deep in summer. Ice fish for them in winter on northern lakes."
+    "tips": "Troll deep in summer. Ice fish for them in winter on northern lakes.",
+    "hookSize": "2/0\u20134/0",
+    "bait": [
+      "Minnows",
+      "Suckers",
+      "Ciscoes"
+    ]
   },
   {
     "id": "20",
@@ -331,12 +999,596 @@
     "averageWeight": "10-30 lbs",
     "maxWeight": "123 lbs",
     "season": "Year-round",
-    "bestMonths": [5, 6, 7, 8, 9, 10],
-    "peakMonths": [6, 7, 8],
-    "regions": ["southeast", "midwest", "south", "southwest"],
-    "waterTypes": ["river"],
-    "lures": ["Live sunfish", "Live shad", "Large cut bait", "Nightcrawlers"],
+    "bestMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      6,
+      7,
+      8
+    ],
+    "regions": [
+      "southeast",
+      "midwest",
+      "south",
+      "southwest"
+    ],
+    "waterTypes": [
+      "river"
+    ],
+    "lures": [
+      "Live sunfish",
+      "Live shad",
+      "Large cut bait",
+      "Nightcrawlers"
+    ],
     "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "tips": "Must use live bait. Fish deep holes in rivers at night."
+    "tips": "Must use live bait. Fish deep holes in rivers at night.",
+    "hookSize": "4/0\u20138/0",
+    "bait": [
+      "Live sunfish",
+      "Live shad",
+      "Live bluegill"
+    ]
+  },
+  {
+    "id": "21",
+    "name": "Kokanee Salmon",
+    "scientificName": "Oncorhynchus nerka",
+    "habitat": "Deep cold freshwater lakes and reservoirs",
+    "description": "Landlocked sockeye salmon prized for their bright red flesh and schooling behavior in open water.",
+    "averageWeight": "1-2 lbs",
+    "maxWeight": "5 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      6,
+      7,
+      9
+    ],
+    "regions": [
+      "west",
+      "northwest",
+      "midwest"
+    ],
+    "waterTypes": [
+      "lake"
+    ],
+    "lures": [
+      "Hoochies",
+      "Small spoons",
+      "Flashers",
+      "Downrigger gear"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Troll deep (40-80 ft) with downriggers during summer. Follow plankton blooms and thermoclines.",
+    "hookSize": "#4\u2013#2",
+    "bait": [
+      "Pink maggots",
+      "Corn",
+      "Krill",
+      "Scent-enhanced corn"
+    ]
+  },
+  {
+    "id": "22",
+    "name": "Black Crappie",
+    "scientificName": "Pomoxis nigromaculatus",
+    "habitat": "Freshwater lakes, reservoirs, backwaters with cover",
+    "description": "Dark-speckled panfish that schools around submerged timber and weed edges. Excellent table fare.",
+    "averageWeight": "0.5-1 lbs",
+    "maxWeight": "5 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peakMonths": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "regions": [
+      "southeast",
+      "midwest",
+      "northeast",
+      "southwest",
+      "south",
+      "west"
+    ],
+    "waterTypes": [
+      "lake",
+      "river",
+      "pond"
+    ],
+    "lures": [
+      "Small jigs",
+      "Tube baits",
+      "Minnow imitations",
+      "Small spinners"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish brush piles and dock pilings. Slow vertical jigging near submerged timber is highly effective.",
+    "hookSize": "#2\u2013#6",
+    "bait": [
+      "Minnows",
+      "Small jigs tipped with minnows",
+      "Nightcrawlers"
+    ]
+  },
+  {
+    "id": "23",
+    "name": "Green Sunfish",
+    "scientificName": "Lepomis cyanellus",
+    "habitat": "Slow streams, ponds, and shallow lake coves",
+    "description": "Aggressive small panfish with a big appetite. Often found in tight cover along banks.",
+    "averageWeight": "0.25-0.5 lbs",
+    "maxWeight": "2 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      5,
+      6,
+      7
+    ],
+    "regions": [
+      "midwest",
+      "south",
+      "southeast",
+      "southwest",
+      "west"
+    ],
+    "waterTypes": [
+      "river",
+      "stream",
+      "pond",
+      "lake"
+    ],
+    "lures": [
+      "Micro jigs",
+      "Small spinners",
+      "Tiny poppers",
+      "Beetle spins"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Target undercut banks and shallow pools in creeks. Ultra-light tackle produces the most fun.",
+    "hookSize": "#8\u2013#12",
+    "bait": [
+      "Worms",
+      "Crickets",
+      "Grubs",
+      "Small pieces of nightcrawler"
+    ]
+  },
+  {
+    "id": "24",
+    "name": "California Halibut",
+    "scientificName": "Paralichthys californicus",
+    "habitat": "Sandy bays, estuaries, and nearshore coastal waters",
+    "description": "Flatfish that ambushes bait from sandy bottom. A prized West Coast inshore species.",
+    "averageWeight": "8-15 lbs",
+    "maxWeight": "60 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "regions": [
+      "west",
+      "southwest"
+    ],
+    "waterTypes": [
+      "coastal"
+    ],
+    "lures": [
+      "Swimbaits",
+      "Soft plastic grubs",
+      "Spinnerbaits",
+      "Live bait rigs"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Drift or cast sandy flats on moving tides. Let bait bounce along the bottom near drop-offs.",
+    "hookSize": "2/0\u20134/0",
+    "bait": [
+      "Live anchovies",
+      "Squid",
+      "Frozen sardines",
+      "Live sardines"
+    ]
+  },
+  {
+    "id": "25",
+    "name": "Bat Ray",
+    "scientificName": "Myliobatis californica",
+    "habitat": "Shallow bays, estuaries, and sandy coastal flats",
+    "description": "Large powerful ray that puts up a strong fight on heavy tackle. Common in California bays.",
+    "averageWeight": "20-50 lbs",
+    "maxWeight": "200 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "regions": [
+      "west",
+      "southwest"
+    ],
+    "waterTypes": [
+      "coastal"
+    ],
+    "lures": [
+      "Heavy surf rigs",
+      "Fish-finder rigs",
+      "Carolina rigs"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Use heavy surf gear on sandy flats. Anchor bait on the bottom and wait for a slow, powerful take.",
+    "hookSize": "6/0\u20139/0",
+    "bait": [
+      "Squid",
+      "Anchovies",
+      "Mackerel",
+      "Ghost shrimp"
+    ]
+  },
+  {
+    "id": "26",
+    "name": "Leopard Shark",
+    "scientificName": "Triakis semifasciata",
+    "habitat": "Shallow bays, estuaries, and surf zones along the Pacific coast",
+    "description": "Hard-fighting inshore shark commonly caught from piers and shorelines. Excellent sport on medium-heavy tackle.",
+    "averageWeight": "10-25 lbs",
+    "maxWeight": "50 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peakMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "regions": [
+      "west",
+      "southwest"
+    ],
+    "waterTypes": [
+      "coastal"
+    ],
+    "lures": [
+      "Surf fishing rigs",
+      "Fish-finder rigs",
+      "Sliding sinker rigs"
+    ],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish incoming tides on sandy flats and bay channels. Use fresh oily bait and a wire leader.",
+    "hookSize": "4/0\u20137/0",
+    "bait": [
+      "Anchovies",
+      "Squid",
+      "Mackerel",
+      "Sand crabs"
+    ]
+  },
+  {
+    "id": "27",
+    "name": "Brown Trout",
+    "scientificName": "Salmo trutta",
+    "habitat": "Cold streams, rivers, and lakes",
+    "description": "Prized trout species known for wariness and strong fights in clear water.",
+    "averageWeight": "1-3 lbs",
+    "maxWeight": "20 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [3, 4, 5, 9, 10, 11],
+    "peakMonths": [4, 5, 10],
+    "regions": ["northeast", "midwest", "west", "northwest"],
+    "waterTypes": ["river", "stream", "lake"],
+    "lures": ["Spinners", "Spoons", "Flies", "Crankbaits"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish early morning in low light. Target undercut banks and riffle tailouts.",
+    "hookSize": "#6–#10",
+    "bait": ["Worms", "Salmon eggs", "Minnows"]
+  },
+  {
+    "id": "28",
+    "name": "Brook Trout",
+    "scientificName": "Salvelinus fontinalis",
+    "habitat": "Cold, clear headwater streams and mountain lakes",
+    "description": "Native char with striking colors. Thrives in pristine cold water.",
+    "averageWeight": "0.5-1.5 lbs",
+    "maxWeight": "6 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [5, 6, 7, 8, 9],
+    "peakMonths": [6, 7],
+    "regions": ["northeast", "midwest", "northwest"],
+    "waterTypes": ["stream", "lake"],
+    "lures": ["Small spinners", "Flies", "Spoons"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Use ultralight tackle in small streams. Natural drifts work best.",
+    "hookSize": "#10–#14",
+    "bait": ["Worms", "Crickets", "Grasshoppers"]
+  },
+  {
+    "id": "29",
+    "name": "Blue Catfish",
+    "scientificName": "Ictalurus furcatus",
+    "habitat": "Large rivers and reservoirs",
+    "description": "Giant catfish species capable of exceeding 100 lbs in big rivers.",
+    "averageWeight": "10-30 lbs",
+    "maxWeight": "150 lbs",
+    "season": "Year-round",
+    "bestMonths": [6, 7, 8, 9, 10],
+    "peakMonths": [7, 8, 9],
+    "regions": ["southeast", "midwest", "southwest"],
+    "waterTypes": ["river", "lake"],
+    "lures": ["Cut bait rigs", "Slip sinker rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish deep holes and channel edges at night with fresh cut bait.",
+    "hookSize": "6/0–10/0",
+    "bait": ["Skipjack herring", "Shad", "Bluegill chunks"]
+  },
+  {
+    "id": "30",
+    "name": "Snook",
+    "scientificName": "Centropomus undecimalis",
+    "habitat": "Mangrove shorelines, passes, and inshore flats",
+    "description": "Premier inshore game fish of Florida and Gulf Coast. Explosive strikes.",
+    "averageWeight": "3-8 lbs",
+    "maxWeight": "30 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [4, 5, 6, 7, 8, 9, 10],
+    "peakMonths": [5, 6, 7, 8],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Topwater plugs", "Soft plastics", "Jigs", "Live bait rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Target moving tides along mangrove points and dock lights at night.",
+    "hookSize": "1/0–4/0",
+    "bait": ["Live shrimp", "Pilchards", "Threadfin herring"]
+  },
+  {
+    "id": "31",
+    "name": "Tarpon",
+    "scientificName": "Megalops atlanticus",
+    "habitat": "Passes, beaches, and shallow flats",
+    "description": "Silver king — iconic acrobatic sport fish of tropical and subtropical coasts.",
+    "averageWeight": "40-80 lbs",
+    "maxWeight": "200 lbs",
+    "season": "Spring-Summer",
+    "bestMonths": [4, 5, 6, 7, 8],
+    "peakMonths": [5, 6, 7],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Large swimbaits", "Flies", "Live bait rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Look for rolling fish at dawn. Bow to the jump when hooked.",
+    "hookSize": "4/0–8/0",
+    "bait": ["Live crabs", "Threadfin herring", "Pilchards"]
+  },
+  {
+    "id": "32",
+    "name": "Red Snapper",
+    "scientificName": "Lutjanus campechanus",
+    "habitat": "Reefs, wrecks, and offshore structure",
+    "description": "Highly prized reef fish known for excellent table fare and hard fights.",
+    "averageWeight": "5-15 lbs",
+    "maxWeight": "40 lbs",
+    "season": "Summer-Fall",
+    "bestMonths": [6, 7, 8, 9, 10],
+    "peakMonths": [7, 8, 9],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Vertical jigs", "Bottom rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Drop baits to reef edges and wrecks. Check federal and state seasons.",
+    "hookSize": "4/0–7/0",
+    "bait": ["Squid", "Cigar minnows", "Sardines"]
+  },
+  {
+    "id": "33",
+    "name": "Flounder",
+    "scientificName": "Paralichthys sp.",
+    "habitat": "Sandy bays, estuaries, and nearshore flats",
+    "description": "Flatfish ambush predator. Southern and summer flounder are top inshore targets.",
+    "averageWeight": "2-5 lbs",
+    "maxWeight": "15 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [4, 5, 6, 7, 8, 9, 10],
+    "peakMonths": [5, 6, 9, 10],
+    "regions": ["southeast", "northeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Soft plastic grubs", "Spinner rigs", "Bucktail jigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Drag baits along sandy bottom on moving tides. Flounder gigging in fall.",
+    "hookSize": "1/0–3/0",
+    "bait": ["Live minnows", "Shrimp", "Squid strips"]
+  },
+  {
+    "id": "34",
+    "name": "King Mackerel",
+    "scientificName": "Scomberomorus cavalla",
+    "habitat": "Nearshore waters, reefs, and open Gulf/Atlantic",
+    "description": "Fast pelagic predator. Known for blistering runs and razor teeth.",
+    "averageWeight": "10-20 lbs",
+    "maxWeight": "50 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [4, 5, 6, 7, 8, 9, 10],
+    "peakMonths": [5, 6, 7, 8],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Spoons", "Drone spoons", "Live bait rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Slow-troll live bait or spoons along color lines and reef edges.",
+    "hookSize": "4/0–6/0",
+    "bait": ["Blue runners", "Menhaden", "Cigar minnows"]
+  },
+  {
+    "id": "35",
+    "name": "Bluefish",
+    "scientificName": "Pomatomus saltatrix",
+    "habitat": "Surf zones, bays, and nearshore waters",
+    "description": "Aggressive schooling predator. Famous for blitzing bait at the surface.",
+    "averageWeight": "3-8 lbs",
+    "maxWeight": "20 lbs",
+    "season": "Spring-Fall",
+    "bestMonths": [5, 6, 7, 8, 9, 10],
+    "peakMonths": [6, 7, 8, 9],
+    "regions": ["northeast", "southeast", "midwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Metal spoons", "Topwater plugs", "Wire leaders required"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Chase bird activity and surface blitzes. Use wire leader — sharp teeth.",
+    "hookSize": "1/0–3/0",
+    "bait": ["Cut bunker", "Eels", "Live bunker"]
+  },
+  {
+    "id": "36",
+    "name": "Black Drum",
+    "scientificName": "Pogonias cromis",
+    "habitat": "Bays, channels, and nearshore structure",
+    "description": "Large drum species. Bulls exceed 50 lbs and feed heavily on crustaceans.",
+    "averageWeight": "10-30 lbs",
+    "maxWeight": "80 lbs",
+    "season": "Year-round",
+    "bestMonths": [2, 3, 4, 5, 10, 11],
+    "peakMonths": [3, 4],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Bottom rigs", "Fish-finder rigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish channel edges with blue crabs or shrimp. Listen for drumming in spring.",
+    "hookSize": "4/0–8/0",
+    "bait": ["Blue crabs", "Shrimp", "Clams"]
+  },
+  {
+    "id": "37",
+    "name": "Sheepshead",
+    "scientificName": "Archosargus probatocephalus",
+    "habitat": "Piers, jetties, bridges, and structure",
+    "description": "Structure-oriented fish with human-like teeth. Excellent table fare.",
+    "averageWeight": "2-5 lbs",
+    "maxWeight": "12 lbs",
+    "season": "Winter-Spring",
+    "bestMonths": [1, 2, 3, 4, 5, 11, 12],
+    "peakMonths": [2, 3, 4],
+    "regions": ["southeast", "southwest"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Jigs tipped with shrimp"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Fish tight to pilings. Set hook immediately — notorious bait stealers.",
+    "hookSize": "#1–2/0",
+    "bait": ["Fiddler crabs", "Barnacles", "Shrimp"]
+  },
+  {
+    "id": "38",
+    "name": "Sauger",
+    "scientificName": "Sander canadensis",
+    "habitat": "River channels, tailwaters, and reservoirs",
+    "description": "Close walleye relative. Thrives in flowing water and deep river holes.",
+    "averageWeight": "1-2 lbs",
+    "maxWeight": "8 lbs",
+    "season": "Fall-Winter",
+    "bestMonths": [10, 11, 12, 1, 2, 3],
+    "peakMonths": [11, 12, 1],
+    "regions": ["midwest", "southeast", "northeast"],
+    "waterTypes": ["river", "lake"],
+    "lures": ["Jigs", "Minnow rigs", "Crankbaits"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Vertical jig river channel edges in low light. Often mixed with walleye.",
+    "hookSize": "#4–#2",
+    "bait": ["Minnows", "Nightcrawlers", "Leeches"]
+  },
+  {
+    "id": "39",
+    "name": "White Bass",
+    "scientificName": "Morone chrysops",
+    "habitat": "Reservoirs and river tributaries",
+    "description": "Hard-fighting schooling bass. Spring spawning runs are legendary.",
+    "averageWeight": "1-2 lbs",
+    "maxWeight": "4 lbs",
+    "season": "Spring-Summer",
+    "bestMonths": [3, 4, 5, 6, 7],
+    "peakMonths": [4, 5],
+    "regions": ["midwest", "southwest", "southeast"],
+    "waterTypes": ["river", "lake"],
+    "lures": ["Small crankbaits", "Spinners", "Jigs", "Spoons"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Follow spring spawning runs up tributaries. Look for surface schooling in summer.",
+    "hookSize": "#4–#2",
+    "bait": ["Minnows", "Small jigs", "Twister tails"]
+  },
+  {
+    "id": "40",
+    "name": "Mahi Mahi",
+    "scientificName": "Coryphaena hippurus",
+    "habitat": "Offshore weed lines and floating debris",
+    "description": "Colorful pelagic sport fish. One of the fastest-growing offshore species.",
+    "averageWeight": "10-25 lbs",
+    "maxWeight": "60 lbs",
+    "season": "Spring-Summer",
+    "bestMonths": [4, 5, 6, 7, 8, 9],
+    "peakMonths": [5, 6, 7],
+    "regions": ["southeast", "southwest", "west"],
+    "waterTypes": ["coastal", "saltwater"],
+    "lures": ["Trolling skirts", "Ballyhoo rigs", "Casting jigs"],
+    "image": "https://images.pexels.com/photos/1854958/pexels-photo-1854958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "tips": "Troll weed lines and FADs. Keep a pitch bait ready for followers.",
+    "hookSize": "4/0–7/0",
+    "bait": ["Ballyhoo", "Squid", "Flying fish"]
   }
 ]

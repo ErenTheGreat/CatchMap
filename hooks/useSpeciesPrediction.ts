@@ -55,6 +55,7 @@ export function useSpeciesPrediction({
           latitude,
           longitude,
           spotName,
+          spotWaterType,
           currentMonth,
         ],
         queryFn: ({ signal }) =>
@@ -84,7 +85,7 @@ export function useSpeciesPrediction({
         networkMode: 'offlineFirst',
       },
       {
-        queryKey: ['catchActivity', latitude, longitude],
+        queryKey: ['catchActivity', latitude, longitude, 500, 90],
         queryFn: ({ signal }) =>
           fishingApi.getCatchActivityNearPoint(latitude!, longitude!, 500, 90, signal),
         enabled: hasCoords && !networkOffline,
@@ -156,9 +157,12 @@ export function useSpeciesPrediction({
 
   return {
     data,
+    catchActivity: catchActivityQuery.data ?? [],
     isLoading: isLoadingSpecies,
     isUpdating: isUpdatingSpecies || isUpdatingScores,
     isError: availabilityQuery.isError,
+    isCatchActivityError: catchActivityQuery.isError,
+    refetchCatchActivity: () => void catchActivityQuery.refetch(),
     refetch: () => {
       void availabilityQuery.refetch();
       void weatherQuery.refetch();

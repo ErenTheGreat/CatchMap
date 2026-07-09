@@ -1,6 +1,5 @@
-import speciesData from '@/data/species.json';
 import { FishingSpot } from '@/lib/supabase';
-import { calculateDistance, getCurrentMonth, getRegionFromCoordinates, Region } from '@/utils/geo';
+import { calculateDistance } from '@/utils/geo';
 
 export interface NearbySpot extends FishingSpot {
   distance: number;
@@ -10,6 +9,8 @@ export interface NearbySpot extends FishingSpot {
   avgDepthFeet?: number;
   underwaterStructure?: string[];
   bestSeason?: string;
+  /** Distinguishes water bodies from access infrastructure on the map. */
+  poiType?: 'water' | 'access_ramp' | 'marina';
 }
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
@@ -37,7 +38,7 @@ function getElementCoords(element: OverpassElement): { lat: number; lon: number 
   return null;
 }
 
-function getSpotName(tags: Record<string, string>): string {
+export function getSpotName(tags: Record<string, string>): string {
   if (tags.name) return tags.name;
   if (tags['name:en']) return tags['name:en'];
   if (tags.operator) return tags.operator;
@@ -48,7 +49,7 @@ function getSpotName(tags: Record<string, string>): string {
   return 'Fishing Spot';
 }
 
-function inferWaterType(tags: Record<string, string>): string {
+export function inferWaterType(tags: Record<string, string>): string {
   if (tags.water === 'pond' || tags.natural === 'pond') return 'pond';
   if (tags.water === 'lake' || (tags.natural === 'water' && !tags.waterway)) return 'lake';
   if (tags.waterway === 'stream' || tags.natural === 'stream') return 'stream';
@@ -58,45 +59,13 @@ function inferWaterType(tags: Record<string, string>): string {
   return 'lake';
 }
 
-function inferFacilities(tags: Record<string, string>): string[] {
+export function inferFacilities(tags: Record<string, string>): string[] {
   const facilities: string[] = [];
   if (tags['man_made'] === 'pier') facilities.push('pier');
   if (tags.leisure === 'slipway' || tags['boat:launch'] === 'yes') facilities.push('boat_launch');
   if (tags.parking === 'yes' || tags['parking:lane'] === 'yes') facilities.push('parking');
   if (tags.toilets === 'yes' || tags.amenity === 'toilets') facilities.push('restrooms');
   return facilities;
-}
-
-function getSpeciesForSpot(lat: number, lon: number, waterType: string): {
-  speciesIds: string[];
-  matchedNames: string[];
-  isPeakSeason: boolean;
-} {
-  const currentMonth = getCurrentMonth();
-  const regions = getRegionFromCoordinates(lat, lon);
-
-  const matching = speciesData
-    .filter((species) => {
-      const regionMatch = species.regions.some((region) => regions.includes(region as Region));
-      const waterMatch = species.waterTypes.includes(waterType);
-      return regionMatch && (waterMatch || waterType === 'lake');
-    })
-    .sort((a, b) => {
-      const aPeak = a.peakMonths.includes(currentMonth) ? 1 : 0;
-      const bPeak = b.peakMonths.includes(currentMonth) ? 1 : 0;
-      return bPeak - aPeak;
-    })
-    .slice(0, 5);
-
-  const speciesIds = matching.map((species) => species.id);
-  const matchedNames = matching
-    .filter((species) => species.bestMonths.includes(currentMonth))
-    .map((species) => species.name)
-    .slice(0, 3);
-
-  const isPeakSeason = matching.some((species) => species.peakMonths.includes(currentMonth));
-
-  return { speciesIds, matchedNames, isPeakSeason };
 }
 
 function buildOverpassQuery(latitude: number, longitude: number, radiusMeters: number): string {
@@ -137,11 +106,15 @@ export async function getOsmFishingSpots(
     });
 
     if (!response.ok) {
-      throw new Error(`Overpass API error: ${response.status}`);
+      const status = response.status;
+      if (status === 429 || status === 504) {
+        console.warn(`OSM fishing spots unavailable (HTTP ${status}), skipping remote fetch`);
+        return [];
+      }
+      throw new Error(`Overpass API error: ${status}`);
     }
 
     const data: OverpassResponse = await response.json();
-    const currentMonth = getCurrentMonth();
     const seen = new Set<string>();
 
     const spots: NearbySpot[] = [];
@@ -159,11 +132,6 @@ export async function getOsmFishingSpots(
 
       const tags = element.tags;
       const waterType = inferWaterType(tags);
-      const { speciesIds, matchedNames, isPeakSeason } = getSpeciesForSpot(
-        coords.lat,
-        coords.lon,
-        waterType
-      );
 
       const spot: NearbySpot = {
         id: `osm-${element.type}-${element.id}`,
@@ -172,23 +140,14 @@ export async function getOsmFishingSpots(
         latitude: coords.lat,
         longitude: coords.lon,
         water_type: waterType,
-        species: speciesIds,
+        species: [],
         facilities: inferFacilities(tags),
-        best_months: speciesData
-          .filter((species) => speciesIds.includes(species.id))
-          .flatMap((species) => species.bestMonths),
+        best_months: [],
         rating: tags['fishing:rating'] ? parseFloat(tags['fishing:rating']) : 4.0,
         created_at: new Date().toISOString(),
         distance: Math.round(distance * 10) / 10,
-        matchedSpecies: matchedNames.length > 0 ? matchedNames : speciesData
-          .filter((species) => speciesIds.includes(species.id))
-          .slice(0, 3)
-          .map((species) => species.name),
-        isPeakSeason: isPeakSeason || [currentMonth].some((month) =>
-          speciesData
-            .filter((species) => speciesIds.includes(species.id))
-            .some((species) => species.peakMonths.includes(month))
-        ),
+        matchedSpecies: [],
+        isPeakSeason: false,
       };
 
       spots.push(spot);
@@ -198,7 +157,12 @@ export async function getOsmFishingSpots(
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 15);
   } catch (error) {
-    console.error('Error fetching OSM fishing spots:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (/429|504|rate.?limit|timeout/i.test(message)) {
+      console.warn('OSM fishing spots unavailable (rate limit/timeout), skipping remote fetch');
+    } else {
+      console.error('Error fetching OSM fishing spots:', error);
+    }
     return [];
   }
 }

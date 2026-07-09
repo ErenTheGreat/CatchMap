@@ -1,7 +1,6 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
@@ -9,12 +8,12 @@ import {
   Linking,
   ScrollView,
 } from 'react-native';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { ChevronLeft, Database, Fish, MapPin, RefreshCw } from 'lucide-react-native';
+import { ChevronLeft, ChevronDown, Database, Fish, MapPin, RefreshCw } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { BOTTOM_SHEET_SNAP_POINTS } from '@/components/map/mapSheetConstants';
+import MapNativeSheet, { type MapNativeSheetHandle } from '@/components/map/MapNativeSheet';
 import { MAP_SIDE_PANEL_WIDTH } from '@/constants/layout';
-import { Skeleton, OfflineBanner } from '@/components/ui';
+import { Skeleton, OfflineBanner, ThemedText } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 import MapSpotDetail from '@/components/map/MapSpotDetail';
@@ -29,10 +28,18 @@ import type { SpotDetails, CatchTimeSlot } from '@/lib/types/spotDetails';
 import type { CategorizedSpotsResponse } from '@/lib/types/categorizedSpots';
 import type { CoordinateSource } from '@/lib/types/mapCoordinates';
 import type { NearbySpot, RecommendedSpecies } from '@/utils/recommendations';
+import { formatSpotSpeciesSubtitle } from '@/utils/spotMetadata';
+import type { RankedDiscoverySpot, SpotDiscoveryScore } from '@/utils/spotDiscoveryScore';
+import type { RecentSpotSnapshot, SavedSpotSnapshot } from '@/lib/types/savedSpot';
 import type { BestTimeNowResult } from '@/utils/bestTimeNow';
 import type { WeatherSnapshot } from '@/lib/api/endpoints/weather';
+import type { TidePrediction } from '@/lib/api/endpoints/tides';
 import type { CatchInsights, PersonalSpeciesNear } from '@/lib/types/catchInsights';
+import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
+import type { CatchRecord } from '@/utils/storage';
 import type { RegulationNotice } from '@/lib/types/fishingRegulations';
+import type { CommunityCatchSummary } from '@/utils/communityCatchIntel';
+import type { WaypointRecord } from '@/lib/types/waypoint';
 import { useOfflineMap } from '@/hooks/useOfflineMap';
 
 type OfflineMapHandle = ReturnType<typeof useOfflineMap>;
@@ -66,6 +73,11 @@ export interface MapBottomSheetProps {
   onSheetIndexChange?: (index: number) => void;
   bestTime: BestTimeNowResult;
   weather?: WeatherSnapshot | null;
+  tides?: TidePrediction[] | null;
+  /** Weather at the selected spot (or map center when no spot is selected). */
+  fishingWeather?: WeatherSnapshot | null;
+  /** Tides at the selected spot (or map center when no spot is selected). */
+  fishingTides?: TidePrediction[] | null;
   recommendations: RecommendedSpecies[];
   categorizedSpots: CategorizedSpotsResponse;
   discoveryStatus: DiscoveryDashboardStatus;
@@ -84,11 +96,33 @@ export interface MapBottomSheetProps {
   onRetryPredictions?: () => void;
   onRetryCatchTimes?: () => void;
   insights?: CatchInsights;
+  fingerprint?: PersonalBiteFingerprint;
   onViewInsights?: () => void;
   areaRegulationNotices?: RegulationNotice[];
+  scoresBySpotId?: Record<string, SpotDiscoveryScore>;
+  topDiscoverySpots?: RankedDiscoverySpot[];
+  discoveryScoring?: boolean;
+  discoveryEnriching?: boolean;
+  onGoToBestSpot?: (spot: NearbySpot) => void;
+  onPlanTrip?: () => void;
+  savedSpots?: SavedSpotSnapshot[];
+  recentSpots?: RecentSpotSnapshot[];
+  isSpotSaved?: (spotId: string) => boolean;
+  onToggleSpotSaved?: (spot: NearbySpot) => void;
+  onSavedSpotPress?: (snapshot: SavedSpotSnapshot) => void;
+  /** Height of the floating map header so the sheet stops below the search bar. */
+  headerInset?: number;
   /** Side panel mode for tablet/web — replaces the bottom sheet. */
   panelMode?: boolean;
   panelWidth?: number;
+  communityCatchSummary?: CommunityCatchSummary;
+  communityCatchLoading?: boolean;
+  communityCatchError?: boolean;
+  onCommunityCatchRetry?: () => void;
+  waypoints?: WaypointRecord[];
+  onWaypointPress?: (waypoint: WaypointRecord) => void;
+  onDeleteWaypoint?: (waypointId: string) => void;
+  catches?: CatchRecord[];
 }
 
 const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
@@ -118,6 +152,9 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
       onSheetIndexChange,
       bestTime,
       weather,
+      tides,
+      fishingWeather,
+      fishingTides,
       recommendations,
       categorizedSpots,
       discoveryStatus,
@@ -134,16 +171,37 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
       onRetryPredictions,
       onRetryCatchTimes,
       insights,
+      fingerprint,
       onViewInsights,
       areaRegulationNotices = [],
+      scoresBySpotId = {},
+      topDiscoverySpots = [],
+      discoveryScoring = false,
+      discoveryEnriching = false,
+      onGoToBestSpot,
+      onPlanTrip,
+      savedSpots = [],
+      recentSpots = [],
+      isSpotSaved,
+      onToggleSpotSaved,
+      onSavedSpotPress,
+      headerInset = 0,
       panelMode = false,
       panelWidth = MAP_SIDE_PANEL_WIDTH,
+      communityCatchSummary,
+      communityCatchLoading = false,
+      communityCatchError = false,
+      onCommunityCatchRetry,
+      waypoints = [],
+      onWaypointPress,
+      onDeleteWaypoint,
+      catches = [],
     },
     ref
   ) => {
     const { colors } = useTheme();
     const styles = useThemedStyles(createStyles);
-    const bottomSheetRef = useRef<BottomSheet>(null);
+    const bottomSheetRef = useRef<MapNativeSheetHandle>(null);
     const snapPoints = useMemo(() => [...BOTTOM_SHEET_SNAP_POINTS], []);
     const [sheetIndex, setSheetIndex] = useState(0);
 
@@ -188,13 +246,30 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
       [onSheetIndexChange]
     );
 
+    const spotWeather = fishingWeather ?? weather ?? null;
+    const spotTides = fishingTides ?? tides ?? null;
+
+    const handleCollapseSheet = useCallback(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+    }, []);
+
+    useEffect(() => {
+      if (panelMode || !selectedSpot) return;
+      bottomSheetRef.current?.snapToIndex(2);
+      // Expand when the selected spot id changes — not on every snapshot refresh.
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- id is the meaningful trigger
+    }, [panelMode, selectedSpot?.id]);
+
+    const showFullFishingIntel = panelMode || sheetIndex >= 2;
     const showSpotDetail = panelMode
       ? selectedSpot != null
       : selectedSpot != null && sheetIndex >= 1;
     const showDiscovery = panelMode
       ? selectedSpot == null
       : selectedSpot == null && sheetIndex >= 1;
-    const showExtras = panelMode ? true : sheetIndex >= 2;
+    const showExtras = panelMode
+      ? selectedSpot == null
+      : sheetIndex >= 2 && selectedSpot == null;
     const showCategoryPreview =
       !panelMode &&
       selectedSpot == null &&
@@ -215,31 +290,56 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
             />
           ) : null}
 
-          <View style={styles.peekHeader}>
+          {!(showSpotDetail && selectedSpot) ? (
+          <View style={[styles.peekHeader, showDiscovery && styles.peekHeaderCompact]}>
+            {showDiscovery ? (
+              <View style={styles.expandedPeekRow}>
+                <View style={styles.expandedPeekText}>
+                  <ThemedText style={styles.peekTitle}>
+                    {selectedSpot ? selectedSpot.name : 'Waters in View'}
+                  </ThemedText>
+                  <ThemedText style={styles.peekSubtitle}>
+                    Drag handle down or tap Show map
+                  </ThemedText>
+                </View>
+                {!panelMode ? (
+                  <Pressable
+                    style={styles.showMapButton}
+                    onPress={handleCollapseSheet}
+                    accessibilityRole="button"
+                    accessibilityLabel="Show map"
+                  >
+                    <ChevronDown color={colors.accent} size={16} />
+                    <ThemedText style={styles.showMapText}>Show map</ThemedText>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : (
+              <>
             <View style={styles.badgeRow}>
               <Database color={colors.brandAccent} size={14} />
-              <Text style={styles.badgeText}>Live Database</Text>
+              <ThemedText style={styles.badgeText}>Live Database</ThemedText>
               {speciesFetching && !speciesLoading && (
                 <ActivityIndicator color={colors.textMuted} size="small" />
               )}
             </View>
-            <Text style={styles.peekTitle}>
+            <ThemedText style={styles.peekTitle}>
               {selectedSpot ? selectedSpot.name : discoverySummary}
-            </Text>
-            <Text style={styles.peekSubtitle}>
+            </ThemedText>
+            <ThemedText style={styles.peekSubtitle}>
               {selectedSpot
-                ? `${formatSpotSubtitle(selectedSpot)}${panelMode ? '' : ' · Swipe up for more'}`
+                ? `${formatSpotSubtitle(selectedSpot)} · ${bestTime.label} now · Swipe up for details`
                 : subtitle}
-            </Text>
+            </ThemedText>
 
             {!selectedSpot && !speciesLoading && species.length > 0 && (
               <View style={styles.peekRow}>
                 {species.slice(0, 3).map((item) => (
                   <View key={item.id} style={styles.peekChip}>
                     <Fish color={colors.brandAccent} size={12} />
-                    <Text style={styles.peekChipText} numberOfLines={1}>
+                    <ThemedText style={styles.peekChipText} numberOfLines={1}>
                       {item.name}
-                    </Text>
+                    </ThemedText>
                   </View>
                 ))}
               </View>
@@ -248,7 +348,7 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
             {!selectedSpot && speciesLoading && (
               <View style={styles.loadingSpecies}>
                 <ActivityIndicator color={colors.accent} size="small" />
-                <Text style={styles.loadingSpeciesText}>Loading nearby species…</Text>
+                <ThemedText style={styles.loadingSpeciesText}>Loading nearby species…</ThemedText>
                 <View style={styles.peekSkeletonRow}>
                   <Skeleton width={100} height={24} borderRadius={BorderRadius.full} />
                   <Skeleton width={120} height={24} borderRadius={BorderRadius.full} />
@@ -259,16 +359,16 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
             {!selectedSpot && permissionDenied && (
               <View style={styles.notice}>
                 <MapPin color={colors.textSecondary} size={14} />
-                <Text style={styles.noticeText}>
+                <ThemedText style={styles.noticeText}>
                   Location off — showing default area
-                </Text>
+                </ThemedText>
                 <Pressable
                   style={styles.settingsButton}
                   onPress={() => Linking.openSettings()}
                   accessibilityRole="button"
                   accessibilityLabel="Open settings to enable location"
                 >
-                  <Text style={styles.settingsButtonText}>Open Settings</Text>
+                  <ThemedText style={styles.settingsButtonText}>Open Settings</ThemedText>
                 </Pressable>
               </View>
             )}
@@ -281,35 +381,40 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
                 accessibilityLabel="Retry loading species"
               >
                 <RefreshCw color={colors.accentForeground} size={14} />
-                <Text style={styles.retryText}>Retry when online</Text>
+                <ThemedText style={styles.retryText}>Retry when online</ThemedText>
               </Pressable>
             ) : null}
 
             {!selectedSpot && !speciesLoading && species.length === 0 && !isOffline && (
               <View style={styles.emptySpecies}>
                 <Fish color={colors.textMuted} size={20} />
-                <Text style={styles.emptySpeciesText}>
+                <ThemedText style={styles.emptySpeciesText}>
                   No documented species in this area yet. Explore new waters to enrich the catalog.
-                </Text>
+                </ThemedText>
               </View>
-            )}
-
-            {!selectedSpot && areaRegulationNotices.length > 0 && (
-              <AreaRegulationsBanner notices={areaRegulationNotices} />
             )}
 
             {showCategoryPreview && (
               <View style={styles.peekRow}>
                 {categorizedSpots.map((group) => (
                   <View key={group.category} style={styles.peekChip}>
-                    <Text style={styles.peekChipText} numberOfLines={1}>
+                    <ThemedText style={styles.peekChipText} numberOfLines={1}>
                       {group.category} · {group.spots.length}
-                    </Text>
+                    </ThemedText>
                   </View>
                 ))}
               </View>
             )}
+              </>
+            )}
           </View>
+          ) : null}
+
+          {!selectedSpot && areaRegulationNotices.length > 0 && (
+            <View style={styles.regulationBannerWrap}>
+              <AreaRegulationsBanner notices={areaRegulationNotices} />
+            </View>
+          )}
 
           {showSpotDetail && selectedSpot ? (
             <>
@@ -321,11 +426,17 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <ChevronLeft color={colors.accent} size={18} />
-                  <Text style={styles.backRowText}>Back to waters in view</Text>
+                  <ThemedText style={styles.backRowText}>Back to waters in view</ThemedText>
                 </TouchableOpacity>
               ) : null}
               <MapSpotDetail
                 spot={selectedSpot}
+                bestTime={bestTime}
+                showFishingNowCard={showFullFishingIntel}
+                weather={spotWeather}
+                tides={spotTides}
+                isSaved={isSpotSaved?.(selectedSpot.id) ?? false}
+                onToggleSaved={onToggleSpotSaved}
                 spotDetails={spotDetails}
                 spotDetailsLoading={spotDetailsLoading}
                 spotDetailsError={spotDetailsError}
@@ -344,6 +455,12 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
                 personalSpeciesNear={personalSpeciesNear}
                 onRetryPredictions={onRetryPredictions}
                 onRetryCatchTimes={onRetryCatchTimes}
+                communityCatchSummary={communityCatchSummary}
+                communityCatchLoading={communityCatchLoading}
+                communityCatchError={communityCatchError}
+                onCommunityCatchRetry={onCommunityCatchRetry}
+                fingerprint={fingerprint}
+                catches={catches}
               />
             </>
           ) : null}
@@ -355,16 +472,34 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
               onSpotPress={onSpotPress}
               selectedSpotId={selectedSpotId}
               usingCachedDiscovery={usingCachedDiscovery}
+              scoresBySpotId={scoresBySpotId}
+              topSpots={topDiscoverySpots}
+              isScoring={discoveryScoring}
+              isEnriching={discoveryEnriching}
+              isOffline={isOffline}
+              onGoToBestSpot={onGoToBestSpot}
+              onPlanTrip={onPlanTrip}
+              savedSpots={savedSpots}
+              recentSpots={recentSpots}
+              isSpotSaved={isSpotSaved}
+              onToggleSpotSaved={onToggleSpotSaved}
+              onSavedSpotPress={onSavedSpotPress}
+              waypoints={waypoints}
+              onWaypointPress={onWaypointPress}
+              onDeleteWaypoint={onDeleteWaypoint}
+              fingerprint={fingerprint}
+              weather={weather}
             />
           ) : null}
 
           {showExtras ? (
             <MapDashboardContent
               bestTime={bestTime}
-              weather={weather}
+              weather={spotWeather}
               recommendations={recommendations}
               offlineMap={offlineMap}
               insights={insights}
+              fingerprint={fingerprint}
               onViewInsights={onViewInsights}
               onUseRecommendation={onUseRecommendation}
             />
@@ -395,22 +530,20 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
     }
 
     return (
-      <BottomSheet
+      <MapNativeSheet
         ref={bottomSheetRef}
-        index={0}
-        snapPoints={snapPoints}
+        snapPointCount={snapPoints.length}
+        topInset={headerInset}
         onChange={handleSheetChange}
-        enablePanDownToClose={false}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
+        contentContainerStyle={[
+          styles.scrollContent,
+          headerInset > 0 && { paddingTop: Spacing.xs },
+        ]}
       >
-        <BottomSheetScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {sheetBody}
-        </BottomSheetScrollView>
-      </BottomSheet>
+        {sheetBody}
+      </MapNativeSheet>
     );
   }
 );
@@ -418,7 +551,7 @@ const MapBottomSheet = forwardRef<MapBottomSheetHandle, MapBottomSheetProps>(
 MapBottomSheet.displayName = 'MapBottomSheet';
 
 function formatSpotSubtitle(spot: NearbySpot) {
-  return `${spot.matchedSpecies.slice(0, 2).join(', ') || 'Fishing spot'}`;
+  return formatSpotSpeciesSubtitle(spot);
 }
 
 function createStyles(colors: ThemeColors) {
@@ -444,6 +577,35 @@ function createStyles(colors: ThemeColors) {
     paddingBottom: Spacing.xl,
   },
   peekHeader: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
+  peekHeaderCompact: {
+    paddingBottom: Spacing.xs,
+  },
+  expandedPeekRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  expandedPeekText: {
+    flex: 1,
+  },
+  showMapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.accentDark,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+  },
+  showMapText: {
+    color: colors.accent,
+    fontSize: FontSizes.xs,
+    fontWeight: FontWeights.semibold,
+  },
+  regulationBannerWrap: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
   },

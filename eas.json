@@ -1,0 +1,66 @@
+{
+  "cli": {
+    "version": ">= 20.5.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_ENABLE_CLOUD_SYNC": "true",
+        "EXPO_PUBLIC_ENABLE_SPECIES_ID": "true",
+        "EXPO_PUBLIC_ENABLE_CATCH_COACH": "true",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwend2bHBxZHpqanNkbG5tZmdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjQxMTYsImV4cCI6MjA5ODg0MDExNn0.5d11UBB_mH6YauMJt0DN7djhRpsZtznZ8JxWAlFJs8Y",
+        "EXPO_PUBLIC_PRIVACY_POLICY_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy",
+        "EXPO_PUBLIC_TERMS_OF_SERVICE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/terms-of-service",
+        "EXPO_PUBLIC_FEEDBACK_EMAIL": "support@catchmap.app"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_ENABLE_CLOUD_SYNC": "true",
+        "EXPO_PUBLIC_ENABLE_SPECIES_ID": "true",
+        "EXPO_PUBLIC_ENABLE_CATCH_COACH": "true",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwend2bHBxZHpqanNkbG5tZmdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjQxMTYsImV4cCI6MjA5ODg0MDExNn0.5d11UBB_mH6YauMJt0DN7djhRpsZtznZ8JxWAlFJs8Y",
+        "EXPO_PUBLIC_PRIVACY_POLICY_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy",
+        "EXPO_PUBLIC_TERMS_OF_SERVICE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/terms-of-service",
+        "EXPO_PUBLIC_FEEDBACK_EMAIL": "support@catchmap.app"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_ENABLE_CLOUD_SYNC": "true",
+        "EXPO_PUBLIC_ENABLE_SPECIES_ID": "true",
+        "EXPO_PUBLIC_ENABLE_CATCH_COACH": "true",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwend2bHBxZHpqanNkbG5tZmdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjQxMTYsImV4cCI6MjA5ODg0MDExNn0.5d11UBB_mH6YauMJt0DN7djhRpsZtznZ8JxWAlFJs8Y",
+        "EXPO_PUBLIC_PRIVACY_POLICY_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy",
+        "EXPO_PUBLIC_TERMS_OF_SERVICE_URL": "https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/terms-of-service",
+        "EXPO_PUBLIC_FEEDBACK_EMAIL": "support@catchmap.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal"
+      }
+    },
+    "beta": {
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
+}

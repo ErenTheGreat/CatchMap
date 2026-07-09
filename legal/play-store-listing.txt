@@ -1,0 +1,89 @@
+CatchMap: Fishing Spots & Log — Play Store listing (beta)
+============================================================
+
+ANDROID PACKAGE ID (this build)
+---------------------------------
+com.anonymous.boltexponativewind
+(Create the Play Console app with this exact package ID for the current EAS build.)
+
+PRIVACY POLICY (live)
+---------------------
+https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy
+
+SHORT DESCRIPTION (max 80 characters)
+-------------------------------------
+Find fishing spots, check conditions, and log your catches on the map.
+
+FULL DESCRIPTION
+----------------
+CatchMap helps you plan better fishing trips and keep a personal catch log — all in one app.
+
+DISCOVER SPOTS ON THE MAP
+• Explore lakes, rivers, bays, and coastal waters near you
+• Search by name and pan the map to browse new areas
+• See species predictions, weather, and tide context for your location
+• View what's working nearby — anonymized angler catches, species, and top lures
+
+LOG EVERY CATCH
+• Record species, weight, length, lure, notes, and photos
+• Capture the date and conditions at the moment you landed the fish
+• Review your history with search, filters, and personal-best highlights
+• Opt in to share catches anonymously and help nearby anglers (no name or exact GPS)
+
+BUILT FOR ANGLERS
+• Clean, fast interface with light and dark themes
+• Fahrenheit/Celsius and lb/kg unit preferences
+• Export your catch log as JSON or CSV
+• Privacy-first local intel — smarter spots without selling your secret hole
+
+BETA NOTES
+This is an early beta. Catch logs are stored on your device by default; sign in to back up
+your log and optionally contribute anonymized catch intel. We’d love your feedback — tap Settings → Send feedback to report bugs or suggest features.
+
+Privacy policy: https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy
+
+DATA SAFETY (Play Console questionnaire)
+----------------------------------------
+Location — Collected, optional, app functionality, not shared
+Photos — Collected, optional, app functionality, stored on device, not shared
+Personal info (email) — Optional, only if user submits beta feedback
+Data encrypted in transit — Yes (HTTPS)
+Users can request deletion — Yes (delete catches in app; uninstall removes local data)
+Committed to Play Families Policy — Yes (if targeting general audience)
+
+CONTENT RATING
+--------------
+Likely: Everyone or Everyone 10+ (no violence, gambling, or mature content)
+Category: Sports or Maps & Navigation
+
+SCREENSHOTS NEEDED
+------------------
+Take 4–6 phone screenshots showing:
+1. Map with fishing spots
+2. Spot detail / species panel
+3. Log catch form
+4. Catch history
+5. Settings (optional)
+
+FEATURE GRAPHIC (1024 x 500)
+-----------------------------
+Optional banner for store page — navy background + white hook/fish mark matching app icon.
+
+BUILD & SUBMIT COMMANDS
+-----------------------
+1. Set EAS env vars (production):
+   EXPO_PUBLIC_SUPABASE_URL
+   EXPO_PUBLIC_SUPABASE_ANON_KEY
+   EXPO_PUBLIC_ENABLE_CLOUD_SYNC=false
+   EXPO_PUBLIC_PRIVACY_POLICY_URL=https://YOUR-HOST/privacy-policy.html
+   EXPO_PUBLIC_FEEDBACK_EMAIL=support@catchmap.app  (optional fallback)
+
+2. eas build --platform android --profile production
+
+3. eas submit --platform android --profile production
+
+4. Play Console → Internal testing → add testers → share opt-in link
+
+VIEW BETA FEEDBACK
+------------------
+Supabase dashboard → Table Editor → app_feedback

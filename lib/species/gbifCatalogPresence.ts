@@ -7,10 +7,13 @@ import {
   getCachedPresenceNearPoint,
   setCachedPresenceNearPoint,
 } from '@/lib/species/gbifPresenceCache';
+import { fetchEnrichRegion } from '@/lib/api/endpoints/enrichRegion';
+import { isCloudSyncEnabled } from '@/constants/features';
 
 /**
  * GBIF occurrences near a point, matched against the app catalog downstream.
- * Uses one bbox occurrence search (orderKey Perciformes) instead of per-species fan-out.
+ * When signed in, triggers server-side enrich-region first so Postgres-backed
+ * species_near_point results stay in sync with the tile cache.
  */
 export async function fetchCatalogSpeciesPresenceNearPoint(
   latitude: number,
@@ -21,6 +24,10 @@ export async function fetchCatalogSpeciesPresenceNearPoint(
   const cached = await getCachedPresenceNearPoint(latitude, longitude, radiusKm);
   if (cached !== undefined) {
     return cached;
+  }
+
+  if (isCloudSyncEnabled()) {
+    await fetchEnrichRegion({ latitude, longitude, radiusKm }, signal);
   }
 
   const bbox = bboxAroundPoint(latitude, longitude, radiusKm);

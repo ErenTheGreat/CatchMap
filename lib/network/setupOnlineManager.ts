@@ -1,26 +1,19 @@
-import NetInfo from '@react-native-community/netinfo';
 import { onlineManager } from '@tanstack/react-query';
+import { getSafeNetInfo } from '@/lib/network/safeNetInfo';
+import { resolveIsOnline } from '@/lib/network/resolveIsOnline';
 
 let initialized = false;
-
-function resolveIsOnline(state: {
-  isConnected: boolean | null;
-  isInternetReachable?: boolean | null;
-}): boolean {
-  if (state.isConnected !== true) return false;
-  if (state.isInternetReachable === false) return false;
-  return true;
-}
 
 export function setupOnlineManager(): void {
   if (initialized) return;
   initialized = true;
 
+  const netInfo = getSafeNetInfo();
   onlineManager.setEventListener((setOnline) => {
-    return NetInfo.addEventListener((state) => {
+    return netInfo.addEventListener((state) => {
       setOnline(resolveIsOnline(state));
     });
   });
 }
 
-export { resolveIsOnline };
+export { resolveIsOnline } from '@/lib/network/resolveIsOnline';

@@ -1,0 +1,8 @@
+{
+  "source": "data/us/gulf_coast_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/gulf_coast",
+  "rows": 5943,
+  "batches": 12,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T10:40:48.616Z"
+}

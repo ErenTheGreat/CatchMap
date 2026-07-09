@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { VECTOR_STYLE_URL } from '@/components/map/types';
+import { getVectorStyleUrl } from '@/components/map/types';
 
 /**
  * Offline vector tile packs via MapLibre's OfflineManager.
@@ -19,8 +19,14 @@ export interface OfflineRegionStatus {
 
 export type OfflineProgressCallback = (status: OfflineRegionStatus) => void;
 
+interface OfflinePack {
+  id: string;
+  metadata?: { name?: string };
+  status?: () => Promise<OfflineRegionStatus>;
+}
+
 interface OfflineManagerType {
-  getPacks(): Promise<Array<{ id: string; metadata?: { name?: string } }>>;
+  getPacks(): Promise<OfflinePack[]>;
   createPack(
     options: {
       mapStyle: string;
@@ -72,7 +78,7 @@ export async function getOfflineRegionStatus(): Promise<OfflineRegionStatus | nu
   if (!manager) return null;
 
   const pack = await findExistingPack(manager);
-  if (!pack) return null;
+  if (!pack?.status) return null;
 
   const status = await pack.status();
   return {
@@ -87,7 +93,8 @@ export async function downloadOfflineRegion(
   longitude: number,
   radiusMiles: number,
   onProgress: OfflineProgressCallback,
-  onError: (message: string) => void
+  onError: (message: string) => void,
+  isDark = false
 ): Promise<void> {
   const manager = getOfflineManager();
   if (!manager) {
@@ -103,7 +110,7 @@ export async function downloadOfflineRegion(
 
   await manager.createPack(
     {
-      mapStyle: VECTOR_STYLE_URL,
+      mapStyle: getVectorStyleUrl(isDark),
       bounds: boundsAround(latitude, longitude, radiusMiles),
       minZoom: 8,
       maxZoom: 14,

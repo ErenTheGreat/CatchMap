@@ -33,3 +33,31 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# editor / local tooling
+.cursor/
+.bolt/
+
+# local import / MCP / batch scratch (not part of the app)
+.import/
+.batch_*
+.mcp*
+.mcp_*
+.exec_*
+.query_*
+.sql_batch_*
+.deploy-*
+.enrich-*
+.current_query.sql
+_batch_*
+_exec_*
+_import_*
+_invoke_*
+_mcp_*
+_next_mcp*
+_q_*
+_q0*
+supabase/.exec_*
+supabase/.mcp_*
+supabase/.query_*
+supabase/.sql_*

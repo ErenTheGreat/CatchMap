@@ -1,0 +1,290 @@
+[
+  {
+    "idx": 0,
+    "round": 0,
+    "slot": 0,
+    "file": "batch_010_chunk_01.sql",
+    "args_file": "_round0_q0.json",
+    "bytes": 18743
+  },
+  {
+    "idx": 1,
+    "round": 0,
+    "slot": 1,
+    "file": "batch_010_chunk_02.sql",
+    "args_file": "_round0_q1.json",
+    "bytes": 18671
+  },
+  {
+    "idx": 2,
+    "round": 0,
+    "slot": 2,
+    "file": "batch_010_chunk_03.sql",
+    "args_file": "_round0_q2.json",
+    "bytes": 18816
+  },
+  {
+    "idx": 3,
+    "round": 0,
+    "slot": 3,
+    "file": "batch_010_chunk_04.sql",
+    "args_file": "_round0_q3.json",
+    "bytes": 18962
+  },
+  {
+    "idx": 4,
+    "round": 1,
+    "slot": 0,
+    "file": "batch_011_chunk_01.sql",
+    "args_file": "_round1_q0.json",
+    "bytes": 18815
+  },
+  {
+    "idx": 5,
+    "round": 1,
+    "slot": 1,
+    "file": "batch_011_chunk_02.sql",
+    "args_file": "_round1_q1.json",
+    "bytes": 18749
+  },
+  {
+    "idx": 6,
+    "round": 1,
+    "slot": 2,
+    "file": "batch_011_chunk_03.sql",
+    "args_file": "_round1_q2.json",
+    "bytes": 18708
+  },
+  {
+    "idx": 7,
+    "round": 1,
+    "slot": 3,
+    "file": "batch_011_chunk_04.sql",
+    "args_file": "_round1_q3.json",
+    "bytes": 18868
+  },
+  {
+    "idx": 8,
+    "round": 2,
+    "slot": 0,
+    "file": "batch_012_chunk_01.sql",
+    "args_file": "_round2_q0.json",
+    "bytes": 18816
+  },
+  {
+    "idx": 9,
+    "round": 2,
+    "slot": 1,
+    "file": "batch_012_chunk_02.sql",
+    "args_file": "_round2_q1.json",
+    "bytes": 18791
+  },
+  {
+    "idx": 10,
+    "round": 2,
+    "slot": 2,
+    "file": "batch_012_chunk_03.sql",
+    "args_file": "_round2_q2.json",
+    "bytes": 19212
+  },
+  {
+    "idx": 11,
+    "round": 2,
+    "slot": 3,
+    "file": "batch_012_chunk_04.sql",
+    "args_file": "_round2_q3.json",
+    "bytes": 18845
+  },
+  {
+    "idx": 12,
+    "round": 3,
+    "slot": 0,
+    "file": "batch_013_chunk_01.sql",
+    "args_file": "_round3_q0.json",
+    "bytes": 19138
+  },
+  {
+    "idx": 13,
+    "round": 3,
+    "slot": 1,
+    "file": "batch_013_chunk_02.sql",
+    "args_file": "_round3_q1.json",
+    "bytes": 18805
+  },
+  {
+    "idx": 14,
+    "round": 3,
+    "slot": 2,
+    "file": "batch_013_chunk_03.sql",
+    "args_file": "_round3_q2.json",
+    "bytes": 18808
+  },
+  {
+    "idx": 15,
+    "round": 3,
+    "slot": 3,
+    "file": "batch_013_chunk_04.sql",
+    "args_file": "_round3_q3.json",
+    "bytes": 19222
+  },
+  {
+    "idx": 16,
+    "round": 4,
+    "slot": 0,
+    "file": "batch_014_chunk_01.sql",
+    "args_file": "_round4_q0.json",
+    "bytes": 18973
+  },
+  {
+    "idx": 17,
+    "round": 4,
+    "slot": 1,
+    "file": "batch_014_chunk_02.sql",
+    "args_file": "_round4_q1.json",
+    "bytes": 19054
+  },
+  {
+    "idx": 18,
+    "round": 4,
+    "slot": 2,
+    "file": "batch_014_chunk_03.sql",
+    "args_file": "_round4_q2.json",
+    "bytes": 18909
+  },
+  {
+    "idx": 19,
+    "round": 4,
+    "slot": 3,
+    "file": "batch_014_chunk_04.sql",
+    "args_file": "_round4_q3.json",
+    "bytes": 18774
+  },
+  {
+    "idx": 20,
+    "round": 5,
+    "slot": 0,
+    "file": "batch_015_chunk_01.sql",
+    "args_file": "_round5_q0.json",
+    "bytes": 18966
+  },
+  {
+    "idx": 21,
+    "round": 5,
+    "slot": 1,
+    "file": "batch_015_chunk_02.sql",
+    "args_file": "_round5_q1.json",
+    "bytes": 18787
+  },
+  {
+    "idx": 22,
+    "round": 5,
+    "slot": 2,
+    "file": "batch_015_chunk_03.sql",
+    "args_file": "_round5_q2.json",
+    "bytes": 18980
+  },
+  {
+    "idx": 23,
+    "round": 5,
+    "slot": 3,
+    "file": "batch_015_chunk_04.sql",
+    "args_file": "_round5_q3.json",
+    "bytes": 18980
+  },
+  {
+    "idx": 24,
+    "round": 6,
+    "slot": 0,
+    "file": "batch_016_chunk_01.sql",
+    "args_file": "_round6_q0.json",
+    "bytes": 18839
+  },
+  {
+    "idx": 25,
+    "round": 6,
+    "slot": 1,
+    "file": "batch_016_chunk_02.sql",
+    "args_file": "_round6_q1.json",
+    "bytes": 19069
+  },
+  {
+    "idx": 26,
+    "round": 6,
+    "slot": 2,
+    "file": "batch_016_chunk_03.sql",
+    "args_file": "_round6_q2.json",
+    "bytes": 19044
+  },
+  {
+    "idx": 27,
+    "round": 6,
+    "slot": 3,
+    "file": "batch_016_chunk_04.sql",
+    "args_file": "_round6_q3.json",
+    "bytes": 18952
+  },
+  {
+    "idx": 28,
+    "round": 7,
+    "slot": 0,
+    "file": "batch_017_chunk_01.sql",
+    "args_file": "_round7_q0.json",
+    "bytes": 18914
+  },
+  {
+    "idx": 29,
+    "round": 7,
+    "slot": 1,
+    "file": "batch_017_chunk_02.sql",
+    "args_file": "_round7_q1.json",
+    "bytes": 19013
+  },
+  {
+    "idx": 30,
+    "round": 7,
+    "slot": 2,
+    "file": "batch_017_chunk_03.sql",
+    "args_file": "_round7_q2.json",
+    "bytes": 18977
+  },
+  {
+    "idx": 31,
+    "round": 7,
+    "slot": 3,
+    "file": "batch_017_chunk_04.sql",
+    "args_file": "_round7_q3.json",
+    "bytes": 19124
+  },
+  {
+    "idx": 32,
+    "round": 8,
+    "slot": 0,
+    "file": "batch_018_chunk_01.sql",
+    "args_file": "_round8_q0.json",
+    "bytes": 19024
+  },
+  {
+    "idx": 33,
+    "round": 8,
+    "slot": 1,
+    "file": "batch_018_chunk_02.sql",
+    "args_file": "_round8_q1.json",
+    "bytes": 18812
+  },
+  {
+    "idx": 34,
+    "round": 8,
+    "slot": 2,
+    "file": "batch_018_chunk_03.sql",
+    "args_file": "_round8_q2.json",
+    "bytes": 19022
+  },
+  {
+    "idx": 35,
+    "round": 8,
+    "slot": 3,
+    "file": "batch_018_chunk_04.sql",
+    "args_file": "_round8_q3.json",
+    "bytes": 19187
+  }
+]

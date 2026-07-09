@@ -6,10 +6,7 @@ import {
 } from '@/lib/api/endpoints/bundledSpeciesAvailability';
 import { fetchCatalogSpeciesPresenceNearPoint } from '@/lib/species/gbifCatalogPresence';
 import { getCachedPresenceNearPoint } from '@/lib/species/gbifPresenceCache';
-import { matchGbifOccurrencesToCatalog } from '@/lib/species/matchGbifToCatalog';
-import {
-  fetchOfflineCategorySpeciesForSpot,
-} from '@/lib/species/offlineCategorySpecies';
+import { matchGbifOccurrences, buildGbifSpeciesList } from '@/lib/species/matchGbifToCatalog';
 import { spotLikelyNeedsGbifLookup } from '@/lib/species/spotGbifLookup';
 import type {
   AvailableSpecies,
@@ -28,6 +25,28 @@ function toNumberOrNull(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+const VERIFIED_SPECIES_SOURCES = new Set<SpeciesSource>([
+  'location',
+  'bundled',
+  'presence',
+  'gbif',
+  'gbif_discovered',
+]);
+
+export function isVerifiedSpeciesSource(source?: SpeciesSource): boolean {
+  return source != null && VERIFIED_SPECIES_SOURCES.has(source);
+}
+
+export function filterVerifiedAvailabilityRows(
+  rows: SpeciesAvailabilityRow[]
+): SpeciesAvailabilityRow[] {
+  return rows.filter((row) => isVerifiedSpeciesSource(row.source ?? 'presence'));
+}
+
+function emptySpeciesResult(): SpeciesAvailabilityResult {
+  return { species: [], spotContext: null };
+}
+
 function confidenceForSource(source?: SpeciesSource): DataConfidence {
   switch (source) {
     case 'location':
@@ -36,6 +55,7 @@ function confidenceForSource(source?: SpeciesSource): DataConfidence {
     case 'gbif':
     case 'presence':
       return 'medium';
+    case 'gbif_discovered':
     case 'category':
     default:
       return 'low';
@@ -87,6 +107,25 @@ function mapAvailabilityRow(row: SpeciesAvailabilityRow): AvailableSpecies {
     source,
     dataConfidence: confidenceForSource(source),
   };
+}
+
+/** Collapse duplicate species rows that share an id or display name. */
+export function dedupeAvailableSpecies(species: AvailableSpecies[]): AvailableSpecies[] {
+  const seenIds = new Set<string>();
+  const seenNames = new Set<string>();
+  const deduped: AvailableSpecies[] = [];
+
+  for (const item of species) {
+    const nameKey = item.name.trim().toLowerCase();
+    if (!nameKey || seenIds.has(item.id) || seenNames.has(nameKey)) {
+      continue;
+    }
+    seenIds.add(item.id);
+    seenNames.add(nameKey);
+    deduped.push(item);
+  }
+
+  return deduped;
 }
 
 /** RPC returns jsonb — a JSON array of row objects (see migration 010). */
@@ -149,6 +188,8 @@ async function rpcGetSpeciesAvailabilityForLocation(
 }
 
 function mapNearPointRow(row: SpeciesNearPointRow): AvailableSpecies {
+  const source: SpeciesSource =
+    row.data_source === 'GBIF' ? 'gbif' : 'presence';
   return {
     id: row.species_id,
     name: row.species_name,
@@ -159,8 +200,8 @@ function mapNearPointRow(row: SpeciesNearPointRow): AvailableSpecies {
     idealTempMax: row.ideal_temp_max,
     monthStart: 1,
     monthEnd: 12,
-    source: 'presence',
-    dataConfidence: 'medium',
+    source,
+    dataConfidence: confidenceForSource(source),
   };
 }
 
@@ -244,7 +285,7 @@ async function fetchGbifSpeciesForSpot(
         radiusKm,
         signal
       );
-      const species = matchGbifOccurrencesToCatalog(occurrences, month);
+      const species = buildGbifSpeciesList(matchGbifOccurrences(occurrences, month));
       if (species.length > 0) {
         return species;
       }
@@ -313,8 +354,7 @@ async function fetchSpeciesAvailabilityOffline(
   latitude: number | null,
   longitude: number | null,
   month: number,
-  spotName?: string | null,
-  waterType?: string | null
+  spotName?: string | null
 ): Promise<SpeciesAvailabilityResult> {
   const bundledSpot = findBundledSpot(locationId);
   if (bundledSpot) {
@@ -326,19 +366,19 @@ async function fetchSpeciesAvailabilityOffline(
       const cached = await getCachedPresenceNearPoint(latitude, longitude, radiusKm);
       if (cached === undefined || cached.length === 0) continue;
 
-      const species = matchGbifOccurrencesToCatalog(cached, month);
+      const species = buildGbifSpeciesList(matchGbifOccurrences(cached, month));
       if (species.length > 0) {
-        return { species, spotContext: freshwaterSpotContext() };
+        return { species: dedupeAvailableSpecies(species), spotContext: freshwaterSpotContext() };
       }
+    }
+
+    const nearPoint = await fetchNearPointFallback(latitude, longitude);
+    if (nearPoint.length > 0) {
+      return { species: dedupeAvailableSpecies(nearPoint), spotContext: null };
     }
   }
 
-  const categoryResult = fetchOfflineCategorySpeciesForSpot(spotName, waterType, month);
-  if (categoryResult.species.length > 0) {
-    return categoryResult;
-  }
-
-  return fetchBundledSpeciesAvailabilityWithContext(locationId, month);
+  return emptySpeciesResult();
 }
 
 export async function fetchSpeciesAvailabilityWithContext(
@@ -357,8 +397,7 @@ export async function fetchSpeciesAvailabilityWithContext(
       latitude,
       longitude,
       month,
-      spotName,
-      waterType
+      spotName
     );
   }
 
@@ -378,19 +417,17 @@ export async function fetchSpeciesAvailabilityWithContext(
         : null;
 
     const rows = await rpcGetSpeciesAvailabilityForLocation(parsedLocationId, month, signal);
+    const verifiedRows = filterVerifiedAvailabilityRows(rows ?? []);
 
-    if (rows && rows.length > 0) {
-      const onlyCategoryFallback = rows.every((row) => row.source === 'category');
-      if (!onlyCategoryFallback) {
-        const spotContext =
-          latitude != null && longitude != null
-            ? inferSpotContextFromSpecies(rows, latitude, longitude)
-            : null;
-        return {
-          species: rows.map(mapAvailabilityRow),
-          spotContext,
-        };
-      }
+    if (verifiedRows.length > 0) {
+      const spotContext =
+        latitude != null && longitude != null
+          ? inferSpotContextFromSpecies(verifiedRows, latitude, longitude)
+          : null;
+      return {
+        species: dedupeAvailableSpecies(verifiedRows.map(mapAvailabilityRow)),
+        spotContext,
+      };
     }
 
     if (latitude != null && longitude != null) {
@@ -398,28 +435,16 @@ export async function fetchSpeciesAvailabilityWithContext(
         ? await gbifPromise
         : await fetchGbifSpeciesForSpot(latitude, longitude, month, spotName, signal);
       if (gbifSpecies.length > 0) {
-        return { species: gbifSpecies, spotContext: freshwaterSpotContext() };
+        return { species: dedupeAvailableSpecies(gbifSpecies), spotContext: freshwaterSpotContext() };
       }
-    }
-
-    if (rows && rows.length > 0) {
-      const spotContext =
-        latitude != null && longitude != null
-          ? inferSpotContextFromSpecies(rows, latitude, longitude)
-          : null;
-      return {
-        species: rows.map(mapAvailabilityRow),
-        spotContext,
-      };
     }
 
     const nearPoint = await fetchNearPointFallback(latitude, longitude, signal);
     if (nearPoint.length > 0) {
-      return { species: nearPoint, spotContext: null };
+      return { species: dedupeAvailableSpecies(nearPoint), spotContext: null };
     }
 
-    const bundledFallback = fetchBundledSpeciesAvailabilityWithContext(locationId, month);
-    return bundledFallback;
+    return emptySpeciesResult();
   }
 
   const nearPoint = await fetchNearPointFallback(latitude, longitude, signal);
@@ -427,7 +452,7 @@ export async function fetchSpeciesAvailabilityWithContext(
     return { species: nearPoint, spotContext: null };
   }
 
-  return fetchBundledSpeciesAvailabilityWithContext(locationId, month);
+  return emptySpeciesResult();
 }
 
 function inferSpotContextFromSpecies(

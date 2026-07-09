@@ -1,0 +1,66 @@
+{
+  "batches_run": [
+    {
+      "batch": "001",
+      "status": "success",
+      "chars": 74019,
+      "note": "logged in _import_log.json"
+    },
+    {
+      "batch": "002",
+      "status": "partial",
+      "chars": 73854,
+      "note": "test row Pit 6 Reservoir confirmed; full batch pending"
+    },
+    {
+      "batch": "003",
+      "status": "pending",
+      "chars": 73503,
+      "payload": "_mcp_live_003.json"
+    },
+    {
+      "batch": "004",
+      "status": "pending",
+      "chars": 73708,
+      "payload": "_mcp_live_004.json"
+    },
+    {
+      "batch": "005",
+      "status": "pending",
+      "chars": 73514,
+      "payload": "_mcp_live_005.json"
+    },
+    {
+      "batch": "006",
+      "status": "pending",
+      "chars": 73941,
+      "payload": "_mcp_live_006.json"
+    },
+    {
+      "batch": "007",
+      "status": "pending",
+      "chars": 74531,
+      "payload": "_mcp_live_007.json"
+    },
+    {
+      "batch": "008",
+      "status": "pending",
+      "chars": 74564,
+      "payload": "_mcp_live_008.json"
+    },
+    {
+      "batch": "009",
+      "status": "pending",
+      "chars": 73996,
+      "payload": "_mcp_live_009.json"
+    }
+  ],
+  "errors": [],
+  "timeouts": [],
+  "locations_count_before": 1060,
+  "locations_count_after": 1429,
+  "mcp_test_inserts": [
+    "batch_002 single-row Pit 6 Reservoir: success"
+  ],
+  "note": "Full 74KB batch payloads prepared at _mcp_live_XXX.json. Run import_batches_mcp.py with SUPABASE_ACCESS_TOKEN or continue CallMcpTool execute_sql per payload."
+}

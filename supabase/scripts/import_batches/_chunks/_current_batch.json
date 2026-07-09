@@ -1,0 +1,26 @@
+[
+  {
+    "index": 0,
+    "name": "batch_010_chunk_01.sql",
+    "path": "/home/hp/Downloads/project-bolt-sb1-ngfk6oqw/project/supabase/scripts/import_batches/_chunks/_mcp_batch/00_batch_010_chunk_01.sql",
+    "bytes": 18743
+  },
+  {
+    "index": 1,
+    "name": "batch_010_chunk_02.sql",
+    "path": "/home/hp/Downloads/project-bolt-sb1-ngfk6oqw/project/supabase/scripts/import_batches/_chunks/_mcp_batch/01_batch_010_chunk_02.sql",
+    "bytes": 18671
+  },
+  {
+    "index": 2,
+    "name": "batch_010_chunk_03.sql",
+    "path": "/home/hp/Downloads/project-bolt-sb1-ngfk6oqw/project/supabase/scripts/import_batches/_chunks/_mcp_batch/02_batch_010_chunk_03.sql",
+    "bytes": 18816
+  },
+  {
+    "index": 3,
+    "name": "batch_010_chunk_04.sql",
+    "path": "/home/hp/Downloads/project-bolt-sb1-ngfk6oqw/project/supabase/scripts/import_batches/_chunks/_mcp_batch/03_batch_010_chunk_04.sql",
+    "bytes": 18962
+  }
+]

@@ -1,8 +1,18 @@
+export { default as AccessibleText } from './AccessibleText';
 export { default as Button } from './Button';
 export { default as TextField } from './TextField';
+export { default as ThemedText } from './ThemedText';
+export { default as SearchField } from './SearchField';
+export { default as SegmentedControl } from './SegmentedControl';
+export type { SegmentedOption } from './SegmentedControl';
+export { default as FadeInView } from './FadeInView';
+export { default as ScalePressable } from './ScalePressable';
+export { default as CollapsibleContent } from './CollapsibleContent';
+export { default as AnimatedChevron } from './AnimatedChevron';
 export { default as LoadingState } from './LoadingState';
 export { default as EmptyState } from './EmptyState';
 export { default as ErrorState } from './ErrorState';
+export { default as AppErrorBoundary } from './AppErrorBoundary';
 export { default as SpeciesPicker } from './SpeciesPicker';
 export { default as Skeleton } from './Skeleton';
 export { default as OfflineBanner } from './OfflineBanner';

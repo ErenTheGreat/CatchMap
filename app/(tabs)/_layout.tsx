@@ -1,22 +1,73 @@
-import { Tabs } from 'expo-router';
-import { MapPin, Fish, BookOpen, History } from 'lucide-react-native';
-import { Colors } from '@/constants/theme';
+import React from 'react';
+import { Tabs, usePathname } from 'expo-router';
+import { MapPin, Fish, BookOpen, History, Sparkles } from 'lucide-react-native';
+import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { PlatformPressable } from '@react-navigation/elements';
+import ResponsiveTabBar from '@/components/navigation/ResponsiveTabBar';
+import { SIDE_TAB_BAR_WIDTH } from '@/constants/layout';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { isCatchAiChatEnabled } from '@/constants/features';
+import { useLogFormGuard } from '@/providers/LogFormGuardProvider';
+import { useTheme } from '@/providers/ThemeProvider';
+
+function GuardedTabBarButton(props: BottomTabBarButtonProps) {
+  const pathname = usePathname();
+  const { isDirty, confirmLeave } = useLogFormGuard();
+  const onLogTab = pathname.includes('/log');
+
+  return (
+    <PlatformPressable
+      {...props}
+      onPress={(event) => {
+        const href = typeof props.href === 'string' ? props.href : '';
+        const navigatingToLog = href.includes('log');
+
+        if (onLogTab && isDirty && !navigatingToLog) {
+          confirmLeave(() => props.onPress?.(event));
+          return;
+        }
+
+        props.onPress?.(event);
+      }}
+    />
+  );
+}
 
 export default function TabLayout() {
+  const { colors } = useTheme();
+  const { useSideTabs } = useResponsiveLayout();
+
   return (
     <Tabs
+      tabBar={(props) => <ResponsiveTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.card,
-          borderTopColor: Colors.border,
-          borderTopWidth: 1,
-          height: 65,
-          paddingBottom: 12,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: Colors.accent,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarButton: useSideTabs
+          ? undefined
+          : (props) => <GuardedTabBarButton {...props} />,
+        sceneStyle: useSideTabs ? { marginLeft: SIDE_TAB_BAR_WIDTH } : undefined,
+        tabBarStyle: useSideTabs
+          ? {
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: SIDE_TAB_BAR_WIDTH,
+              height: '100%',
+              backgroundColor: 'transparent',
+              borderTopWidth: 0,
+              elevation: 0,
+            }
+          : {
+              backgroundColor: colors.card,
+              borderTopColor: colors.border,
+              borderTopWidth: 1,
+              height: 65,
+              paddingBottom: 12,
+              paddingTop: 8,
+            },
+        tabBarActiveTintColor: colors.brandAccent,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',
@@ -55,6 +106,16 @@ export default function TabLayout() {
           title: 'History',
           tabBarIcon: ({ color, size }) => (
             <History color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="assistant"
+        options={{
+          title: 'Catch AI',
+          href: isCatchAiChatEnabled() ? undefined : null,
+          tabBarIcon: ({ color, size }) => (
+            <Sparkles color={color} size={size} />
           ),
         }}
       />

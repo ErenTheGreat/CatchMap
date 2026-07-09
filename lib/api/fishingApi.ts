@@ -17,11 +17,13 @@
 import { fetchCategorizedSpotsInBBox } from '@/lib/api/endpoints/categorizedSpots';
 import { fetchNearbyFishingSpots, FishingSpotsParams } from '@/lib/api/endpoints/fishingSpots';
 import { fetchSpotsInBBox, BBox } from '@/lib/api/endpoints/spatialSpots';
+import { fetchAccessPointsInBBox } from '@/lib/api/endpoints/accessPoints';
 import { fetchSpotDetails } from '@/lib/api/endpoints/spotDetails';
 import { fetchSpeciesAvailability, fetchSpeciesAvailabilityWithContext, fetchCatchActivityNearPoint } from '@/lib/api/endpoints/speciesPrediction';
 import { fetchWeather, WeatherSnapshot } from '@/lib/api/endpoints/weather';
 import { fetchTides, TidesResponse } from '@/lib/api/endpoints/tides';
 import { fetchSpeciesCatalog, SpeciesRecord } from '@/lib/api/endpoints/speciesCatalog';
+import { fetchEnrichRegion, EnrichRegionParams, EnrichRegionResult } from '@/lib/api/endpoints/enrichRegion';
 import {
   getCatches,
   saveCatch,
@@ -34,6 +36,7 @@ import {
   SyncPendingResult,
   SaveCatchInput,
   UpdateCatchInput,
+  type DeleteCatchResult,
 } from '@/utils/storage';
 import { NearbySpot } from '@/utils/osmFishingSpots';
 
@@ -52,6 +55,15 @@ export const fishingApi = {
    */
   getSpotsInBBox(bbox: BBox, signal?: AbortSignal): Promise<NearbySpot[]> {
     return fetchSpotsInBBox(bbox, signal);
+  },
+
+  getAccessPointsInBBox(
+    bbox: BBox,
+    centerLat: number,
+    centerLng: number,
+    signal?: AbortSignal
+  ): Promise<NearbySpot[]> {
+    return fetchAccessPointsInBBox(bbox, centerLat, centerLng, signal);
   },
 
   getSpotDetails(
@@ -117,6 +129,10 @@ export const fishingApi = {
     return fetchSpeciesCatalog(latitude, longitude, signal);
   },
 
+  enrichRegion(params: EnrichRegionParams, signal?: AbortSignal): Promise<EnrichRegionResult | null> {
+    return fetchEnrichRegion(params, signal);
+  },
+
   getCatches(): Promise<CatchRecord[]> {
     return getCatches();
   },
@@ -129,7 +145,7 @@ export const fishingApi = {
     return updateCatch(id, changes);
   },
 
-  deleteCatch(id: string): Promise<void> {
+  deleteCatch(id: string): Promise<DeleteCatchResult> {
     return deleteCatch(id);
   },
 
@@ -142,5 +158,5 @@ export const fishingApi = {
   },
 };
 
-export type { NearbySpot, WeatherSnapshot, TidesResponse, SpeciesRecord, CatchRecord, SaveResult, SyncPendingResult, SaveCatchInput, UpdateCatchInput };
+export type { NearbySpot, WeatherSnapshot, TidesResponse, SpeciesRecord, CatchRecord, SaveResult, SyncPendingResult, SaveCatchInput, UpdateCatchInput, EnrichRegionResult, EnrichRegionParams };
 export type { BBox };

@@ -6,7 +6,7 @@ import React, {
   useState,
   type PropsWithChildren,
 } from 'react';
-import NetInfo from '@react-native-community/netinfo';
+import { getSafeNetInfo } from '@/lib/network/safeNetInfo';
 import { resolveIsOnline, setupOnlineManager } from '@/lib/network/setupOnlineManager';
 
 interface NetworkContextValue {
@@ -29,15 +29,16 @@ export function NetworkProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     setupOnlineManager();
+    const netInfo = getSafeNetInfo();
 
-    void NetInfo.fetch().then((state) => {
+    void netInfo.fetch().then((state) => {
       setNetworkState({
         isConnected: state.isConnected ?? true,
         isInternetReachable: state.isInternetReachable,
       });
     });
 
-    return NetInfo.addEventListener((state) => {
+    return netInfo.addEventListener((state) => {
       setNetworkState({
         isConnected: state.isConnected ?? false,
         isInternetReachable: state.isInternetReachable,

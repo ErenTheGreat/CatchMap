@@ -20,7 +20,7 @@ export async function fetchSpeciesCatalog(
         signal,
       });
     } catch (error) {
-      console.warn('BFF species unavailable, using bundled catalog:', error);
+      if (__DEV__) console.warn('BFF species unavailable, using bundled catalog:', error);
     }
   }
 

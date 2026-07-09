@@ -1,0 +1,45 @@
+{
+  "auditedAt": "2026-07-08T11:23:00.000Z",
+  "total": 48513,
+  "california": 17053,
+  "byRegion": {
+    "great_lakes": 11860,
+    "gulf_coast": 5943,
+    "northeast": 7251,
+    "pacific_nw": 1488,
+    "california": 17053,
+    "intermountain_west": 2081,
+    "rocky_mountain": 1871,
+    "great_plains": 799,
+    "northern_plains": 2379,
+    "southeast_inland": 604
+  },
+  "byCategory": [
+    { "category": "Bay", "water_type": "saltwater", "n": 4 },
+    { "category": "Creek", "water_type": "freshwater", "n": 12870 },
+    { "category": "Lake", "water_type": "freshwater", "n": 29186 }
+  ],
+  "newRegionsImported": {
+    "intermountain_west": { "sourceRows": 1882, "approxInserted": 1877 },
+    "rocky_mountain": { "sourceRows": 1891, "approxInserted": 1600 },
+    "great_plains": { "sourceRows": 803, "approxInserted": 803 },
+    "northern_plains": { "sourceRows": 2386, "approxInserted": 2038 },
+    "southeast_inland": { "sourceRows": 616, "approxInserted": 135 }
+  },
+  "importSources": {
+    "california": "mcp-import-all-pending.js mini-chunks",
+    "great_lakes": "run_import_mcp.js 96/96 chunks",
+    "pacific_nw": "run_import_mcp.js 13/13 chunks",
+    "gulf_coast": "import-json-via-rpc.js (5943 NHD rows)",
+    "northeast": "import-json-via-rpc.js (7257 NHD rows)",
+    "intermountain_west": "import-json-via-rpc.js (1882 NHD rows)",
+    "rocky_mountain": "import-json-via-rpc.js (1891 NHD rows)",
+    "great_plains": "import-json-via-rpc.js (803 NHD rows)",
+    "northern_plains": "import-json-via-rpc.js (2386 NHD rows)",
+    "southeast_inland": "import-json-via-rpc.js (616 NHD rows)"
+  },
+  "mapFlowsVerified": true,
+  "verifyReport": "data/us/_verify_map_flows.json",
+  "netNewSpots": 6453,
+  "phase0Notes": "Constraint locations_category_check allows Creek|Lake|Bay|Other. import_waterbodies_batch codified in migration 021."
+}

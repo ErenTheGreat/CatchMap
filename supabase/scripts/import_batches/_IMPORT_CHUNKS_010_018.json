@@ -1,0 +1,12 @@
+{
+  "chunks_run": 0,
+  "chunks_total": 36,
+  "completed": [],
+  "errors": [],
+  "before_count": 1805,
+  "prepared": true,
+  "queue_dir": "_mcp_queue",
+  "exec_plan": "_MCP_EXEC_PLAN.json",
+  "batches": "_MCP_BATCHES.json",
+  "note": "All 36 chunk payloads prepared (_round{r}_q{i}.json, _SQL{r}_{i}.sql). Execute via CallMcpTool execute_sql in 9 parallel batches of 4: python3 mcp_round_args.py R I | load project_id+query and call MCP."
+}

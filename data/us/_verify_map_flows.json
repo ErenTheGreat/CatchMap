@@ -1,0 +1,495 @@
+{
+  "verifiedAt": "2026-07-09T03:50:50.857Z",
+  "tests": {
+    "caDiscovery": {
+      "label": "CA East Bay",
+      "bbox": {
+        "minLng": -121.942,
+        "minLat": 37.568999999999996,
+        "maxLng": -121.742,
+        "maxLat": 37.769
+      },
+      "categorizedGroups": 2,
+      "categorizedSpots": 29,
+      "flatSpots": 29,
+      "sample": {
+        "id": "d900cabd-44cf-425e-a024-13870ba27a88",
+        "name": "Alamo Creek",
+        "lat": 37.71278587,
+        "lng": -121.91494939
+      }
+    },
+    "greatLakesDiscovery": {
+      "label": "Great Lakes (Lake MI)",
+      "bbox": {
+        "minLng": -86.99499999999999,
+        "minLat": 44.469,
+        "maxLng": -86.795,
+        "maxLat": 44.669000000000004
+      },
+      "categorizedGroups": 1,
+      "categorizedSpots": 1,
+      "flatSpots": 1,
+      "sample": {
+        "id": "91cb3dd7-494d-4adc-aa03-fbf7c2cde1aa",
+        "name": "Lake Michigan",
+        "lat": 44.5694589510121,
+        "lng": -86.8953306234242
+      }
+    },
+    "texasDiscovery": {
+      "label": "Texas (Belton Lake)",
+      "bbox": {
+        "minLng": -97.58399999999999,
+        "minLat": 31.086,
+        "maxLng": -97.384,
+        "maxLat": 31.286
+      },
+      "categorizedGroups": 1,
+      "categorizedSpots": 1,
+      "flatSpots": 1,
+      "sample": {
+        "id": "e156cf64-64af-463f-bfb3-2fdeeeecb59d",
+        "name": "Belton Lake",
+        "lat": 31.1856999131898,
+        "lng": -97.4835798019176
+      }
+    },
+    "northeastDiscovery": {
+      "label": "Northeast (Boston)",
+      "bbox": {
+        "minLng": -71.1,
+        "minLat": 42.199999999999996,
+        "maxLng": -70.9,
+        "maxLat": 42.4
+      },
+      "categorizedGroups": 1,
+      "categorizedSpots": 5,
+      "flatSpots": 5,
+      "sample": {
+        "id": "d5af3bfa-e924-4e20-9f30-cfffae5f53ea",
+        "name": "Blacks Creek Marshes",
+        "lat": 42.2685281599993,
+        "lng": -71.002092508055
+      }
+    },
+    "denverDiscovery": {
+      "label": "Rocky Mountain (Denver)",
+      "bbox": {
+        "minLng": -105.24,
+        "minLat": 39.49,
+        "maxLng": -104.74,
+        "maxLat": 39.99
+      },
+      "categorizedGroups": 2,
+      "categorizedSpots": 38,
+      "flatSpots": 38,
+      "sample": {
+        "id": "6460235b-e03b-4dc9-a61e-c4cbbe4b162e",
+        "name": "Barr Lake",
+        "lat": 39.9396334148669,
+        "lng": -104.76510179585
+      }
+    },
+    "phoenixDiscovery": {
+      "label": "Intermountain West (Phoenix)",
+      "bbox": {
+        "minLng": -112.32,
+        "minLat": 33.2,
+        "maxLng": -111.82,
+        "maxLat": 33.7
+      },
+      "categorizedGroups": 2,
+      "categorizedSpots": 5,
+      "flatSpots": 5,
+      "sample": {
+        "id": "5eec46a0-596f-4ea6-b6d4-01a65b431522",
+        "name": "Firebird Lake",
+        "lat": 33.2690128687976,
+        "lng": -111.964703849121
+      }
+    },
+    "southeastInlandDiscovery": {
+      "label": "Southeast Inland (Central AL lakes)",
+      "bbox": {
+        "minLng": -87.5,
+        "minLat": 33.03,
+        "maxLng": -87,
+        "maxLat": 33.53
+      },
+      "categorizedGroups": 1,
+      "categorizedSpots": 8,
+      "flatSpots": 8,
+      "sample": {
+        "id": "d913329d-fe1a-4c73-a4de-04f2f36e260b",
+        "name": "Bankhead Lake",
+        "lat": 33.4959502134601,
+        "lng": -87.3007169375447
+      }
+    },
+    "nashvilleDiscovery": {
+      "label": "Southeast Inland (Central AL lakes)",
+      "bbox": {
+        "minLng": -87.5,
+        "minLat": 33.03,
+        "maxLng": -87,
+        "maxLat": 33.53
+      },
+      "categorizedGroups": 1,
+      "categorizedSpots": 8,
+      "flatSpots": 8,
+      "sample": {
+        "id": "d913329d-fe1a-4c73-a4de-04f2f36e260b",
+        "name": "Bankhead Lake",
+        "lat": 33.4959502134601,
+        "lng": -87.3007169375447
+      }
+    },
+    "okcDiscovery": {
+      "label": "Great Plains (Oklahoma City)",
+      "bbox": {
+        "minLng": -97.77,
+        "minLat": 35.22,
+        "maxLng": -97.27,
+        "maxLat": 35.72
+      },
+      "categorizedGroups": 2,
+      "categorizedSpots": 6,
+      "flatSpots": 6,
+      "sample": {
+        "id": "220fa230-db3a-4f83-ac20-af9908c185ae",
+        "name": "Cherry Creek",
+        "lat": 35.449883132527,
+        "lng": -97.4430478766254
+      }
+    },
+    "slcDiscovery": {
+      "label": "Rocky Mountain (Salt Lake City)",
+      "bbox": {
+        "minLng": -112.14,
+        "minLat": 40.51,
+        "maxLng": -111.64,
+        "maxLat": 41.01
+      },
+      "categorizedGroups": 2,
+      "categorizedSpots": 9,
+      "flatSpots": 9,
+      "sample": {
+        "id": "1050746b-29e8-4384-a87b-7a0585a3be42",
+        "name": "Baileys Lake",
+        "lat": 40.7978614686325,
+        "lng": -112.044826202135
+      }
+    },
+    "searchCA": {
+      "term": "Shadow",
+      "expectRegion": "CA",
+      "count": 10,
+      "samples": [
+        {
+          "name": "Lake Shadow",
+          "lat": 28.6225704814141,
+          "lng": -81.4033009859716
+        },
+        {
+          "name": "Lake Shadowood Reservoir",
+          "lat": 32.6092719087448,
+          "lng": -94.2964983367373
+        },
+        {
+          "name": "Shadow Cliffs Lake",
+          "lat": 37.662,
+          "lng": -121.849
+        }
+      ]
+    },
+    "searchGL": {
+      "term": "Michigan",
+      "expectRegion": "Great Lakes",
+      "count": 2,
+      "samples": [
+        {
+          "name": "Lake Michigan",
+          "lat": 44.5694589510121,
+          "lng": -86.8953306234242
+        },
+        {
+          "name": "Michigan Bar Ditch",
+          "lat": 38.51237501,
+          "lng": -120.97040412
+        }
+      ]
+    },
+    "searchTX": {
+      "term": "Belton",
+      "expectRegion": "Texas",
+      "count": 1,
+      "samples": [
+        {
+          "name": "Belton Lake",
+          "lat": 31.1856999131898,
+          "lng": -97.4835798019176
+        }
+      ]
+    },
+    "searchNE": {
+      "term": "Charles",
+      "expectRegion": "Northeast",
+      "count": 10,
+      "samples": [
+        {
+          "name": "Big Charles Bayou",
+          "lat": 29.607442855666,
+          "lng": -91.9840341843467
+        },
+        {
+          "name": "Big Charles Bayou",
+          "lat": 29.5995292582145,
+          "lng": -91.9803041211222
+        },
+        {
+          "name": "Charles Creek",
+          "lat": 40.04786794,
+          "lng": -120.24050586
+        }
+      ]
+    },
+    "searchDenver": {
+      "term": "Cherry",
+      "expectRegion": "Rocky Mountain",
+      "count": 10,
+      "samples": [
+        {
+          "name": "Cherry Creek",
+          "lat": 34.87230121,
+          "lng": -119.03316353
+        },
+        {
+          "name": "Cherry Creek",
+          "lat": 41.31913207,
+          "lng": -120.32878739
+        },
+        {
+          "name": "Cherry Creek",
+          "lat": 37.88859707,
+          "lng": -119.97227879
+        }
+      ]
+    },
+    "searchPhoenix": {
+      "term": "Roosevelt",
+      "expectRegion": "Intermountain West",
+      "count": 8,
+      "samples": [
+        {
+          "name": "Franklin D Roosevelt Lake",
+          "lat": 48.2441328160591,
+          "lng": -118.307254227516
+        },
+        {
+          "name": "Roosevelt Creek",
+          "lat": 36.12347001,
+          "lng": -121.47085739
+        },
+        {
+          "name": "Roosevelt Lake",
+          "lat": 38.29556206,
+          "lng": -119.54203123
+        }
+      ]
+    },
+    "searchSoutheastInland": {
+      "term": "Lake Nicol",
+      "expectRegion": "Southeast Inland",
+      "count": 1,
+      "samples": [
+        {
+          "name": "Lake Nicol",
+          "lat": 33.3059125795058,
+          "lng": -87.4794325757342
+        }
+      ]
+    },
+    "searchNashville": {
+      "term": "Lake Nicol",
+      "expectRegion": "Southeast Inland",
+      "count": 1,
+      "samples": [
+        {
+          "name": "Lake Nicol",
+          "lat": 33.3059125795058,
+          "lng": -87.4794325757342
+        }
+      ]
+    },
+    "caSpotDetails": {
+      "locationId": "d900cabd-44cf-425e-a024-13870ba27a88",
+      "name": "Alamo Creek",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "glSpotDetails": {
+      "locationId": "91cb3dd7-494d-4adc-aa03-fbf7c2cde1aa",
+      "name": "Lake Michigan",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "txSpotDetails": {
+      "locationId": "e156cf64-64af-463f-bfb3-2fdeeeecb59d",
+      "name": "Belton Lake",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "neSpotDetails": {
+      "locationId": "d5af3bfa-e924-4e20-9f30-cfffae5f53ea",
+      "name": "Blacks Creek Marshes",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "caSpecies": {
+      "locationId": "d900cabd-44cf-425e-a024-13870ba27a88",
+      "month": 7,
+      "speciesCount": 8
+    },
+    "glSpecies": {
+      "locationId": "91cb3dd7-494d-4adc-aa03-fbf7c2cde1aa",
+      "month": 7,
+      "speciesCount": 7
+    },
+    "txSpecies": {
+      "locationId": "e156cf64-64af-463f-bfb3-2fdeeeecb59d",
+      "month": 7,
+      "speciesCount": 7
+    },
+    "neSpecies": {
+      "locationId": "d5af3bfa-e924-4e20-9f30-cfffae5f53ea",
+      "month": 7,
+      "speciesCount": 7
+    },
+    "denverSpotDetails": {
+      "locationId": "6460235b-e03b-4dc9-a61e-c4cbbe4b162e",
+      "name": "Barr Lake",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "phoenixSpotDetails": {
+      "locationId": "5eec46a0-596f-4ea6-b6d4-01a65b431522",
+      "name": "Firebird Lake",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "southeastInlandSpotDetails": {
+      "locationId": "d913329d-fe1a-4c73-a4de-04f2f36e260b",
+      "name": "Bankhead Lake",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "nashvilleSpotDetails": {
+      "locationId": "d913329d-fe1a-4c73-a4de-04f2f36e260b",
+      "name": "Bankhead Lake",
+      "speciesCount": 0,
+      "catchTimesCount": 0
+    },
+    "denverSpecies": {
+      "locationId": "6460235b-e03b-4dc9-a61e-c4cbbe4b162e",
+      "month": 7,
+      "speciesCount": 7
+    },
+    "phoenixSpecies": {
+      "locationId": "5eec46a0-596f-4ea6-b6d4-01a65b431522",
+      "month": 7,
+      "speciesCount": 7
+    }
+  },
+  "pass": true,
+  "checks": [
+    {
+      "name": "CA discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "CA discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Great Lakes discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Great Lakes discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Texas discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Texas discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Northeast discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Northeast discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Denver discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Denver discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Phoenix discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Phoenix discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Southeast Inland discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Southeast Inland discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Oklahoma City discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Oklahoma City discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "Salt Lake City discovery flat spots",
+      "ok": true
+    },
+    {
+      "name": "Salt Lake City discovery categorized spots",
+      "ok": true
+    },
+    {
+      "name": "CA search results",
+      "ok": true
+    },
+    {
+      "name": "Great Lakes search results",
+      "ok": true
+    },
+    {
+      "name": "Texas search results",
+      "ok": true
+    },
+    {
+      "name": "Northeast search results",
+      "ok": true
+    }
+  ]
+}

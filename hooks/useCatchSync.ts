@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isCloudSyncEnabled } from '@/constants/features';
 import { fishingApi } from '@/lib/api/fishingApi';
 import { useToast } from '@/components/ui';
+import { useAuth } from '@/providers/AuthProvider';
 import { useNetworkStatus } from '@/providers/NetworkProvider';
 
 const CATCHES_KEY = ['catches'];
@@ -14,10 +15,12 @@ export function useCatchSync() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { isOnline } = useNetworkStatus();
+  const { user } = useAuth();
   const lastSyncAtRef = useRef(0);
   const syncingRef = useRef(false);
   const wasOfflineRef = useRef(false);
-  const cloudSync = isCloudSyncEnabled();
+  const cloudSync = isCloudSyncEnabled() && user != null;
+  const runSyncRef = useRef<(force?: boolean) => void>(() => {});
 
   const syncMutation = useMutation({
     mutationFn: () => fishingApi.syncPendingCatches(),
@@ -32,6 +35,14 @@ export function useCatchSync() {
           variant: 'success',
         });
       }
+    },
+    onError: () => {
+      showToast({
+        message: 'Could not sync catches to the cloud',
+        variant: 'error',
+        actionLabel: 'Retry',
+        onAction: () => runSyncRef.current(true),
+      });
     },
   });
 
@@ -50,6 +61,8 @@ export function useCatchSync() {
     });
   };
 
+  runSyncRef.current = runSync;
+
   useEffect(() => {
     if (!isOnline) {
       wasOfflineRef.current = true;
@@ -62,6 +75,7 @@ export function useCatchSync() {
     }
   }, [isOnline]);
 
+  // Re-runs when the user signs in so locally saved catches upload immediately.
   useEffect(() => {
     runSync(true);
 
@@ -72,7 +86,7 @@ export function useCatchSync() {
     });
 
     return () => subscription.remove();
-  }, [isOnline]);
+  }, [isOnline, user?.id]);
 }
 
 /** Mount once at app root to enable background catch sync. */

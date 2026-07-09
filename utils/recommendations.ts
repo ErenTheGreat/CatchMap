@@ -2,6 +2,7 @@ import speciesData from '@/data/species.json';
 import { fetchNearbyFishingSpots } from '@/lib/api/endpoints/fishingSpots';
 import { getCurrentMonth, getRegionFromCoordinates, calculateDistance, Region } from '@/utils/geo';
 import { NearbySpot } from '@/utils/osmFishingSpots';
+import { getPrimaryLureLabel } from '@/utils/speciesRigs';
 
 export type { Region, NearbySpot };
 
@@ -96,7 +97,10 @@ export function getSpeciesRecommendations(
         (species.bestMonths.includes(currentMonth) ? 5 : 0) : 0;
       score += regionBonus;
 
-      const recommendedLure = species.lures[Math.floor(Math.random() * species.lures.length)];
+      const recommendedLure =
+        getPrimaryLureLabel(species.id) ??
+        species.lures[0] ??
+        '';
 
       return {
         ...species,
@@ -111,36 +115,8 @@ export function getSpeciesRecommendations(
   return recommendations;
 }
 
-export function getTimeOfDayRecommendation(): { period: string; tip: string } {
-  const hour = new Date().getHours();
-
-  if (hour >= 5 && hour < 9) {
-    return {
-      period: 'Early Morning',
-      tip: 'Prime fishing time! Fish are actively feeding. Try topwater lures for bass, streamers for trout.'
-    };
-  } else if (hour >= 9 && hour < 12) {
-    return {
-      period: 'Late Morning',
-      tip: 'Fish are moving to deeper water. Slow down your presentation and target structure.'
-    };
-  } else if (hour >= 12 && hour < 17) {
-    return {
-      period: 'Afternoon',
-      tip: 'Fish may be sluggish. Try fishing deeper or in shaded areas. Catfish and carp are active.'
-    };
-  } else if (hour >= 17 && hour < 21) {
-    return {
-      period: 'Evening',
-      tip: 'Second prime time! Fish move shallow to feed. Great time for topwater and shallow crankbaits.'
-    };
-  } else {
-    return {
-      period: 'Night',
-      tip: 'Catfish, walleye, and crappie are active. Use live bait or glow-in-the-dark lures.'
-    };
-  }
-}
+export { getTimeOfDayRecommendation, getBestTimeNow } from '@/utils/bestTimeNow';
+export type { BestTimeNowResult } from '@/utils/bestTimeNow';
 
 export function getWeatherRecommendation(temperature: number): { tip: string; recommendedLures: string[] } {
   if (temperature < 40) {

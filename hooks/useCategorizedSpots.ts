@@ -191,10 +191,16 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
     setIsFetching(true);
 
     try {
-      const [data, bboxSpots] = await Promise.all([
+      const centerLat = (rawBbox[1] + rawBbox[3]) / 2;
+      const centerLng = (rawBbox[0] + rawBbox[2]) / 2;
+      const [data, bboxSpots, accessPoints] = await Promise.all([
         fetchCategoriesWithCache(rawBbox),
         fishingApi.getSpotsInBBox(rawBbox).catch((error) => {
-          console.warn('[useCategorizedSpots] getSpotsInBBox failed:', error);
+          if (__DEV__) console.warn('[useCategorizedSpots] getSpotsInBBox failed:', error);
+          return [] as NearbySpot[];
+        }),
+        fishingApi.getAccessPointsInBBox(rawBbox, centerLat, centerLng).catch((error) => {
+          if (__DEV__) console.warn('[useCategorizedSpots] getAccessPointsInBBox failed:', error);
           return [] as NearbySpot[];
         }),
       ]);
@@ -202,10 +208,10 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
         return;
       }
 
-      const mergedSpots = mergeViewportSpots(data, bboxSpots);
+      const mergedSpots = mergeViewportSpots(data, [...bboxSpots, ...accessPoints]);
 
       if (mergedSpots.length === 0) {
-        console.warn('[useCategorizedSpots] Empty bbox result — clearing viewport pins');
+        if (__DEV__) console.warn('[useCategorizedSpots] Empty bbox result — clearing viewport pins');
         lastFetchedKeyRef.current = cacheKey;
         setUsingCachedDiscovery(false);
         setDisplayedCategories(EMPTY_CATEGORIES);
@@ -213,17 +219,30 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
         return;
       }
 
+      const categoriesWithAccess = (() => {
+        const base =
+          countCategorizedSpots(data) > 0
+            ? data
+            : mergedSpots.some((s) => !s.poiType || s.poiType === 'water')
+              ? [
+                  {
+                    category: 'Nearby',
+                    spots: mergedSpots.filter((s) => !s.poiType || s.poiType === 'water'),
+                  },
+                ]
+              : [{ category: 'Nearby', spots: mergedSpots }];
+
+        if (accessPoints.length === 0) return base;
+        return [...base, { category: 'Access & Ramps', spots: accessPoints }];
+      })();
+
       lastFetchedKeyRef.current = cacheKey;
       setUsingCachedDiscovery(false);
-      setDisplayedCategories(
-        countCategorizedSpots(data) > 0
-          ? data
-          : [{ category: 'Nearby', spots: mergedSpots }]
-      );
+      setDisplayedCategories(categoriesWithAccess);
       setViewportMapSpots(mergedSpots);
     } catch (error) {
       if (mountedRef.current && requestId === activeRequestRef.current) {
-        console.error('[useCategorizedSpots] Fetch failed:', error);
+        if (__DEV__) console.error('[useCategorizedSpots] Fetch failed:', error);
         applyOfflineDiscovery(
           rawBbox,
           cacheKey,
@@ -243,7 +262,7 @@ export function useCategorizedSpots(centerLat?: number, centerLng?: number) {
   const onViewportChange = useCallback(
     (bbox: BBox) => {
       if (!isValidBBox(bbox)) {
-        console.warn('[useCategorizedSpots] Ignoring invalid bbox:', bbox);
+        if (__DEV__) console.warn('[useCategorizedSpots] Ignoring invalid bbox:', bbox);
         return;
       }
 

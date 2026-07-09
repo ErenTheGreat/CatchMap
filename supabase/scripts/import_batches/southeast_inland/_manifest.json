@@ -1,0 +1,8 @@
+{
+  "source": "data/us/southeast_inland_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/southeast_inland",
+  "rows": 616,
+  "batches": 2,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T11:23:04.697Z"
+}
