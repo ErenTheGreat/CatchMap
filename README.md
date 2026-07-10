@@ -1,6 +1,10 @@
 # CatchMap — Fishing Spots & Log
 
+[![GitHub](https://img.shields.io/badge/GitHub-ErenTheGreat%2FCatchMap-181717?logo=github)](https://github.com/ErenTheGreat/CatchMap)
+
 Mobile fishing app (Expo / React Native) for discovering US waterbodies, forecasting bite times, logging catches, and optional cloud sync via Supabase.
+
+**Repository:** [github.com/ErenTheGreat/CatchMap](https://github.com/ErenTheGreat/CatchMap)
 
 ## Features
 

@@ -35,7 +35,8 @@ yarn-error.*
 *.tsbuildinfo
 
 # editor / local tooling
-.cursor/
+.cursor/*
+!.cursor/environment.json
 .bolt/
 .tools/
 
