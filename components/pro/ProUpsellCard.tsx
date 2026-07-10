@@ -33,7 +33,7 @@ export default function ProUpsellCard({ title, description, compact = false }: P
       </View>
       <Text style={styles.description}>{description}</Text>
       <Button
-        title={`Upgrade to Pro — ${priceLabel}`}
+        title={`Start Pro — ${priceLabel}`}
         onPress={() => router.push(PRO_UPGRADE_HREF)}
         style={styles.button}
       />

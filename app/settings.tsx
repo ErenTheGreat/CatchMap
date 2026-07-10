@@ -33,7 +33,7 @@ import {
 import * as WebBrowser from 'expo-web-browser';
 import { isCloudSyncFeatureAvailable, isCloudSyncEnabled } from '@/constants/features';
 import { Button, useToast, SegmentedControl } from '@/components/ui';
-import { PRO_LAUNCH_PROMO_ACTIVE } from '@/constants/pro';
+import { PRO_SUBSCRIPTION_DISCLOSURE } from '@/constants/pro';
 import { PRO_UPGRADE_HREF } from '@/constants/routes';
 import { usePro } from '@/providers/ProProvider';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
@@ -368,15 +368,12 @@ export default function SettingsScreen() {
           <Text style={styles.aiDescription}>
             {isPro
               ? 'Hosted Catch AI, cloud backup, offline maps, trip planner, and pattern alerts are unlocked.'
-              : `One-time ${priceLabel} lifetime purchase. Hosted Catch AI (30 requests/day), cloud sync, offline maps, trip planner, and more.`}
+              : `${priceLabel} subscription. Hosted Catch AI (30 requests/day), cloud sync, offline maps, trip planner, and more. ${PRO_SUBSCRIPTION_DISCLOSURE}`}
           </Text>
-          {PRO_LAUNCH_PROMO_ACTIVE && !isPro ? (
-            <Text style={styles.promoNote}>Launch promo pricing — limited time</Text>
-          ) : null}
           {!isPro ? (
             <>
               <Button
-                title={purchasingPro ? 'Processing…' : `Unlock Pro — ${priceLabel}`}
+                title={purchasingPro ? 'Processing…' : `Start Pro — ${priceLabel}`}
                 onPress={handlePurchasePro}
                 loading={purchasingPro}
                 style={styles.aiButton}

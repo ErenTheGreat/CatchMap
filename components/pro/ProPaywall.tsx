@@ -6,12 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Check, Crown, Sparkles, X } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
-import { PRO_FEATURE_BULLETS, PRO_LAUNCH_PROMO_ACTIVE } from '@/constants/pro';
+import { PRO_FEATURE_BULLETS, PRO_SUBSCRIPTION_DISCLOSURE } from '@/constants/pro';
 import { usePro } from '@/providers/ProProvider';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -28,16 +29,19 @@ interface ProPaywallProps {
 export default function ProPaywall({
   embedded = false,
   headline = 'CatchMap Pro',
-  subtitle = 'Pay once. Fish smarter forever.',
+  subtitle = 'Fish smarter with AI, cloud sync, and offline maps.',
   onClose,
 }: ProPaywallProps) {
   const router = useRouter();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const { isPro, loading, priceLabel, purchasePro, restorePurchases } = usePro();
+  const { isPro, loading, priceLabel, purchasesAvailable, purchasePro, restorePurchases } = usePro();
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const privacyPolicyUrl = process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL;
+  const termsOfServiceUrl = process.env.EXPO_PUBLIC_TERMS_OF_SERVICE_URL;
 
   const handleClose = () => {
     if (onClose) {
@@ -79,6 +83,15 @@ export default function ProPaywall({
     handleClose();
   };
 
+  const openLegalUrl = async (url: string | undefined) => {
+    if (!url) return;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setError('Could not open link.');
+    }
+  };
+
   if (isPro && !embedded) {
     return (
       <SafeAreaView style={styles.container}>
@@ -100,13 +113,8 @@ export default function ProPaywall({
         </View>
         <Text style={styles.headline}>{headline}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
-        {PRO_LAUNCH_PROMO_ACTIVE ? (
-          <View style={styles.promoPill}>
-            <Text style={styles.promoText}>Launch price — limited time</Text>
-          </View>
-        ) : null}
         <Text style={styles.price}>{loading ? '…' : priceLabel}</Text>
-        <Text style={styles.priceNote}>One-time purchase · lifetime access</Text>
+        <Text style={styles.priceNote}>{PRO_SUBSCRIPTION_DISCLOSURE}</Text>
       </View>
 
       <View style={styles.featureList}>
@@ -120,24 +128,54 @@ export default function ProPaywall({
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <Button
-        title={purchasing ? 'Processing…' : `Unlock Pro — ${priceLabel}`}
-        onPress={handlePurchase}
-        loading={purchasing}
-        style={styles.primaryButton}
-      />
-      <TouchableOpacity
-        onPress={handleRestore}
-        disabled={restoring}
-        accessibilityRole="button"
-        accessibilityLabel="Restore purchases"
-      >
-        {restoring ? (
-          <ActivityIndicator color={colors.accent} style={styles.restoreSpinner} />
-        ) : (
-          <Text style={styles.restoreText}>Restore purchases</Text>
-        )}
-      </TouchableOpacity>
+      {purchasesAvailable ? (
+        <>
+          <Button
+            title={purchasing ? 'Processing…' : `Start Pro — ${priceLabel}`}
+            onPress={handlePurchase}
+            loading={purchasing}
+            style={styles.primaryButton}
+          />
+          <TouchableOpacity
+            onPress={handleRestore}
+            disabled={restoring}
+            accessibilityRole="button"
+            accessibilityLabel="Restore purchases"
+          >
+            {restoring ? (
+              <ActivityIndicator color={colors.accent} style={styles.restoreSpinner} />
+            ) : (
+              <Text style={styles.restoreText}>Restore purchases</Text>
+            )}
+          </TouchableOpacity>
+        </>
+      ) : null}
+
+      {(privacyPolicyUrl || termsOfServiceUrl) ? (
+        <View style={styles.legalLinks}>
+          {termsOfServiceUrl ? (
+            <TouchableOpacity
+              onPress={() => openLegalUrl(termsOfServiceUrl)}
+              accessibilityRole="link"
+              accessibilityLabel="Terms of Service"
+            >
+              <Text style={styles.legalLinkText}>Terms of Service</Text>
+            </TouchableOpacity>
+          ) : null}
+          {privacyPolicyUrl && termsOfServiceUrl ? (
+            <Text style={styles.legalSeparator}> · </Text>
+          ) : null}
+          {privacyPolicyUrl ? (
+            <TouchableOpacity
+              onPress={() => openLegalUrl(privacyPolicyUrl)}
+              accessibilityRole="link"
+              accessibilityLabel="Privacy Policy"
+            >
+              <Text style={styles.legalLinkText}>Privacy Policy</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
     </ScrollView>
   );
 
@@ -206,18 +244,6 @@ function createStyles(colors: ThemeColors) {
       textAlign: 'center',
       marginTop: Spacing.xs,
     },
-    promoPill: {
-      marginTop: Spacing.md,
-      backgroundColor: colors.accentDark,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.xs,
-      borderRadius: BorderRadius.full,
-    },
-    promoText: {
-      color: colors.accent,
-      fontSize: FontSizes.sm,
-      fontWeight: FontWeights.semibold,
-    },
     price: {
       color: colors.text,
       fontSize: 40,
@@ -228,6 +254,7 @@ function createStyles(colors: ThemeColors) {
       color: colors.textMuted,
       fontSize: FontSizes.sm,
       marginTop: Spacing.xs,
+      textAlign: 'center',
     },
     featureList: {
       backgroundColor: colors.card,
@@ -267,6 +294,22 @@ function createStyles(colors: ThemeColors) {
     },
     restoreSpinner: {
       marginVertical: Spacing.sm,
+    },
+    legalLinks: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: Spacing.lg,
+    },
+    legalLinkText: {
+      color: colors.textMuted,
+      fontSize: FontSizes.sm,
+      textDecorationLine: 'underline',
+    },
+    legalSeparator: {
+      color: colors.textMuted,
+      fontSize: FontSizes.sm,
     },
     proActiveCard: {
       flex: 1,

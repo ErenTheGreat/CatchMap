@@ -4,7 +4,11 @@ import Purchases, {
   type PurchasesPackage,
   LOG_LEVEL,
 } from 'react-native-purchases';
-import { PRO_ENTITLEMENT_ID, PRO_PRODUCT_ID } from '@/constants/pro';
+import {
+  PRO_ENTITLEMENT_ID,
+  PRO_PRODUCT_ID,
+  PRO_SUBSCRIPTION_PRODUCT_ID,
+} from '@/constants/pro';
 
 let configured = false;
 
@@ -78,10 +82,20 @@ export async function findProPackage(): Promise<PurchasesPackage | null> {
     const current = offerings.current;
     if (!current) return null;
 
-    const byProduct = current.availablePackages.find(
+    const monthlyByProduct = current.availablePackages.find(
+      (pkg) => pkg.product.identifier === PRO_SUBSCRIPTION_PRODUCT_ID
+    );
+    if (monthlyByProduct) return monthlyByProduct;
+
+    const monthly = current.monthly;
+    if (monthly?.product.identifier === PRO_SUBSCRIPTION_PRODUCT_ID) {
+      return monthly;
+    }
+
+    const lifetimeByProduct = current.availablePackages.find(
       (pkg) => pkg.product.identifier === PRO_PRODUCT_ID
     );
-    if (byProduct) return byProduct;
+    if (lifetimeByProduct) return lifetimeByProduct;
 
     const lifetime = current.lifetime;
     if (lifetime?.product.identifier === PRO_PRODUCT_ID) {
@@ -132,4 +146,8 @@ export async function restoreProPurchases(): Promise<{
 export async function getProPriceString(): Promise<string | null> {
   const pkg = await findProPackage();
   return pkg?.product.priceString ?? null;
+}
+
+export function getProPricePeriod(): 'month' | 'lifetime' {
+  return 'month';
 }
