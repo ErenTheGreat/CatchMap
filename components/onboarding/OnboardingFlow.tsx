@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,49 +16,80 @@ import { MapPin, Fish, Clock, Navigation } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { Button } from '@/components/ui';
 import BrandMark from '@/components/brand/BrandMark';
+import ProOnboardingSlide from '@/components/onboarding/ProOnboardingSlide';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useOnboarding } from '@/providers/OnboardingProvider';
+import { usePro } from '@/providers/ProProvider';
 import { hapticLight } from '@/utils/haptics';
 
-interface Slide {
+interface FeatureSlide {
+  kind: 'feature';
   icon: React.ReactNode;
   title: string;
   description: string;
 }
 
+interface ProSlide {
+  kind: 'pro';
+}
+
+interface LocationSlide {
+  kind: 'location';
+}
+
+type Slide = FeatureSlide | ProSlide | LocationSlide;
+
 export default function OnboardingFlow() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { markComplete } = useOnboarding();
+  const { isPro } = usePro();
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
   const [requesting, setRequesting] = useState(false);
 
-  const slides: Slide[] = [
-    {
-      icon: <MapPin color={colors.accent} size={64} />,
-      title: 'Discover fishing spots',
-      description:
-        'Explore thousands of spots near you with live species predictions, tides, and weather right on the map.',
-    },
-    {
-      icon: <Fish color={colors.accent} size={64} />,
-      title: 'Log every catch',
-      description:
-        'Record species, weight, length, and a photo — plus the exact conditions you caught them in.',
-    },
-    {
-      icon: <Clock color={colors.accent} size={64} />,
-      title: 'Know the best time',
-      description:
-        'Solunar and weather-powered bite forecasts show you when the fish are most likely to be active.',
-    },
-  ];
+  const slides = useMemo<Slide[]>(() => {
+    const featureSlides: FeatureSlide[] = [
+      {
+        kind: 'feature',
+        icon: <MapPin color={colors.accent} size={64} />,
+        title: 'Discover fishing spots',
+        description:
+          'Explore thousands of spots near you with live species predictions, tides, and weather right on the map.',
+      },
+      {
+        kind: 'feature',
+        icon: <Fish color={colors.accent} size={64} />,
+        title: 'Log every catch',
+        description:
+          'Record species, weight, length, and a photo — plus the exact conditions you caught them in.',
+      },
+      {
+        kind: 'feature',
+        icon: <Clock color={colors.accent} size={64} />,
+        title: 'Know the best time',
+        description:
+          'Solunar and weather-powered bite forecasts show you when the fish are most likely to be active.',
+      },
+    ];
 
+    const proSlide: ProSlide = { kind: 'pro' };
+    const locationSlide: LocationSlide = { kind: 'location' };
+
+    if (isPro) {
+      return [...featureSlides, locationSlide];
+    }
+
+    return [...featureSlides, proSlide, locationSlide];
+  }, [colors.accent, isPro]);
+
+  const currentSlide = slides[index];
   const isLast = index === slides.length - 1;
+  const isProSlide = currentSlide?.kind === 'pro';
+  const isLocationSlide = currentSlide?.kind === 'location';
 
   const goToIndex = (next: number) => {
     scrollRef.current?.scrollTo({ x: next * width, animated: true });
@@ -84,7 +115,6 @@ export default function OnboardingFlow() {
       await Location.requestForegroundPermissionsAsync();
     } catch (error) {
       if (__DEV__) console.warn('[onboarding] location permission request failed:', error);
-      // Permission errors shouldn't block finishing onboarding.
     } finally {
       setRequesting(false);
       finish();
@@ -94,6 +124,11 @@ export default function OnboardingFlow() {
   const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(event.nativeEvent.contentOffset.x / width);
     if (next !== index) setIndex(next);
+  };
+
+  const slideKey = (slide: Slide, i: number) => {
+    if (slide.kind === 'feature') return slide.title;
+    return `${slide.kind}-${i}`;
   };
 
   return (
@@ -114,15 +149,35 @@ export default function OnboardingFlow() {
         ref={scrollRef}
         horizontal
         pagingEnabled
+        scrollEnabled={!isProSlide}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={onScrollEnd}
         style={styles.pager}
       >
-        {slides.map((slide) => (
-          <View key={slide.title} style={[styles.slide, { width }]}>
-            <View style={styles.iconCircle}>{slide.icon}</View>
-            <Text style={styles.title}>{slide.title}</Text>
-            <Text style={styles.description}>{slide.description}</Text>
+        {slides.map((slide, i) => (
+          <View key={slideKey(slide, i)} style={[styles.slide, { width }]}>
+            {slide.kind === 'feature' ? (
+              <>
+                <View style={styles.iconCircle}>{slide.icon}</View>
+                <Text style={styles.title}>{slide.title}</Text>
+                <Text style={styles.description}>{slide.description}</Text>
+              </>
+            ) : null}
+            {slide.kind === 'pro' ? (
+              <ProOnboardingSlide onContinueFree={() => goToIndex(i + 1)} />
+            ) : null}
+            {slide.kind === 'location' ? (
+              <>
+                <View style={styles.iconCircle}>
+                  <Navigation color={colors.accent} size={64} />
+                </View>
+                <Text style={styles.title}>Find spots near you</Text>
+                <Text style={styles.description}>
+                  Allow location to center the map on you and tailor species predictions to where
+                  you fish.
+                </Text>
+              </>
+            ) : null}
           </View>
         ))}
       </ScrollView>
@@ -131,21 +186,14 @@ export default function OnboardingFlow() {
         <View style={styles.dots}>
           {slides.map((slide, i) => (
             <View
-              key={slide.title}
+              key={slideKey(slide, i)}
               style={[styles.dot, i === index && styles.dotActive]}
             />
           ))}
         </View>
 
-        {isLast ? (
+        {isLocationSlide ? (
           <View style={styles.finishBlock}>
-            <View style={styles.permissionCard}>
-              <Navigation color={colors.accent} size={20} />
-              <Text style={styles.permissionText}>
-                Allow location to center the map on you and tailor species predictions to
-                where you fish.
-              </Text>
-            </View>
             <Button
               title="Enable location & finish"
               onPress={handleEnableLocation}
@@ -161,7 +209,7 @@ export default function OnboardingFlow() {
               <Text style={styles.laterText}>Not now</Text>
             </TouchableOpacity>
           </View>
-        ) : (
+        ) : isProSlide ? null : (
           <Button title="Next" onPress={handleNext} accessibilityLabel="Next slide" />
         )}
       </View>
@@ -242,20 +290,6 @@ function createStyles(colors: ThemeColors) {
     },
     finishBlock: {
       gap: Spacing.md,
-    },
-    permissionCard: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: Spacing.sm,
-      backgroundColor: colors.cardLight,
-      borderRadius: BorderRadius.lg,
-      padding: Spacing.md,
-    },
-    permissionText: {
-      flex: 1,
-      color: colors.textSecondary,
-      fontSize: FontSizes.sm,
-      lineHeight: 20,
     },
     laterButton: {
       alignItems: 'center',

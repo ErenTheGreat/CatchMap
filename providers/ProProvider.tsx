@@ -18,7 +18,7 @@ import {
   purchaseProPackage,
   restoreProPurchases,
 } from '@/lib/pro/revenueCat';
-import { getProDisplayPrice } from '@/constants/pro';
+import { formatProPriceLabel } from '@/constants/pro';
 import { useAuth } from '@/providers/AuthProvider';
 
 const PRO_CACHE_KEY = '@catchmap_pro_entitled_v1';
@@ -118,7 +118,7 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
     return result;
   }, [applyEntitlement]);
 
-  const priceLabel = storePriceLabel ?? getProDisplayPrice();
+  const priceLabel = formatProPriceLabel(storePriceLabel);
 
   const value = useMemo<ProContextValue>(
     () => ({

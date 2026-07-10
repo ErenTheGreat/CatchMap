@@ -33,7 +33,7 @@ const HTML = `<!DOCTYPE html>
     <li>Do not upload unlawful, harmful, or misleading content.</li>
   </ul>
   <h2>CatchMap Pro (optional)</h2>
-  <p>CatchMap Pro is a one-time in-app purchase that unlocks hosted Catch AI (chat, photo species ID, coach enhancement), cloud backup, offline maps, trip planner, pattern alerts, and related features. AI requests are subject to a daily fair-use limit. Refunds are handled by Apple or Google per their store policies.</p>
+  <p>CatchMap Pro is an auto-renewing monthly subscription that unlocks hosted Catch AI (chat, photo species ID, coach enhancement), cloud backup, offline maps, trip planner, pattern alerts, and related features. Subscriptions renew automatically each month until cancelled in your App Store or Google Play account settings. AI requests are subject to a daily fair-use limit. Refunds are handled by Apple or Google per their store policies.</p>
   <h2>Catch AI</h2>
   <p>Free users can use the map and local catch log without AI. Pro subscribers use hosted AI through CatchMap servers (Google Gemini). You must not abuse AI features or attempt to bypass usage limits.</p>
   <h2>Acceptable use</h2>

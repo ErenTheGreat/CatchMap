@@ -33,7 +33,7 @@ CatchMap helps anglers fish smarter across the United States.
 
 **Your data, your choice** — Use CatchMap without an account (everything stays on your device). **CatchMap Pro** unlocks private cloud backup when signed in. Community insights use only anonymized, opt-in catch data.
 
-**CatchMap Pro** — One-time purchase ($49.99 launch / $59.99 list). Pay once, fish smarter forever: hosted AI, cloud sync, offline maps, trip planner, pattern alerts, and personal insights.
+**CatchMap Pro** — $3.99/month subscription. Cancel anytime: hosted AI, cloud sync, offline maps, trip planner, pattern alerts, and personal insights.
 
 Free map and catch logging. Pro unlocks the serious angler toolkit.
 
@@ -52,15 +52,30 @@ Set in Supabase Dashboard → Edge Functions → Secrets:
 | `REVENUECAT_WEBHOOK_SECRET` | Optional auth for `revenuecat-webhook` |
 | `PRO_DEV_BYPASS` | Set `true` in staging only to skip Pro checks |
 
-Deploy edge functions: `ai-proxy`, `revenuecat-webhook`. Apply migration `20260710100000_026_pro_entitlements.sql`.
+Deploy edge functions: `ai-proxy`, `revenuecat-webhook`. Apply migrations through `20260711100000_027_pro_subscription_lifecycle.sql`.
 
 ## IAP setup (RevenueCat)
 
-1. Create product `catchmap_pro_lifetime` (non-consumable) in App Store Connect and Play Console
-2. Configure RevenueCat entitlement `pro` linked to that product
-3. Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in EAS secrets
-4. Webhook URL: `https://<project>.supabase.co/functions/v1/revenuecat-webhook`
-5. Launch at **$49.99** (`EXPO_PUBLIC_PRO_LAUNCH_PROMO=true`); move to **$59.99** after 30–60 days
+### Primary offer: monthly subscription
+
+| Platform | Action |
+|----------|--------|
+| App Store Connect | Create auto-renewable subscription `catchmap_pro_monthly` in subscription group "CatchMap Pro" (~$3.99/mo tier) |
+| Play Console | Create subscription `catchmap_pro_monthly` with a monthly base plan |
+| RevenueCat | Link `catchmap_pro_monthly` to entitlement `pro`; set as **default package** in current offering |
+| Webhook | `https://<project>.supabase.co/functions/v1/revenuecat-webhook` |
+
+### Grandfather: lifetime product (restore only)
+
+Keep `catchmap_pro_lifetime` (non-consumable) linked to the same `pro` entitlement so existing lifetime buyers retain access after restore.
+
+1. Do **not** remove the lifetime product from RevenueCat
+2. Remove lifetime from the default offering so new users only see the monthly plan
+3. Restore purchases still resolves lifetime entitlements via RevenueCat
+
+### EAS secrets
+
+Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in EAS secrets.
 
 
 | Item | URL |

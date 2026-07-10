@@ -1,23 +1,32 @@
-/** CatchMap Pro — lifetime IAP product and fair-use limits. */
+/** CatchMap Pro — subscription IAP and fair-use limits. */
 
+/** Primary offer: monthly auto-renewing subscription. */
+export const PRO_SUBSCRIPTION_PRODUCT_ID = 'catchmap_pro_monthly';
+
+/** Legacy lifetime product — kept for restore / grandfathered buyers. */
 export const PRO_PRODUCT_ID = 'catchmap_pro_lifetime';
 
 /** RevenueCat entitlement identifier (configure in RevenueCat dashboard). */
 export const PRO_ENTITLEMENT_ID = 'pro';
 
-/** List price shown in paywall (USD). */
-export const PRO_LIST_PRICE_USD = 59.99;
-
-/** Launch promo price (USD) — first 30–60 days. */
-export const PRO_LAUNCH_PRICE_USD = 49.99;
-
-export const PRO_LAUNCH_PROMO_ACTIVE =
-  process.env.EXPO_PUBLIC_PRO_LAUNCH_PROMO !== 'false';
+/** Fallback display price when the store price is unavailable (USD). */
+export const PRO_MONTHLY_PRICE_USD = 3.99;
 
 export function getProDisplayPrice(): string {
-  const amount = PRO_LAUNCH_PROMO_ACTIVE ? PRO_LAUNCH_PRICE_USD : PRO_LIST_PRICE_USD;
-  return `$${amount.toFixed(2)}`;
+  return `$${PRO_MONTHLY_PRICE_USD.toFixed(2)}/mo`;
 }
+
+/** Append /mo when the store price string omits a billing period. */
+export function formatProPriceLabel(priceString: string | null | undefined): string {
+  const base = priceString?.trim() || getProDisplayPrice();
+  if (/\/\s*(mo|month|yr|year)/i.test(base)) {
+    return base;
+  }
+  return `${base}/mo`;
+}
+
+export const PRO_SUBSCRIPTION_DISCLOSURE =
+  'Auto-renews monthly · Cancel anytime in App Store or Google Play settings';
 
 export const PRO_AI_DAILY_LIMIT = 30;
 export const PRO_CLOUD_PHOTO_LIMIT_MB = 500;
@@ -36,6 +45,14 @@ export function getMaxSavedSpots(isPro: boolean): number {
 export function getMaxWaypoints(isPro: boolean): number {
   return isPro ? PRO_WAYPOINTS_LIMIT : FREE_WAYPOINTS_LIMIT;
 }
+
+/** Compact bullets for onboarding Pro slide. */
+export const PRO_ONBOARDING_BULLETS = [
+  'Hosted Catch AI — chat, photo species ID, coach tips',
+  'Cloud backup for catches, photos, and waypoints',
+  'Offline map packs and trip planner with reminders',
+  'Personal insights, pattern alerts, and premium map layers',
+] as const;
 
 export const PRO_FEATURE_BULLETS = [
   'Hosted Catch AI — chat, photo species ID, coach enhance (30 requests/day)',
