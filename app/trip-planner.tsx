@@ -39,6 +39,8 @@ import { formatDistance } from '@/utils/recommendations';
 import { getActivityColor, getActivityLabel } from '@/utils/fishingEngine';
 import { getTripDayOutlook } from '@/utils/bestTimeNow';
 import { isPersonalBiteEnabled } from '@/constants/features';
+import { useProFeature } from '@/hooks/useProFeature';
+import ProPaywall from '@/components/pro/ProPaywall';
 import { buildCatchConditions } from '@/utils/catchConditions';
 import { computePersonalBiteBoost } from '@/utils/personalBiteFingerprint';
 import { openSpotInMaps } from '@/utils/openSpotInMaps';
@@ -73,6 +75,7 @@ export default function TripPlannerScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
+  const tripPlannerPro = useProFeature('trip_planner');
   const params = useLocalSearchParams<{ lat?: string; lng?: string }>();
 
   const paramLat = params.lat ? parseFloat(params.lat) : null;
@@ -149,6 +152,15 @@ export default function TripPlannerScreen() {
       params: { lat: String(spot.latitude), lng: String(spot.longitude) },
     });
   };
+
+  if (!tripPlannerPro) {
+    return (
+      <ProPaywall
+        headline="Trip planner is a Pro feature"
+        subtitle="Rank spots, set reminders, and plan around your personal bite patterns."
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>

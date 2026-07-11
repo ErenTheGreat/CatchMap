@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   Share,
-  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -29,14 +28,14 @@ import {
   FileText,
   UserX,
   Sparkles,
-  KeyRound,
-  ExternalLink,
+  Crown,
 } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { isCloudSyncFeatureAvailable } from '@/constants/features';
-import { Button, TextField, useToast, SegmentedControl } from '@/components/ui';
-import { useCatchAi } from '@/hooks/useCatchAi';
-import { DEFAULT_DAILY_BUDGET, MAX_DAILY_BUDGET } from '@/lib/ai/userApiKey';
+import { isCloudSyncFeatureAvailable, isCloudSyncEnabled } from '@/constants/features';
+import { Button, useToast, SegmentedControl } from '@/components/ui';
+import { PRO_LAUNCH_PROMO_ACTIVE } from '@/constants/pro';
+import { PRO_UPGRADE_HREF } from '@/constants/routes';
+import { usePro } from '@/providers/ProProvider';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useAuth } from '@/providers/AuthProvider';
@@ -48,6 +47,7 @@ import { clearAllWaypoints } from '@/utils/waypointsStorage';
 import BrandMark from '@/components/brand/BrandMark';
 import { hapticSuccess, hapticError } from '@/utils/haptics';
 import type { CatchRecord } from '@/lib/api/fishingApi';
+import { buildSeasonRecapText } from '@/utils/seasonRecap';
 
 function toCsv(catches: CatchRecord[]): string {
   const header = [
@@ -103,80 +103,39 @@ export default function SettingsScreen() {
   const termsOfServiceUrl = process.env.EXPO_PUBLIC_TERMS_OF_SERVICE_URL;
   const { user, signOut, deleteAccount } = useAuth();
   const cloudSyncAvailable = isCloudSyncFeatureAvailable();
-  const cloudSync = cloudSyncAvailable && user != null;
+  const cloudSync = isCloudSyncEnabled();
+  const { isPro, priceLabel, purchasePro, restorePurchases } = usePro();
+  const [purchasingPro, setPurchasingPro] = useState(false);
+  const [restoringPro, setRestoringPro] = useState(false);
 
-  const {
-    hasKey,
-    usage,
-    refresh: refreshAi,
-    saveApiKey,
-    removeApiKey,
-    updateDailyBudget,
-    testKey,
-  } = useCatchAi();
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [savingKey, setSavingKey] = useState(false);
-  const [budgetInput, setBudgetInput] = useState(String(DEFAULT_DAILY_BUDGET));
-
-  useEffect(() => {
-    setBudgetInput(String(usage.budget));
-  }, [usage.budget]);
-
-  const handleSaveApiKey = async () => {
-    const trimmed = apiKeyInput.trim();
-    if (!trimmed) {
-      showToast({ message: 'Paste your API key first', variant: 'warning' });
+  const handlePurchasePro = async () => {
+    setPurchasingPro(true);
+    const { error, entitled } = await purchasePro();
+    setPurchasingPro(false);
+    if (error) {
+      showToast({ message: error, variant: 'error' });
       return;
     }
-    setSavingKey(true);
-    try {
-      const ok = await testKey(trimmed);
-      if (!ok) {
-        showToast({ message: 'Key test failed — check and try again', variant: 'error' });
-        return;
-      }
-      await saveApiKey(trimmed);
-      setApiKeyInput('');
-      await refreshAi();
+    if (entitled) {
       hapticSuccess();
-      showToast({ message: 'Catch AI key saved', variant: 'success' });
-    } finally {
-      setSavingKey(false);
+      showToast({ message: 'CatchMap Pro unlocked', variant: 'success' });
     }
   };
 
-  const handleRemoveApiKey = () => {
-    Alert.alert(
-      'Remove API key',
-      'Photo ID and Catch AI chat will stop until you add a key again.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            const removed = await removeApiKey();
-            await refreshAi();
-            if (removed) {
-              showToast({ message: 'API key removed', variant: 'success' });
-            } else {
-              showToast({ message: 'Could not remove API key', variant: 'error' });
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleSaveBudget = async () => {
-    const n = parseInt(budgetInput, 10);
-    if (!Number.isFinite(n) || n < 1) {
-      showToast({ message: 'Enter a valid daily budget', variant: 'warning' });
+  const handleRestorePro = async () => {
+    setRestoringPro(true);
+    const { entitled, error } = await restorePurchases();
+    setRestoringPro(false);
+    if (error) {
+      showToast({ message: error, variant: 'error' });
       return;
     }
-    await updateDailyBudget(n);
-    await refreshAi();
-    showToast({ message: 'Daily budget updated', variant: 'success' });
+    if (entitled) {
+      hapticSuccess();
+      showToast({ message: 'Pro restored', variant: 'success' });
+    } else {
+      showToast({ message: 'No Pro purchase found for this account', variant: 'warning' });
+    }
   };
 
   const handleSignOut = () => {
@@ -220,6 +179,21 @@ export default function SettingsScreen() {
         text: 'CSV',
         onPress: () => shareContent(toCsv(catches), 'fishing-catches.csv'),
       },
+      ...(isPro
+        ? [
+            {
+              text: 'Season recap',
+              onPress: () => {
+                const recap = buildSeasonRecapText(catches);
+                if (!recap) {
+                  showToast({ message: 'Could not build season recap', variant: 'warning' });
+                  return;
+                }
+                void shareContent(recap, 'catchmap-season-recap.txt');
+              },
+            },
+          ]
+        : []),
     ]);
   };
 
@@ -385,75 +359,46 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionLabel}>Catch AI</Text>
+        <Text style={styles.sectionLabel}>CatchMap Pro</Text>
         <View style={styles.card}>
           <View style={styles.rowHeader}>
-            <Sparkles color={colors.accent} size={18} />
-            <Text style={styles.rowTitle}>Your free AI key</Text>
+            <Crown color={colors.accent} size={18} />
+            <Text style={styles.rowTitle}>{isPro ? 'Pro active' : 'Upgrade to Pro'}</Text>
           </View>
           <Text style={styles.aiDescription}>
-            CatchMap never charges for AI. Add your own free Google Gemini key — you pay Google
-            directly (~1,500 free requests/day on Flash).
+            {isPro
+              ? 'Hosted Catch AI, cloud backup, offline maps, trip planner, and pattern alerts are unlocked.'
+              : `One-time ${priceLabel} lifetime purchase. Hosted Catch AI (30 requests/day), cloud sync, offline maps, trip planner, and more.`}
           </Text>
-          <TouchableOpacity
-            style={styles.linkRow}
-            onPress={() => Linking.openURL('https://aistudio.google.com/apikey')}
-            accessibilityRole="link"
-          >
-            <ExternalLink color={colors.accent} size={16} />
-            <Text style={styles.linkText}>Get a free key at Google AI Studio</Text>
-          </TouchableOpacity>
-
-          {hasKey ? (
-            <View style={styles.aiStatusRow}>
-              <KeyRound color={colors.success} size={16} />
-              <Text style={styles.aiStatusText}>API key configured</Text>
-            </View>
+          {PRO_LAUNCH_PROMO_ACTIVE && !isPro ? (
+            <Text style={styles.promoNote}>Launch promo pricing — limited time</Text>
+          ) : null}
+          {!isPro ? (
+            <>
+              <Button
+                title={purchasingPro ? 'Processing…' : `Unlock Pro — ${priceLabel}`}
+                onPress={handlePurchasePro}
+                loading={purchasingPro}
+                style={styles.aiButton}
+              />
+              <Button
+                title={restoringPro ? 'Restoring…' : 'Restore purchases'}
+                onPress={handleRestorePro}
+                loading={restoringPro}
+                variant="secondary"
+                style={styles.aiButton}
+              />
+            </>
           ) : (
-            <TextField
-              label="Gemini API key"
-              placeholder="AIza..."
-              value={apiKeyInput}
-              onChangeText={setApiKeyInput}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <TouchableOpacity
+              style={styles.linkRow}
+              onPress={() => router.push(PRO_UPGRADE_HREF)}
+              accessibilityRole="button"
+            >
+              <Sparkles color={colors.accent} size={16} />
+              <Text style={styles.linkText}>View Pro benefits</Text>
+            </TouchableOpacity>
           )}
-
-          {!hasKey ? (
-            <Button
-              title={savingKey ? 'Saving…' : 'Save & test key'}
-              onPress={handleSaveApiKey}
-              loading={savingKey}
-              style={styles.aiButton}
-            />
-          ) : (
-            <Button
-              title="Remove API key"
-              onPress={handleRemoveApiKey}
-              variant="secondary"
-              style={styles.aiButton}
-            />
-          )}
-
-          <View style={styles.divider} />
-
-          <Text style={styles.usageTitle}>{"Today's usage"}</Text>
-          <Text style={styles.usageStats}>
-            {usage.count} / {usage.budget} requests
-            {usage.status === 'warning' ? ' — approaching limit' : ''}
-            {usage.status === 'exceeded' ? ' — budget reached' : ''}
-          </Text>
-
-          <TextField
-            label={`Daily budget (max ${MAX_DAILY_BUDGET})`}
-            placeholder={String(DEFAULT_DAILY_BUDGET)}
-            value={budgetInput}
-            onChangeText={setBudgetInput}
-            keyboardType="number-pad"
-          />
-          <Button title="Update budget" onPress={handleSaveBudget} variant="secondary" />
         </View>
 
         {cloudSyncAvailable ? (
@@ -467,8 +412,10 @@ export default function SettingsScreen() {
                     <View style={styles.actionTextBlock}>
                       <Text style={styles.actionTitle}>{user.email ?? 'Signed in'}</Text>
                       <Text style={styles.actionSubtitle}>
-                        Catches and photos back up to your account automatically
-                      </Text>
+                      {isPro
+                        ? 'Catches and photos back up to your account automatically'
+                        : 'Pro unlocks cloud backup for catches, photos, and waypoints'}
+                    </Text>
                     </View>
                   </View>
                   <View style={styles.divider} />
@@ -515,8 +462,9 @@ export default function SettingsScreen() {
                   <View style={styles.actionTextBlock}>
                     <Text style={styles.actionTitle}>Sign in to back up & sync</Text>
                     <Text style={styles.actionSubtitle}>
-                      Free account. Your catch log and photos survive reinstalls; catches stay
-                      private by default.
+                      {isPro
+                        ? 'Your catch log and photos survive reinstalls; catches stay private by default.'
+                        : 'Sign in after upgrading to Pro for cloud backup. Free tier keeps catches on this device.'}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -737,6 +685,12 @@ function createStyles(colors: ThemeColors) {
       color: colors.textSecondary,
       fontSize: FontSizes.sm,
       lineHeight: 20,
+      marginBottom: Spacing.sm,
+    },
+    promoNote: {
+      color: colors.accent,
+      fontSize: FontSizes.xs,
+      fontWeight: FontWeights.semibold,
       marginBottom: Spacing.sm,
     },
     linkRow: {

@@ -37,6 +37,7 @@ yarn-error.*
 # editor / local tooling
 .cursor/
 .bolt/
+.tools/
 
 # local import / MCP / batch scratch (not part of the app)
 .import/

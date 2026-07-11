@@ -30,6 +30,8 @@ import PersonalBiteFingerprintCard from '@/components/insights/PersonalBiteFinge
 import type { CatchInsights } from '@/lib/types/catchInsights';
 import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
 import { isPersonalBiteEnabled } from '@/constants/features';
+import { useProFeature } from '@/hooks/useProFeature';
+import ProUpsellCard from '@/components/pro/ProUpsellCard';
 import { useOfflineMap } from '@/hooks/useOfflineMap';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -58,6 +60,8 @@ export default function MapDashboardContent({
   onViewInsights,
   onUseRecommendation,
 }: MapDashboardContentProps) {
+  const tripPlannerPro = useProFeature('trip_planner');
+  const offlineMapsPro = useProFeature('offline_maps');
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [selectedRecommendation, setSelectedRecommendation] =
@@ -73,7 +77,8 @@ export default function MapDashboardContent({
         <PersonalInsightsCard insights={insights} onViewAll={onViewInsights} />
       ) : null}
 
-      {offlineMap.state !== 'unavailable' && (
+      {offlineMap.state !== 'unavailable' ? (
+        offlineMapsPro ? (
         <View style={styles.offlineRow}>
           {offlineMap.state === 'idle' && (
             <TouchableOpacity style={styles.offlineButton} onPress={offlineMap.download}>
@@ -108,10 +113,23 @@ export default function MapDashboardContent({
             </TouchableOpacity>
           )}
         </View>
-      )}
+        ) : (
+          <ProUpsellCard
+            compact
+            title="Offline maps"
+            description="Download map tiles for remote fishing — no cell signal required."
+          />
+        )
+      ) : null}
 
-      {bestTime.hourlyForecast.length > 0 ? (
+      {tripPlannerPro && bestTime.hourlyForecast.length > 0 ? (
         <TripPlannerCard hourlyForecast={bestTime.hourlyForecast} />
+      ) : !tripPlannerPro ? (
+        <ProUpsellCard
+          compact
+          title="Trip planner"
+          description="See your best bite windows and add trips to your calendar."
+        />
       ) : null}
 
       <View style={styles.sectionHeader}>

@@ -1,24 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePro } from '@/providers/ProProvider';
+import { PRO_AI_DAILY_LIMIT } from '@/constants/pro';
 import {
-  hasUserGeminiApiKey,
-  getDailyBudget,
-  setDailyBudget,
-  setUserGeminiApiKey,
-  clearUserGeminiApiKey,
-  getUserGeminiApiKey,
-} from '@/lib/ai/userApiKey';
-import {
-  getUsageStatus,
-  canMakeAiRequest,
-  incrementUsageCount,
-  type UsageStatus,
-} from '@/lib/ai/usageTracker';
-import {
-  generateText,
-  testGeminiConnection,
-  type GeminiError,
-} from '@/lib/ai/geminiClient';
+  fetchHostedAiUsage,
+  hostedGenerateText,
+  type HostedAiError,
+  type HostedAiUsage,
+} from '@/lib/ai/hostedAiClient';
 import {
   buildFishingSystemPrompt,
   buildFishingContextBlock,
@@ -35,27 +24,28 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export type { HostedAiError as GeminiError };
+
 export function useCatchAi() {
-  const [hasKey, setHasKey] = useState(false);
-  const [usage, setUsage] = useState({
-    status: 'ok' as UsageStatus,
+  const { isPro } = usePro();
+  const hasPro = isPro;
+  const [usage, setUsage] = useState<HostedAiUsage>({
     count: 0,
-    budget: 100,
-    remaining: 100,
-    percentUsed: 0,
+    limit: PRO_AI_DAILY_LIMIT,
+    remaining: PRO_AI_DAILY_LIMIT,
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
   const refresh = useCallback(async () => {
-    const [keyPresent, usageStatus] = await Promise.all([
-      hasUserGeminiApiKey(),
-      getUsageStatus(),
-    ]);
-    setHasKey(keyPresent);
-    setUsage(usageStatus);
-  }, []);
+    if (hasPro) {
+      const usageStatus = await fetchHostedAiUsage();
+      setUsage(usageStatus);
+    } else {
+      setUsage({ count: 0, limit: PRO_AI_DAILY_LIMIT, remaining: 0 });
+    }
+  }, [hasPro]);
 
   useEffect(() => {
     void refresh();
@@ -77,32 +67,6 @@ export function useCatchAi() {
     await AsyncStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(next.slice(-MAX_HISTORY)));
   }, []);
 
-  const saveApiKey = useCallback(
-    async (key: string) => {
-      await setUserGeminiApiKey(key);
-      await refresh();
-    },
-    [refresh]
-  );
-
-  const removeApiKey = useCallback(async (): Promise<boolean> => {
-    const removed = await clearUserGeminiApiKey();
-    await refresh();
-    return removed;
-  }, [refresh]);
-
-  const updateDailyBudget = useCallback(
-    async (budget: number) => {
-      await setDailyBudget(budget);
-      await refresh();
-    },
-    [refresh]
-  );
-
-  const testKey = useCallback(async (key: string): Promise<boolean> => {
-    return testGeminiConnection(key);
-  }, []);
-
   const clearChat = useCallback(async () => {
     await persistMessages([]);
   }, [persistMessages]);
@@ -111,15 +75,24 @@ export function useCatchAi() {
     async (
       text: string,
       context?: FishingContextInput
-    ): Promise<{ error: GeminiError | null }> => {
+    ): Promise<{ error: HostedAiError | null }> => {
       const trimmed = text.trim();
       if (!trimmed) return { error: null };
 
-      if (!(await canMakeAiRequest())) {
+      if (!hasPro) {
+        return {
+          error: {
+            code: 'not_pro',
+            message: 'CatchMap Pro is required for Catch AI.',
+          },
+        };
+      }
+
+      if (usage.remaining <= 0) {
         return {
           error: {
             code: 'quota_exceeded',
-            message: 'Daily AI budget reached. Adjust in Settings or try tomorrow.',
+            message: `Daily AI limit reached (${PRO_AI_DAILY_LIMIT} requests). Try again tomorrow.`,
           },
         };
       }
@@ -150,7 +123,8 @@ export function useCatchAi() {
           .filter(Boolean)
           .join('\n\n');
 
-        const { result, error } = await generateText({
+        const { text: reply, error, usage: nextUsage } = await hostedGenerateText({
+          feature: 'chat',
           systemPrompt: buildFishingSystemPrompt(),
           userPrompt,
           temperature: 0.7,
@@ -162,34 +136,36 @@ export function useCatchAi() {
         const assistantMsg: ChatMessage = {
           id: `a-${Date.now()}`,
           role: 'assistant',
-          content: result?.text ?? '',
+          content: reply ?? '',
           timestamp: Date.now(),
         };
         await persistMessages([...withUser, assistantMsg]);
+        if (nextUsage) setUsage(nextUsage);
         await refresh();
         return { error: null };
       } finally {
         setSending(false);
       }
     },
-    [messages, persistMessages, refresh]
+    [messages, persistMessages, refresh, usage.remaining, hasPro]
   );
 
   return {
-    hasKey,
-    usage,
+    hasKey: hasPro,
+    hasPro,
+    usage: {
+      status:
+        usage.remaining <= 0 ? ('exceeded' as const) : usage.count / usage.limit >= 0.8 ? ('warning' as const) : ('ok' as const),
+      count: usage.count,
+      budget: usage.limit,
+      remaining: usage.remaining,
+      percentUsed: usage.limit > 0 ? Math.round((usage.count / usage.limit) * 100) : 100,
+    },
     messages,
     sending,
     loadingHistory,
     refresh,
-    saveApiKey,
-    removeApiKey,
-    updateDailyBudget,
-    getDailyBudget,
-    getUserGeminiApiKey,
-    testKey,
     clearChat,
     sendMessage,
-    incrementUsageCount,
   };
 }

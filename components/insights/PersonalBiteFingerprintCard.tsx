@@ -5,6 +5,8 @@ import { Fingerprint, Sparkles } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
 import { MIN_CATCHES_FOR_FINGERPRINT } from '@/lib/types/personalBite';
+import { fingerprintNeedsProUnlock } from '@/lib/pro/proInsights';
+import ProUpsellCard from '@/components/pro/ProUpsellCard';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -22,6 +24,15 @@ export default function PersonalBiteFingerprintCard({
 
   if (!fingerprint.unlocked) {
     const logged = fingerprint.totalCatchesWithConditions;
+    if (fingerprintNeedsProUnlock(fingerprint)) {
+      return (
+        <ProUpsellCard
+          compact={compact}
+          title="Bite fingerprint ready"
+          description="You've logged enough conditioned catches. Pro unlocks your personal bite patterns and pattern-match alerts."
+        />
+      );
+    }
     return (
       <View style={[styles.unlockCard, compact && styles.compact]}>
         <Fingerprint color={colors.textMuted} size={compact ? 18 : 20} />

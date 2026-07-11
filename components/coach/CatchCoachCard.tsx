@@ -9,11 +9,10 @@ import { getPrimaryRigForName } from '@/utils/speciesRigs';
 import { getActivityColor, getActivityLabel } from '@/utils/fishingEngine';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
-import { isCatchAiCoachEnhanceEnabled } from '@/constants/features';
-import { generateText } from '@/lib/ai/geminiClient';
+import { isCatchAiCoachEnhanceEnabled, isProFeatureEnabled } from '@/constants/features';
+import { hostedGenerateText, fetchHostedAiUsage } from '@/lib/ai/hostedAiClient';
 import { buildCoachEnhancePrompt, type FishingContextInput } from '@/lib/ai/contextBuilder';
-import { hasUserGeminiApiKey } from '@/lib/ai/userApiKey';
-import { canMakeAiRequest } from '@/lib/ai/usageTracker';
+import { PRO_AI_DAILY_LIMIT } from '@/constants/pro';
 
 interface CatchCoachCardProps {
   advice: CatchCoachAdvice | null;
@@ -72,16 +71,17 @@ export default function CatchCoachCard({
     setEnhancing(true);
     setEnhanceError(null);
     try {
-      const hasKey = await hasUserGeminiApiKey();
-      if (!hasKey) {
-        setEnhanceError('Set up your free API key in Settings → Catch AI.');
+      if (!isProFeatureEnabled('hosted_ai')) {
+        setEnhanceError('Catch AI enhance requires CatchMap Pro.');
         return;
       }
-      if (!(await canMakeAiRequest())) {
-        setEnhanceError('Daily AI budget reached. Try again tomorrow.');
+      const usage = await fetchHostedAiUsage();
+      if (usage.remaining <= 0) {
+        setEnhanceError(`Daily Pro AI limit reached (${PRO_AI_DAILY_LIMIT}). Try again tomorrow.`);
         return;
       }
-      const { result, error } = await generateText({
+      const { text, error } = await hostedGenerateText({
+        feature: 'coach_enhance',
         systemPrompt:
           'You are Catch AI, a friendly fishing coach. Rewrite advice clearly in 2-3 short paragraphs.',
         userPrompt: buildCoachEnhancePrompt(advice, coachContext ?? { speciesName: advice.speciesName }),
@@ -92,7 +92,7 @@ export default function CatchCoachCard({
         setEnhanceError(error.message);
         return;
       }
-      setEnhancedText(result?.text ?? null);
+      setEnhancedText(text ?? null);
     } finally {
       setEnhancing(false);
     }

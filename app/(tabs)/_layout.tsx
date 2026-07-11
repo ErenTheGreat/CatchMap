@@ -6,7 +6,7 @@ import { PlatformPressable } from '@react-navigation/elements';
 import ResponsiveTabBar from '@/components/navigation/ResponsiveTabBar';
 import { SIDE_TAB_BAR_WIDTH } from '@/constants/layout';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { isCatchAiChatEnabled } from '@/constants/features';
+import { isCatchAiTabVisible } from '@/constants/features';
 import { useLogFormGuard } from '@/providers/LogFormGuardProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -113,7 +113,7 @@ export default function TabLayout() {
         name="assistant"
         options={{
           title: 'Catch AI',
-          href: isCatchAiChatEnabled() ? undefined : null,
+          href: isCatchAiTabVisible() ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <Sparkles color={color} size={size} />
           ),

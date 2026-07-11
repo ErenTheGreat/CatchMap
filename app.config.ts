@@ -66,14 +66,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#0f1f3d',
       },
     ],
-    [
-      '@sentry/react-native/expo',
-      {
-        // Organization/project optional until you create a Sentry project.
-        // Set EXPO_PUBLIC_SENTRY_DSN (and SENTRY_AUTH_TOKEN for source maps) via EAS secrets.
-        note: 'Use SENTRY_AUTH_TOKEN env to authenticate with Sentry for source map uploads.',
-      },
-    ],
   ],
   ios: {
     supportsTablet: true,

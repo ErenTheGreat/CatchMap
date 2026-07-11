@@ -5,6 +5,8 @@ import { Clock, Fish, Sparkles, TrendingUp } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import type { CatchInsights } from '@/lib/types/catchInsights';
 import { MIN_CATCHES_FOR_INSIGHTS } from '@/utils/catchInsights';
+import { insightsNeedsProUnlock } from '@/lib/pro/proInsights';
+import ProUpsellCard from '@/components/pro/ProUpsellCard';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -19,6 +21,14 @@ export default function PersonalInsightsCard({ insights, onViewAll }: PersonalIn
 
   if (!insights.hasEnoughData) {
     const logged = insights.totalCatches;
+    if (insightsNeedsProUnlock(insights)) {
+      return (
+        <ProUpsellCard
+          title="Personal insights ready"
+          description="You've logged enough catches. Upgrade to Pro to see your best hours, seasons, and go-to spots."
+        />
+      );
+    }
     return (
       <View style={styles.card}>
         <View style={styles.headerRow}>

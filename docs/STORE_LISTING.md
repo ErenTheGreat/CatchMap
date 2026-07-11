@@ -29,17 +29,39 @@ CatchMap helps anglers fish smarter across the United States.
 
 **Log every catch** — Record species, weight, lure, photos, and conditions. Export your log as JSON or CSV.
 
-**Learn as you go** — Species guide with rig diagrams, Catch Coach tips, regulations notices, Catch AI chat (BYOK), and optional photo species ID using your free Google API key.
+**Learn as you go** — Species guide with rig diagrams, regulations notices, and Catch Coach tips. **CatchMap Pro** adds hosted Catch AI, photo species ID, trip planner, offline maps, and cloud backup.
 
-**Your data, your choice** — Use CatchMap without an account (everything stays on your device) or sign in for private cloud backup. Community insights use only anonymized, opt-in catch data. AI features use your own Google Gemini key — CatchMap never charges for AI.
+**Your data, your choice** — Use CatchMap without an account (everything stays on your device). **CatchMap Pro** unlocks private cloud backup when signed in. Community insights use only anonymized, opt-in catch data.
 
-Free to use. US waterbody focus.
+**CatchMap Pro** — One-time purchase ($49.99 launch / $59.99 list). Pay once, fish smarter forever: hosted AI, cloud sync, offline maps, trip planner, pattern alerts, and personal insights.
+
+Free map and catch logging. Pro unlocks the serious angler toolkit.
 
 ## Keywords (App Store)
 
 fishing,angler,spots,map,bite,solunar,tides,catch log,species,lures,trip planner
 
-## Support & legal URLs
+## Supabase secrets (Pro + hosted AI)
+
+Set in Supabase Dashboard → Edge Functions → Secrets:
+
+| Secret | Purpose |
+|--------|---------|
+| `GEMINI_API_KEY` | Hosted Catch AI (Pro) |
+| `REVENUECAT_SECRET_API_KEY` | Verify Pro purchases for anonymous users |
+| `REVENUECAT_WEBHOOK_SECRET` | Optional auth for `revenuecat-webhook` |
+| `PRO_DEV_BYPASS` | Set `true` in staging only to skip Pro checks |
+
+Deploy edge functions: `ai-proxy`, `revenuecat-webhook`. Apply migration `20260710100000_026_pro_entitlements.sql`.
+
+## IAP setup (RevenueCat)
+
+1. Create product `catchmap_pro_lifetime` (non-consumable) in App Store Connect and Play Console
+2. Configure RevenueCat entitlement `pro` linked to that product
+3. Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in EAS secrets
+4. Webhook URL: `https://<project>.supabase.co/functions/v1/revenuecat-webhook`
+5. Launch at **$49.99** (`EXPO_PUBLIC_PRO_LAUNCH_PROMO=true`); move to **$59.99** after 30–60 days
+
 
 | Item | URL |
 |------|-----|
@@ -67,7 +89,7 @@ Recommended sizes: iPhone 6.7" and 6.1", iPad 12.9" (if supporting tablet promin
 - [ ] Production EAS build smoke-tested (map, log, sign-up, sync, export)
 - [x] `delete-account`, `privacy-policy`, and `terms-of-service` edge functions deployed (ACTIVE; verified via `npm run verify:edge`)
 - [ ] Supabase Auth → URL Configuration → Redirect URLs includes `catchmap://auth` (and `exp+bolt-expo-nativewind://auth` for local/dev-client testing)
-- [ ] Create a Sentry React Native project, then set `EXPO_PUBLIC_SENTRY_DSN` (EAS secret or production env) and optional `SENTRY_AUTH_TOKEN` for source maps
+- [ ] (Optional later) Crash reporting — skipped for now; app runs without Sentry
 - [x] Play Store submit track set to `internal` (closed testing) in `eas.json` — flip to `production` only after beta
 - [ ] App Store Connect / Play Console assets uploaded (screenshots above)
 - [x] Native package IDs aligned to `app.catchmap` (Android `applicationId` / iOS `PRODUCT_BUNDLE_IDENTIFIER`)
@@ -85,12 +107,7 @@ The app builds redirects via `getAuthRedirectUrl()` → `catchmap://auth` ([lib/
 
 ## Crash reporting
 
-Sentry is wired in the app (`lib/sentry.ts`, root `Sentry.wrap`, Expo + Metro plugins). Reporting stays **off** until `EXPO_PUBLIC_SENTRY_DSN` is set. Recommended:
-
-```bash
-eas secret:create --name EXPO_PUBLIC_SENTRY_DSN --value "https://...@o....ingest.sentry.io/..."
-eas secret:create --name SENTRY_AUTH_TOKEN --value "sntrys_..."
-```
+Skipped for now (keeps phone installs simple). Add later only if you want crash reports.
 
 ## EAS build & submit (closed testing first)
 

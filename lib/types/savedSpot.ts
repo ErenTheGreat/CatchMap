@@ -1,4 +1,11 @@
 import type { NearbySpot } from '@/utils/osmFishingSpots';
+import { getMaxSavedSpots } from '@/constants/pro';
+import { getProEntitled } from '@/lib/pro/proState';
+
+/** Tier-aware saved spot cap (free: 10, Pro: 100). */
+export function getMaxSavedSpotsLimit(): number {
+  return getMaxSavedSpots(getProEntitled());
+}
 
 /** Lightweight spot record persisted on device (favorites + recents). */
 export interface SavedSpotSnapshot {
@@ -15,8 +22,11 @@ export interface RecentSpotSnapshot extends SavedSpotSnapshot {
   visitedAt: number;
 }
 
-export const MAX_SAVED_SPOTS = 30;
+export const MAX_SAVED_SPOTS = 100;
 export const MAX_RECENT_SPOTS = 8;
+
+/** @deprecated Use getMaxSavedSpotsLimit() for tier-aware caps. */
+export const LEGACY_MAX_SAVED_SPOTS = 30;
 
 export function nearbySpotToSnapshot(spot: NearbySpot, savedAt = Date.now()): SavedSpotSnapshot {
   return {

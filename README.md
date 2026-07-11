@@ -27,7 +27,12 @@ npm run dev              # Expo dev client on port 8081
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
 | `EXPO_PUBLIC_ENABLE_CLOUD_SYNC` | No | `"true"` enables sign-in + catch backup |
 | `EXPO_PUBLIC_ENABLE_CATCH_COACH` | No | Structured coaching cards |
-| `EXPO_PUBLIC_ENABLE_SPECIES_ID` | No | Gemini photo species ID (user API key in Settings) |
+| `EXPO_PUBLIC_ENABLE_SPECIES_ID` | No | Photo species ID (CatchMap Pro hosted AI) |
+| `EXPO_PUBLIC_ENABLE_PRO` | No | Set `"false"` to disable Pro gating (rollback) |
+| `EXPO_PUBLIC_PRO_LAUNCH_PROMO` | No | `"false"` switches paywall to $59.99 list price |
+| `EXPO_PUBLIC_PRO_DEV_UNLOCK` | No | Dev only — unlock Pro without purchase |
+| `EXPO_PUBLIC_REVENUECAT_IOS_KEY` | IAP | RevenueCat iOS public API key |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | IAP | RevenueCat Android public API key |
 | `EXPO_PUBLIC_PRIVACY_POLICY_URL` | Play Store | Hosted privacy policy URL |
 | `EXPO_PUBLIC_TERMS_OF_SERVICE_URL` | Play Store | Hosted terms of service URL |
 | `EXPO_PUBLIC_SENTRY_DSN` | No | Sentry DSN for crash reporting |
@@ -71,10 +76,10 @@ See [`constants/features.ts`](constants/features.ts). Cloud sync requires both t
 Native package IDs are `app.catchmap` (Android + iOS). Submit track defaults to Play **internal** testing.
 
 ```bash
-# Optional: enable crash reporting
-eas secret:create --name EXPO_PUBLIC_SENTRY_DSN --value "https://...@o....ingest.sentry.io/..."
+# Phone-installable APK (use this to test on your device)
+eas build --profile preview --platform android
 
-# Build + submit helper
+# Store upload binary (AAB — not sideloadable)
 ./scripts/release-play-beta.sh
 ```
 

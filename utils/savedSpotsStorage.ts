@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   MAX_RECENT_SPOTS,
-  MAX_SAVED_SPOTS,
+  getMaxSavedSpotsLimit,
   type RecentSpotSnapshot,
   type SavedSpotSnapshot,
   nearbySpotToSnapshot,
@@ -47,7 +47,7 @@ export function upsertSavedSpot(
 ): SavedSpotSnapshot[] {
   const snapshot = nearbySpotToSnapshot(spot);
   const without = spots.filter((item) => item.id !== snapshot.id);
-  return [snapshot, ...without].slice(0, MAX_SAVED_SPOTS);
+  return [snapshot, ...without].slice(0, getMaxSavedSpotsLimit());
 }
 
 export function removeSavedSpot(

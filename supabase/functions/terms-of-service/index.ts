@@ -16,7 +16,7 @@ const HTML = `<!DOCTYPE html>
 </head>
 <body>
   <h1>CatchMap: Fishing Spots &amp; Log — Terms of Service</h1>
-  <p class="muted">Last updated: July 9, 2026</p>
+  <p class="muted">Last updated: July 10, 2026</p>
   <p>These Terms govern your use of CatchMap ("the app"). By using the app, you agree to these Terms.</p>
   <h2>The service</h2>
   <p>CatchMap helps anglers discover fishing spots, view conditions and bite forecasts, and log catches. Map data, species information, and forecasts are provided for general guidance only — not as professional fishing, safety, or legal advice.</p>
@@ -32,8 +32,10 @@ const HTML = `<!DOCTYPE html>
     <li>When you opt in to community contribution on a catch, you grant us permission to use anonymized species, lure, and approximate-area data to improve community bite insights. Your name and exact GPS are never shared.</li>
     <li>Do not upload unlawful, harmful, or misleading content.</li>
   </ul>
-  <h2>Catch AI (optional)</h2>
-  <p>Photo species identification, Catch AI chat, and enhanced coaching use <strong>your own Google Gemini API key</strong> stored on your device. Requests go directly from your device to Google — CatchMap does not bill you or operate a paid AI tier. You are subject to Google's API terms and free-tier limits.</p>
+  <h2>CatchMap Pro (optional)</h2>
+  <p>CatchMap Pro is a one-time in-app purchase that unlocks hosted Catch AI (chat, photo species ID, coach enhancement), cloud backup, offline maps, trip planner, pattern alerts, and related features. AI requests are subject to a daily fair-use limit. Refunds are handled by Apple or Google per their store policies.</p>
+  <h2>Catch AI</h2>
+  <p>Free users can use the map and local catch log without AI. Pro subscribers use hosted AI through CatchMap servers (Google Gemini). You must not abuse AI features or attempt to bypass usage limits.</p>
   <h2>Acceptable use</h2>
   <ul>
     <li>Do not misuse, reverse engineer, or overload the service.</li>

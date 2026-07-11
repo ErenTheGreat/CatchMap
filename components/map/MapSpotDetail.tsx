@@ -15,6 +15,8 @@ import RegulationNoticeCard from '@/components/map/RegulationNoticeCard';
 import BiteScoreBreakdown from '@/components/map/BiteScoreBreakdown';
 import FishingNowCard from '@/components/map/FishingNowCard';
 import TripPlannerCard from '@/components/map/TripPlannerCard';
+import AiTripBriefCard from '@/components/pro/AiTripBriefCard';
+import { useProFeature } from '@/hooks/useProFeature';
 import CommunityCatchIntelCard from '@/components/map/CommunityCatchIntelCard';
 import { ErrorState, Skeleton, OfflineBanner, ThemedText } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -145,6 +147,7 @@ export default memo(function MapSpotDetail({
 }: MapSpotDetailProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const tripPlannerPro = useProFeature('trip_planner');
   const bestCatchTimes = spotDetails?.bestCatchTimes ?? [];
   const absoluteDiscoveryScore = useMemo(
     () =>
@@ -292,7 +295,7 @@ export default memo(function MapSpotDetail({
         />
       ) : null}
 
-      {breakdownScore && (breakdownScore.hourlyForecast?.length ?? 0) > 0 ? (
+      {tripPlannerPro && breakdownScore && (breakdownScore.hourlyForecast?.length ?? 0) > 0 ? (
         <TripPlannerCard
           hourlyForecast={breakdownScore.hourlyForecast ?? []}
           spotName={spot.name}
@@ -302,6 +305,8 @@ export default memo(function MapSpotDetail({
           weather={weather}
         />
       ) : null}
+
+      <AiTripBriefCard spot={spot} weather={weather ?? undefined} />
 
       <View style={styles.fishSection}>
         <ThemedText style={styles.fishTitle}>Potential Catches</ThemedText>

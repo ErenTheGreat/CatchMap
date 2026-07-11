@@ -1,8 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
-import { isSpeciesIdEnabled } from '@/constants/features';
-import { generateVision } from '@/lib/ai/geminiClient';
-import { hasUserGeminiApiKey } from '@/lib/ai/userApiKey';
+import { isSpeciesIdEnabled, isProFeatureEnabled } from '@/constants/features';
+import { hostedGenerateVision } from '@/lib/ai/hostedAiClient';
 import { matchSpeciesToCatalogDetailed } from '@/lib/species/matchSpeciesToCatalog';
 import { getCatalogSpeciesNames } from '@/lib/ai/contextBuilder';
 
@@ -14,7 +13,7 @@ export interface SpeciesIdentificationResult {
 }
 
 export type SpeciesIdentificationFailure =
-  | 'no_api_key'
+  | 'not_pro'
   | 'quota_exceeded'
   | 'image_unreadable'
   | 'no_match'
@@ -73,8 +72,7 @@ async function imageUriToBase64(uri: string): Promise<string | null> {
 }
 
 /**
- * Identifies fish species from a photo using the user's Gemini API key (BYOK).
- * No sign-in required. Falls back gracefully when no key is configured.
+ * Identifies fish species from a photo using CatchMap Pro hosted AI.
  */
 export async function identifySpeciesFromPhoto(
   imageUri: string,
@@ -84,12 +82,11 @@ export async function identifySpeciesFromPhoto(
     return { result: null };
   }
 
-  const hasKey = await hasUserGeminiApiKey();
-  if (!hasKey) {
+  if (!isProFeatureEnabled('species_id')) {
     return {
       result: null,
-      failure: 'no_api_key',
-      warning: 'Add your free Google API key in Settings → Catch AI for photo identification.',
+      failure: 'not_pro',
+      warning: 'Photo species ID is included with CatchMap Pro.',
     };
   }
 
@@ -106,7 +103,8 @@ If you cannot confidently identify the fish, reply UNKNOWN.
 Reply with ONLY the species name — no punctuation, quotes, or extra words.`;
 
   try {
-    const { result, error } = await generateVision({
+    const { text, error } = await hostedGenerateVision({
+      feature: 'species_id',
       prompt,
       imageBase64: base64,
       mimeType: detectImageMimeType(imageUri, base64),
@@ -118,8 +116,8 @@ Reply with ONLY the species name — no punctuation, quotes, or extra words.`;
     }
 
     if (error) {
-      if (error.code === 'no_api_key') {
-        return { result: null, failure: 'no_api_key', warning: error.message };
+      if (error.code === 'not_pro') {
+        return { result: null, failure: 'not_pro', warning: error.message };
       }
       if (error.code === 'quota_exceeded') {
         return { result: null, failure: 'quota_exceeded', warning: error.message };
@@ -130,7 +128,7 @@ Reply with ONLY the species name — no punctuation, quotes, or extra words.`;
       return { result: null, failure: 'server_unavailable', warning: error.message };
     }
 
-    const raw = result?.text ?? '';
+    const raw = text ?? '';
     const match = matchSpeciesToCatalogDetailed(raw);
 
     if (!match) {
@@ -149,7 +147,7 @@ Reply with ONLY the species name — no punctuation, quotes, or extra words.`;
         source: 'gemini',
         provisional: match.provisional,
       },
-      warning: 'Uses 1 request from your Google free tier.',
+      warning: 'Uses 1 Pro AI request.',
     };
   } catch (error) {
     if (__DEV__) console.warn('Species identification failed:', error);

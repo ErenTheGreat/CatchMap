@@ -65,7 +65,9 @@ import { useWaypoints } from '@/hooks/useWaypoints';
 import type { WaypointRecord } from '@/lib/types/waypoint';
 import { useMapLayers } from '@/hooks/useMapLayers';
 import type { MapLayerState } from '@/lib/mapLayers/config';
-import { useSavedSpots } from '@/providers/SavedSpotsProvider';
+import { isPersonalBiteEnabled, isCloudSyncEnabled } from '@/constants/features';
+import { useProFeature } from '@/hooks/useProFeature';
+import { PRO_UPGRADE_HREF } from '@/constants/routes';
 import { savedSpotToNearbySpot, type SavedSpotSnapshot } from '@/lib/types/savedSpot';
 import { getSpotLogSpeciesOptions } from '@/lib/species/spotLogSpecies';
 import { prefetchSpotData } from '@/lib/species/prefetchSpotData';
@@ -77,7 +79,7 @@ import type { CatchCoachContext } from '@/hooks/useCatchCoachAdvice';
 import type { AvailableSpecies, SpeciesPrediction } from '@/lib/types/speciesPrediction';
 import LogCatchForm, { type LogCatchFormValues } from '@/components/catch/LogCatchForm';
 import { resolveCatchLocationFromMap } from '@/utils/catchLocation';
-import { isPersonalBiteEnabled, isCloudSyncEnabled } from '@/constants/features';
+import { useSavedSpots } from '@/providers/SavedSpotsProvider';
 import { buildCatchConditions } from '@/utils/catchConditions';
 import { buildBiteHeatmapGeoJson, getBiteHeatmapStatus } from '@/utils/biteHeatmap';
 import { computePersonalBiteBoost } from '@/utils/personalBiteFingerprint';
@@ -92,6 +94,8 @@ export default function MapScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
+  const tripPlannerPro = useProFeature('trip_planner');
+  const premiumMapLayersPro = useProFeature('premium_map_layers');
   const { lat: flyLatParam, lng: flyLngParam } = useLocalSearchParams<{
     lat?: string;
     lng?: string;
@@ -355,9 +359,14 @@ export default function MapScreen() {
 
   const handleToggleLayer = useCallback(
     (layer: keyof MapLayerState) => {
+      const premiumLayers: (keyof MapLayerState)[] = ['radar', 'heatmap', 'community'];
+      if (premiumLayers.includes(layer) && !premiumMapLayersPro) {
+        router.push(PRO_UPGRADE_HREF);
+        return;
+      }
       toggleLayer(layer);
     },
-    [toggleLayer]
+    [toggleLayer, router, premiumMapLayersPro]
   );
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -1009,6 +1018,10 @@ export default function MapScreen() {
             discoveryEnriching={discoveryEnriching}
             onGoToBestSpot={handleGoToBestSpot}
             onPlanTrip={() => {
+              if (!tripPlannerPro) {
+                router.push(PRO_UPGRADE_HREF);
+                return;
+              }
               const lat = location?.latitude;
               const lng = location?.longitude;
               router.push({

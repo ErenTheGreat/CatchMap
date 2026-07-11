@@ -4,7 +4,7 @@ import { getCurrentUserId } from '@/lib/authState';
 import { supabase } from '@/lib/supabase';
 import {
   generateWaypointId,
-  MAX_WAYPOINTS,
+  getMaxWaypointsLimit,
   type WaypointRecord,
 } from '@/lib/types/waypoint';
 
@@ -65,7 +65,7 @@ export function mergeWaypointsLocalAndRemote(
     if (seen.has(record.id)) continue;
     seen.add(record.id);
     merged.push(record);
-    if (merged.length >= MAX_WAYPOINTS) break;
+    if (merged.length >= getMaxWaypointsLimit()) break;
   }
 
   return merged;
@@ -156,7 +156,7 @@ export async function pullWaypointsFromCloud(): Promise<WaypointRecord[]> {
     .select('id, client_id, name, notes, latitude, longitude, created_at, updated_at')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false })
-    .limit(MAX_WAYPOINTS);
+    .limit(getMaxWaypointsLimit());
 
   if (error || !data) {
     if (__DEV__) console.error('Failed to pull waypoints:', error);
@@ -184,7 +184,7 @@ export async function saveWaypoint(input: SaveWaypointInput): Promise<WaypointRe
   };
 
   const local = await getWaypointsLocal();
-  const next = [record, ...local].slice(0, MAX_WAYPOINTS);
+  const next = [record, ...local].slice(0, getMaxWaypointsLimit());
   await persistWaypointsLocal(next);
 
   if (isCloudSyncEnabled()) {

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useCatches } from '@/hooks/useCatches';
 import { buildPersonalBiteFingerprint } from '@/utils/personalBiteFingerprint';
+import { applyProToFingerprint } from '@/lib/pro/proInsights';
 import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
 
 const EMPTY_FINGERPRINT: PersonalBiteFingerprint = {
@@ -15,10 +16,11 @@ const EMPTY_FINGERPRINT: PersonalBiteFingerprint = {
 export function usePersonalBiteFingerprint() {
   const { data: catches = [], isLoading } = useCatches();
 
-  const fingerprint = useMemo(
-    () => (catches.length > 0 ? buildPersonalBiteFingerprint(catches) : EMPTY_FINGERPRINT),
-    [catches]
-  );
+  const fingerprint = useMemo(() => {
+    const base =
+      catches.length > 0 ? buildPersonalBiteFingerprint(catches) : EMPTY_FINGERPRINT;
+    return applyProToFingerprint(base);
+  }, [catches]);
 
   return { fingerprint, catches, isLoading };
 }

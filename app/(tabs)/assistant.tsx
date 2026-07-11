@@ -7,23 +7,23 @@ import { useQuery } from '@tanstack/react-query';
 import { Spacing, FontSizes, FontWeights, type ThemeColors } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
-import { isCatchAiChatEnabled } from '@/constants/features';
+import { isCatchAiTabVisible } from '@/constants/features';
 import CatchAiChat from '@/components/ai/CatchAiChat';
 import { useCatchAi } from '@/hooks/useCatchAi';
 import { useCatches } from '@/hooks/useCatches';
 import { fishingApi } from '@/lib/api/fishingApi';
+import { usePro } from '@/providers/ProProvider';
 
 export default function AssistantScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { isPro } = usePro();
   const {
     hasKey,
     usage,
     messages,
     sending,
     loadingHistory,
-    saveApiKey,
-    testKey,
     clearChat,
     sendMessage,
     refresh,
@@ -69,10 +69,10 @@ export default function AssistantScreen() {
     [sendMessage, catches, weatherQuery.data, refresh]
   );
 
-  if (!isCatchAiChatEnabled()) {
+  if (!isCatchAiTabVisible()) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.disabled}>Catch AI chat is not enabled.</Text>
+        <Text style={styles.disabled}>Catch AI requires CatchMap Pro.</Text>
       </SafeAreaView>
     );
   }
@@ -83,7 +83,9 @@ export default function AssistantScreen() {
         <Sparkles color={colors.accent} size={22} />
         <View>
           <Text style={styles.title}>Catch AI</Text>
-          <Text style={styles.subtitle}>Your free fishing assistant</Text>
+          <Text style={styles.subtitle}>
+            {isPro ? 'Hosted Pro assistant' : 'Upgrade to Pro to unlock'}
+          </Text>
         </View>
       </View>
 
@@ -95,8 +97,6 @@ export default function AssistantScreen() {
           usage={usage}
           onSend={handleSend}
           onClear={clearChat}
-          onSaveKey={saveApiKey}
-          onTestKey={testKey}
           error={error}
         />
       ) : null}

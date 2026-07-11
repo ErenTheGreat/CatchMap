@@ -21,20 +21,19 @@ function disableNativeMap(reason: Error) {
 
 function getNativeMapComponent(): NativeMapComponent | null {
   if (Platform.OS === 'web') return null;
+  // Release APKs cannot recover from MapLibre's duplicate-view Invariant Violation — RN kills
+  // the process before our error boundary runs. Use the WebView map instead.
+  if (!__DEV__) return null;
   if (nativeMapPermanentlyDisabled) return null;
   if (cachedNativeMapComponent !== undefined) return cachedNativeMapComponent;
 
   try {
-    // Dynamic require avoids bundling native MapLibre on web and handles missing native modules.
+    // Single require — loading @maplibre/maplibre-react-native twice registers MLRNCamera twice.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Map: NativeMap } = require('@maplibre/maplibre-react-native');
-    if (NativeMap) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const component = require('@/components/map/FishingMapMapLibreNative.native')
-        .default as NativeMapComponent | undefined;
-      cachedNativeMapComponent = component ?? null;
-      return cachedNativeMapComponent;
-    }
+    const component = require('@/components/map/FishingMapMapLibreNative.native')
+      .default as NativeMapComponent | undefined;
+    cachedNativeMapComponent = component ?? null;
+    return cachedNativeMapComponent;
   } catch (error) {
     if (isNativeMapRegistrationError(error)) {
       disableNativeMap(error instanceof Error ? error : new Error(String(error)));

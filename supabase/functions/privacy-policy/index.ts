@@ -16,7 +16,7 @@ const HTML = `<!DOCTYPE html>
 </head>
 <body>
   <h1>CatchMap: Fishing Spots &amp; Log — Privacy Policy</h1>
-  <p class="muted">Last updated: July 9, 2026</p>
+  <p class="muted">Last updated: July 10, 2026</p>
   <p>CatchMap helps anglers discover fishing spots, view conditions, and log catches. This policy explains what data the app collects and how we use it.</p>
   <h2>Information we collect</h2>
   <ul>
@@ -24,7 +24,9 @@ const HTML = `<!DOCTYPE html>
     <li><strong>Account (optional)</strong> — Email and password if you sign in for cloud backup. Managed by Supabase Auth.</li>
     <li><strong>Catch logs</strong> — Stored <strong>locally on your device</strong> by default. When signed in, catches and photos may sync to your private cloud account (protected by row-level security).</li>
     <li><strong>Community contribution (opt-in per catch)</strong> — If you enable sharing on a catch log, anonymized species, lure, and approximate area data may contribute to community bite insights. Your name and exact GPS are never shared.</li>
-    <li><strong>Photos (optional)</strong> — Stored on your device; uploaded to private cloud storage only when signed in and attached to a catch. If you use Catch AI species identification, photos are sent directly to Google Gemini using <strong>your own API key</strong> stored on your device — CatchMap does not host or pay for AI processing.</li>
+    <li><strong>Photos (optional)</strong> — Stored on your device; uploaded to private cloud storage only when signed in with CatchMap Pro and attached to a catch. Pro photo species ID sends images to our secure AI proxy (Google Gemini) for identification — not stored by CatchMap after processing.</li>
+    <li><strong>CatchMap Pro (optional purchase)</strong> — One-time in-app purchase unlocks hosted Catch AI, cloud backup, offline maps, trip planner, and related Pro features. Purchase status is verified via Apple/Google and RevenueCat. Signed-in Pro users may have an entitlement record in our database.</li>
+    <li><strong>Hosted Catch AI (Pro)</strong> — Chat, species ID, and coaching requests are processed through our servers with a daily fair-use limit. We do not sell AI prompts or catch photos.</li>
     <li><strong>Map &amp; species data</strong> — Loaded from our backend over HTTPS.</li>
     <li><strong>Personal patterns</strong> — Bite fingerprints, trip feedback, and pattern-match alerts are computed on your device from your catch history.</li>
     <li><strong>Feedback (optional)</strong> — Message, category, app version, platform, optional email.</li>

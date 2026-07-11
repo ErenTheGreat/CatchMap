@@ -24,6 +24,9 @@ import {
 } from '@/utils/spotDiscoveryScore';
 import BiteScoreBreakdown from '@/components/map/BiteScoreBreakdown';
 import TripPlannerCard from '@/components/map/TripPlannerCard';
+import AiFishTodayCard from '@/components/pro/AiFishTodayCard';
+import ProUpsellCard from '@/components/pro/ProUpsellCard';
+import { useProFeature } from '@/hooks/useProFeature';
 import SavedSpotsSection from '@/components/map/SavedSpotsSection';
 import WaypointsSection from '@/components/map/WaypointsSection';
 import type { RecentSpotSnapshot, SavedSpotSnapshot } from '@/lib/types/savedSpot';
@@ -132,6 +135,7 @@ function DiscoveryDashboard({
 }: DiscoveryDashboardProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const tripPlannerPro = useProFeature('trip_planner');
   const [filter, setFilter] = useState<DiscoveryFilter>('all');
 
   const hasScores = Object.keys(scoresBySpotId).length > 0;
@@ -393,16 +397,24 @@ function DiscoveryDashboard({
       ) : null}
 
       {onPlanTrip ? (
-        <ScalePressable
-          style={styles.planTripButton}
-          onPress={onPlanTrip}
-          accessibilityRole="button"
-          accessibilityLabel="Plan my fishing trip"
-        >
-          <Calendar color={colors.accentForeground} size={18} />
-          <ThemedText style={styles.planTripText}>Plan my trip</ThemedText>
-          <ChevronRight color={colors.accentForeground} size={18} />
-        </ScalePressable>
+        tripPlannerPro ? (
+          <ScalePressable
+            style={styles.planTripButton}
+            onPress={onPlanTrip}
+            accessibilityRole="button"
+            accessibilityLabel="Plan my fishing trip"
+          >
+            <Calendar color={colors.accentForeground} size={18} />
+            <ThemedText style={styles.planTripText}>Plan my trip</ThemedText>
+            <ChevronRight color={colors.accentForeground} size={18} />
+          </ScalePressable>
+        ) : (
+          <ProUpsellCard
+            compact
+            title="Trip planner"
+            description="Rank spots for today, tomorrow, or Saturday — with calendar and reminders."
+          />
+        )
       ) : null}
 
       {bestSpot && onGoToBestSpot ? (
@@ -485,6 +497,12 @@ function DiscoveryDashboard({
         </View>
       ) : null}
 
+      {displayTopSpots.length > 0 ? (
+        <View style={styles.insightSection}>
+          <AiFishTodayCard topSpots={displayTopSpots} weather={weather} />
+        </View>
+      ) : null}
+
       {topScore ? (
         <View style={styles.insightSection}>
           <BiteScoreBreakdown
@@ -496,7 +514,7 @@ function DiscoveryDashboard({
         </View>
       ) : null}
 
-      {topScore && (topScore.hourlyForecast?.length ?? 0) > 0 ? (
+      {tripPlannerPro && topScore && (topScore.hourlyForecast?.length ?? 0) > 0 ? (
         <View style={styles.insightSection}>
           <TripPlannerCard
             hourlyForecast={topScore.hourlyForecast ?? []}

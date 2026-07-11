@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useCatches } from '@/hooks/useCatches';
 import { buildCatchInsights, getPersonalCatchTimesNear, getPersonalSpeciesNear } from '@/utils/catchInsights';
 import { buildPersonalBiteFingerprint } from '@/utils/personalBiteFingerprint';
+import { applyProToFingerprint, applyProToInsights } from '@/lib/pro/proInsights';
 import type { CatchInsights } from '@/lib/types/catchInsights';
 import type { PersonalBiteFingerprint } from '@/lib/types/personalBite';
 import type { CatchTimeSlot } from '@/lib/types/spotDetails';
@@ -30,15 +31,16 @@ const EMPTY_INSIGHTS: CatchInsights = {
 export function useCatchInsights() {
   const { data: catches = [], isLoading, isRefetching, refetch } = useCatches();
 
-  const insights = useMemo(
-    () => (catches.length > 0 ? buildCatchInsights(catches) : EMPTY_INSIGHTS),
-    [catches]
-  );
+  const insights = useMemo(() => {
+    const base = catches.length > 0 ? buildCatchInsights(catches) : EMPTY_INSIGHTS;
+    return applyProToInsights(base);
+  }, [catches]);
 
-  const fingerprint = useMemo(
-    () => (catches.length > 0 ? buildPersonalBiteFingerprint(catches) : EMPTY_FINGERPRINT),
-    [catches]
-  );
+  const fingerprint = useMemo(() => {
+    const base =
+      catches.length > 0 ? buildPersonalBiteFingerprint(catches) : EMPTY_FINGERPRINT;
+    return applyProToFingerprint(base);
+  }, [catches]);
 
   const getPersonalCatchTimesNearPoint = useCallback(
     (lat: number, lon: number, radiusKm?: number): CatchTimeSlot[] =>

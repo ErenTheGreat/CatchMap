@@ -14,7 +14,7 @@ import { Send, Trash2, AlertTriangle } from 'lucide-react-native';
 import { Spacing, FontSizes, BorderRadius, FontWeights, type ThemeColors } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
-import CatchAiSetupCard from '@/components/ai/CatchAiSetupCard';
+import ProPaywall from '@/components/pro/ProPaywall';
 import type { ChatMessage } from '@/hooks/useCatchAi';
 import type { UsageStatus } from '@/lib/ai/usageTracker';
 import { getSuggestedChatPrompts } from '@/lib/ai/contextBuilder';
@@ -32,8 +32,6 @@ interface CatchAiChatProps {
   };
   onSend: (text: string) => Promise<void>;
   onClear: () => void;
-  onSaveKey: (key: string) => Promise<void>;
-  onTestKey: (key: string) => Promise<boolean>;
   speciesName?: string | null;
   error?: string | null;
 }
@@ -45,8 +43,6 @@ export default function CatchAiChat({
   usage,
   onSend,
   onClear,
-  onSaveKey,
-  onTestKey,
   speciesName,
   error,
 }: CatchAiChatProps) {
@@ -66,9 +62,10 @@ export default function CatchAiChat({
 
   if (!hasKey) {
     return (
-      <CatchAiSetupCard
-        onSaveKey={onSaveKey}
-        onTestKey={onTestKey}
+      <ProPaywall
+        embedded
+        headline="Catch AI is a Pro feature"
+        subtitle="Hosted fishing assistant — no API key required."
       />
     );
   }
@@ -92,13 +89,13 @@ export default function CatchAiChat({
           />
           <Text style={styles.usageText}>
             {usage.status === 'exceeded'
-              ? `Daily budget reached (${usage.count}/${usage.budget}). Heuristics still work — try tomorrow.`
-              : `Approaching daily budget: ${usage.count}/${usage.budget} requests used.`}
+              ? `Daily Pro AI limit reached (${usage.count}/${usage.budget}). Try again tomorrow.`
+              : `Approaching daily limit: ${usage.count}/${usage.budget} requests used.`}
           </Text>
         </View>
       ) : (
         <Text style={styles.usageHint}>
-          {usage.remaining} of {usage.budget} AI requests left today
+          {usage.remaining} of {usage.budget} Pro AI requests left today
         </Text>
       )}
 
@@ -181,7 +178,7 @@ export default function CatchAiChat({
       </View>
 
       <Text style={styles.footerNote}>
-        Each message uses 1 request from your Google free tier. CatchMap never charges you.
+        Included with CatchMap Pro — hosted AI, no separate API key.
       </Text>
     </KeyboardAvoidingView>
   );

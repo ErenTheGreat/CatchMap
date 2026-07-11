@@ -16,13 +16,15 @@ import { OnboardingProvider, useOnboarding } from '@/providers/OnboardingProvide
 import { UnitsProvider } from '@/providers/UnitsProvider';
 import { LogFormGuardProvider } from '@/providers/LogFormGuardProvider';
 import { SavedSpotsProvider } from '@/providers/SavedSpotsProvider';
+import { ProProvider } from '@/providers/ProProvider';
 import { AppErrorBoundary, ToastProvider } from '@/components/ui';
 import { CatchSyncRunner } from '@/hooks/useCatchSync';
 import { WaypointSyncRunner } from '@/hooks/useWaypoints';
 import { usePatternMatchAlerts } from '@/hooks/usePatternMatchAlerts';
+import { isPatternAlertsEnabled } from '@/constants/features';
 import { TripFeedbackPrompt } from '@/components/trip/TripFeedbackPrompt';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
-import { initSentry, Sentry } from '@/lib/sentry';
+import { initSentry, wrapRoot } from '@/lib/sentry';
 
 initSentry();
 
@@ -54,7 +56,7 @@ function AuthRecoveryRedirect() {
 function RootLayoutContent() {
   const { colors, isDark, isOutdoor } = useTheme();
   const { status } = useOnboarding();
-  usePatternMatchAlerts(status === 'complete');
+  usePatternMatchAlerts(status === 'complete' && isPatternAlertsEnabled());
 
   return (
     <ToastProvider>
@@ -66,6 +68,7 @@ function RootLayoutContent() {
         <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="pro-upgrade" />
             <Stack.Screen name="trip-planner" />
             <Stack.Screen name="settings" />
             <Stack.Screen name="auth" />
@@ -100,7 +103,8 @@ function RootLayout() {
     <AppErrorBoundary>
       <QueryProvider>
         <AuthProvider>
-          <ThemeProvider>
+          <ProProvider>
+            <ThemeProvider>
             <FontProvider>
               <UnitsProvider>
                 <OnboardingProvider>
@@ -110,14 +114,15 @@ function RootLayout() {
                 </OnboardingProvider>
               </UnitsProvider>
             </FontProvider>
-          </ThemeProvider>
+            </ThemeProvider>
+          </ProProvider>
         </AuthProvider>
       </QueryProvider>
     </AppErrorBoundary>
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default wrapRoot(RootLayout);
 
 const styles = StyleSheet.create({
   root: {

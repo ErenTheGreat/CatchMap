@@ -95,8 +95,8 @@ const EMPTY_INITIAL_VALUES: Partial<LogCatchFormValues> = {};
 
 function getSpeciesIdFailureMessage(failure: SpeciesIdentificationFailure): string {
   switch (failure) {
-    case 'no_api_key':
-      return 'Add your free Google API key in Settings → Catch AI for photo identification.';
+    case 'not_pro':
+      return 'CatchMap Pro is required for photo species identification.';
     case 'quota_exceeded':
       return 'Daily AI budget reached. Pick a species below or try again tomorrow.';
     case 'image_unreadable':
