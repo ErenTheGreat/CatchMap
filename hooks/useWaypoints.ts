@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/providers/AuthProvider';
 import { useNetworkStatus } from '@/providers/NetworkProvider';
-import { isCloudSyncEnabled } from '@/constants/features';
+import { isCloudSyncFeatureAvailable } from '@/constants/features';
 import { useToast } from '@/components/ui';
+import { usePro } from '@/providers/ProProvider';
 import type { WaypointRecord } from '@/lib/types/waypoint';
 import {
   deleteWaypoint,
@@ -22,7 +23,8 @@ export function useWaypoints() {
   const { showToast } = useToast();
   const { user } = useAuth();
   const { isOnline } = useNetworkStatus();
-  const cloudSync = isCloudSyncEnabled();
+  const { isPro } = usePro();
+  const cloudSync = isCloudSyncFeatureAvailable() && user != null && isPro;
 
   const query = useQuery({
     queryKey: WAYPOINTS_KEY,
@@ -59,7 +61,7 @@ export function useWaypoints() {
   useEffect(() => {
     if (!cloudSync || !isOnline || !user) return;
     void syncPendingWaypoints().then(handleSyncResult);
-  }, [cloudSync, isOnline, user?.id, handleSyncResult]);
+  }, [cloudSync, isOnline, user?.id, isPro, handleSyncResult]);
 
   const saveMutation = useMutation({
     mutationFn: (input: SaveWaypointInput) => saveWaypoint(input),
@@ -107,11 +109,12 @@ export function useWaypoints() {
 export function WaypointSyncRunner() {
   const { user } = useAuth();
   const { isOnline } = useNetworkStatus();
+  const { isPro } = usePro();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!isCloudSyncEnabled() || !isOnline || !user) return;
+    if (!isCloudSyncFeatureAvailable() || !isOnline || !user || !isPro) return;
     void syncPendingWaypoints().then((result) => {
       if (result.synced > 0) {
         void queryClient.invalidateQueries({ queryKey: ['waypoints'] });
@@ -129,7 +132,7 @@ export function WaypointSyncRunner() {
         });
       }
     });
-  }, [isOnline, user?.id, queryClient, showToast]);
+  }, [isOnline, user?.id, isPro, queryClient, showToast]);
 
   return null;
 }

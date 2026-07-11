@@ -13,6 +13,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { ThemeProvider, useTheme } from '@/providers/ThemeProvider';
 import { FontProvider } from '@/providers/FontProvider';
 import { OnboardingProvider, useOnboarding } from '@/providers/OnboardingProvider';
+import { SubscriptionGateProvider, useSubscriptionGate } from '@/providers/SubscriptionGateProvider';
 import { UnitsProvider } from '@/providers/UnitsProvider';
 import { LogFormGuardProvider } from '@/providers/LogFormGuardProvider';
 import { SavedSpotsProvider } from '@/providers/SavedSpotsProvider';
@@ -21,9 +22,10 @@ import { AppErrorBoundary, ToastProvider } from '@/components/ui';
 import { CatchSyncRunner } from '@/hooks/useCatchSync';
 import { WaypointSyncRunner } from '@/hooks/useWaypoints';
 import { usePatternMatchAlerts } from '@/hooks/usePatternMatchAlerts';
-import { isPatternAlertsEnabled } from '@/constants/features';
+import { isPatternAlertsEnabled, isProMonetizationEnabled } from '@/constants/features';
 import { TripFeedbackPrompt } from '@/components/trip/TripFeedbackPrompt';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import ProSubscriptionGate from '@/components/pro/ProSubscriptionGate';
 import { initSentry, wrapRoot } from '@/lib/sentry';
 
 initSentry();
@@ -55,8 +57,13 @@ function AuthRecoveryRedirect() {
 
 function RootLayoutContent() {
   const { colors, isDark, isOutdoor } = useTheme();
-  const { status } = useOnboarding();
-  usePatternMatchAlerts(status === 'complete' && isPatternAlertsEnabled());
+  const { status: gateStatus } = useSubscriptionGate();
+  const { status: onboardingStatus } = useOnboarding();
+  usePatternMatchAlerts(gateStatus === 'complete' && onboardingStatus === 'complete' && isPatternAlertsEnabled());
+
+  const showBootOverlay = gateStatus === 'loading' || onboardingStatus === 'loading';
+  const showSubscriptionGate = isProMonetizationEnabled() && gateStatus === 'pending';
+  const showOnboarding = gateStatus === 'complete' && onboardingStatus === 'pending';
 
   return (
     <ToastProvider>
@@ -76,14 +83,20 @@ function RootLayoutContent() {
             <Stack.Screen name="+not-found" />
           </Stack>
 
-          {status === 'loading' ? (
+          {showBootOverlay ? (
             <View
               style={[styles.overlay, { backgroundColor: colors.background }]}
               pointerEvents="none"
             />
           ) : null}
 
-          {status === 'pending' ? (
+          {showSubscriptionGate ? (
+            <View style={[styles.overlay, { backgroundColor: colors.background }]}>
+              <ProSubscriptionGate />
+            </View>
+          ) : null}
+
+          {showOnboarding ? (
             <View style={[styles.overlay, { backgroundColor: colors.background }]}>
               <OnboardingFlow />
             </View>
@@ -107,11 +120,13 @@ function RootLayout() {
             <ThemeProvider>
             <FontProvider>
               <UnitsProvider>
-                <OnboardingProvider>
-                  <SavedSpotsProvider>
-                    <RootLayoutContent />
-                  </SavedSpotsProvider>
-                </OnboardingProvider>
+                <SubscriptionGateProvider>
+                  <OnboardingProvider>
+                    <SavedSpotsProvider>
+                      <RootLayoutContent />
+                    </SavedSpotsProvider>
+                  </OnboardingProvider>
+                </SubscriptionGateProvider>
               </UnitsProvider>
             </FontProvider>
             </ThemeProvider>

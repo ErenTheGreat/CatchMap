@@ -75,9 +75,9 @@ export default function TripPlannerScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
-  const tripPlannerPro = useProFeature('trip_planner');
+  const { enabled: tripPlannerEnabled, loading: tripPlannerLoading } =
+    useProFeature('trip_planner');
   const params = useLocalSearchParams<{ lat?: string; lng?: string }>();
-
   const paramLat = params.lat ? parseFloat(params.lat) : null;
   const paramLng = params.lng ? parseFloat(params.lng) : null;
 
@@ -127,7 +127,7 @@ export default function TripPlannerScreen() {
       }
       return spots.slice(0, 50);
     },
-    enabled: latitude != null && longitude != null,
+    enabled: tripPlannerEnabled && latitude != null && longitude != null,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -153,7 +153,15 @@ export default function TripPlannerScreen() {
     });
   };
 
-  if (!tripPlannerPro) {
+  if (tripPlannerLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LoadingState message="Checking Pro access…" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!tripPlannerEnabled) {
     return (
       <ProPaywall
         headline="Trip planner is a Pro feature"

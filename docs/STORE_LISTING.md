@@ -33,7 +33,7 @@ CatchMap helps anglers fish smarter across the United States.
 
 **Your data, your choice** — Use CatchMap without an account (everything stays on your device). **CatchMap Pro** unlocks private cloud backup when signed in. Community insights use only anonymized, opt-in catch data.
 
-**CatchMap Pro** — One-time purchase ($49.99 launch / $59.99 list). Pay once, fish smarter forever: hosted AI, cloud sync, offline maps, trip planner, pattern alerts, and personal insights.
+**CatchMap Pro** — Monthly subscription ($4/mo) or one-time lifetime purchase ($49.99 launch / $59.99 list). Unlock hosted AI, cloud sync, offline maps, trip planner, pattern alerts, and personal insights.
 
 Free map and catch logging. Pro unlocks the serious angler toolkit.
 
@@ -56,11 +56,14 @@ Deploy edge functions: `ai-proxy`, `revenuecat-webhook`. Apply migration `202607
 
 ## IAP setup (RevenueCat)
 
-1. Create product `catchmap_pro_lifetime` (non-consumable) in App Store Connect and Play Console
-2. Configure RevenueCat entitlement `pro` linked to that product
+1. Create products in App Store Connect and Play Console:
+   - `catchmap_pro_monthly` — auto-renewable subscription at **$4/mo**
+   - `catchmap_pro_lifetime` — non-consumable lifetime purchase
+2. Configure RevenueCat entitlement `pro` linked to **both** products
 3. Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in EAS secrets
 4. Webhook URL: `https://<project>.supabase.co/functions/v1/revenuecat-webhook`
-5. Launch at **$49.99** (`EXPO_PUBLIC_PRO_LAUNCH_PROMO=true`); move to **$59.99** after 30–60 days
+5. Launch lifetime at **$49.99** (`EXPO_PUBLIC_PRO_LAUNCH_PROMO=true`); move to **$59.99** after 30–60 days
+6. First launch shows the monthly subscription gate; users can continue with the free plan
 
 
 | Item | URL |

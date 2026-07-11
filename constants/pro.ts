@@ -1,6 +1,12 @@
-/** CatchMap Pro — lifetime IAP product and fair-use limits. */
+/** CatchMap Pro — lifetime and monthly IAP products and fair-use limits. */
 
 export const PRO_PRODUCT_ID = 'catchmap_pro_lifetime';
+
+/** Monthly subscription product (App Store / Play + RevenueCat). */
+export const PRO_MONTHLY_PRODUCT_ID = 'catchmap_pro_monthly';
+
+/** Fallback monthly price shown before store prices load (USD). */
+export const PRO_MONTHLY_PRICE_USD = 4;
 
 /** RevenueCat entitlement identifier (configure in RevenueCat dashboard). */
 export const PRO_ENTITLEMENT_ID = 'pro';
@@ -17,6 +23,10 @@ export const PRO_LAUNCH_PROMO_ACTIVE =
 export function getProDisplayPrice(): string {
   const amount = PRO_LAUNCH_PROMO_ACTIVE ? PRO_LAUNCH_PRICE_USD : PRO_LIST_PRICE_USD;
   return `$${amount.toFixed(2)}`;
+}
+
+export function getProMonthlyDisplayPrice(): string {
+  return `$${PRO_MONTHLY_PRICE_USD.toFixed(2)}/mo`;
 }
 
 export const PRO_AI_DAILY_LIMIT = 30;

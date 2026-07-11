@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { getVectorStyleUrl } from '@/components/map/types';
+import { isOfflineMapsProEnabled } from '@/constants/features';
 
 /**
  * Offline vector tile packs via MapLibre's OfflineManager.
@@ -99,6 +100,11 @@ export async function downloadOfflineRegion(
   const manager = getOfflineManager();
   if (!manager) {
     onError('Offline maps require a development build.');
+    return;
+  }
+
+  if (!isOfflineMapsProEnabled()) {
+    onError('Offline maps require CatchMap Pro.');
     return;
   }
 

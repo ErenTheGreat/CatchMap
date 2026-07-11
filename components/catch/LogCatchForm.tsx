@@ -8,6 +8,7 @@ import PhotoPicker from '@/components/catch/PhotoPicker';
 import CatchDateTimeField from '@/components/catch/CatchDateTimeField';
 import CatchRegulationCard from '@/components/catch/CatchRegulationCard';
 import { isCloudSyncFeatureAvailable, isSpeciesIdEnabled, isCatchAiChatEnabled } from '@/constants/features';
+import { usePro } from '@/providers/ProProvider';
 import speciesData from '@/data/species.json';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -123,9 +124,12 @@ export default function LogCatchForm({
   coachContext,
 }: LogCatchFormProps) {
   const router = useRouter();
+  const { isPro } = usePro();
   const { colors } = useTheme();
   const { weightUnit } = useUnits();
   const { data: catches = [] } = useCatches();
+  const speciesIdAvailable = isSpeciesIdEnabled();
+  void isPro;
   const styles = useThemedStyles(createStyles);
   const baselineValues = useMemo(
     () => ({ ...EMPTY_VALUES, ...initialValues }),
@@ -483,7 +487,7 @@ export default function LogCatchForm({
 
       <PhotoPicker value={photoUri} onChange={setPhotoUri} />
 
-      {isSpeciesIdEnabled() && !photoUri ? (
+      {speciesIdAvailable && !photoUri ? (
         <Text style={styles.speciesIdHint}>
           Add a catch photo for Catch AI species ID (uses your free Google API key), or pick from
           likely species above.

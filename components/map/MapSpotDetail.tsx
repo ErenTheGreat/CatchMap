@@ -147,7 +147,7 @@ export default memo(function MapSpotDetail({
 }: MapSpotDetailProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const tripPlannerPro = useProFeature('trip_planner');
+  const { enabled: tripPlannerEnabled } = useProFeature('trip_planner');
   const bestCatchTimes = spotDetails?.bestCatchTimes ?? [];
   const absoluteDiscoveryScore = useMemo(
     () =>
@@ -295,7 +295,7 @@ export default memo(function MapSpotDetail({
         />
       ) : null}
 
-      {tripPlannerPro && breakdownScore && (breakdownScore.hourlyForecast?.length ?? 0) > 0 ? (
+      {tripPlannerEnabled && breakdownScore && (breakdownScore.hourlyForecast?.length ?? 0) > 0 ? (
         <TripPlannerCard
           hourlyForecast={breakdownScore.hourlyForecast ?? []}
           spotName={spot.name}

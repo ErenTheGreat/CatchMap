@@ -4,7 +4,7 @@ import Purchases, {
   type PurchasesPackage,
   LOG_LEVEL,
 } from 'react-native-purchases';
-import { PRO_ENTITLEMENT_ID, PRO_PRODUCT_ID } from '@/constants/pro';
+import { PRO_ENTITLEMENT_ID, PRO_MONTHLY_PRODUCT_ID, PRO_PRODUCT_ID } from '@/constants/pro';
 
 let configured = false;
 
@@ -69,26 +69,67 @@ export async function fetchProEntitlement(): Promise<boolean> {
   }
 }
 
+async function getCurrentOffering() {
+  const offerings = await Purchases.getOfferings();
+  return offerings.current ?? null;
+}
+
+function findPackageByProductId(
+  current: NonNullable<Awaited<ReturnType<typeof getCurrentOffering>>>,
+  productId: string,
+  packageType?: 'MONTHLY' | 'LIFETIME'
+): PurchasesPackage | null {
+  const byProduct = current.availablePackages.find(
+    (pkg) => pkg.product.identifier === productId
+  );
+  if (byProduct) return byProduct;
+
+  if (packageType === 'MONTHLY') {
+    const monthly = current.monthly;
+    if (monthly?.product.identifier === productId) {
+      return monthly;
+    }
+    return monthly ?? null;
+  }
+
+  if (packageType === 'LIFETIME') {
+    const lifetime = current.lifetime;
+    if (lifetime?.product.identifier === productId) {
+      return lifetime;
+    }
+    return lifetime ?? null;
+  }
+
+  return null;
+}
+
 export async function findProPackage(): Promise<PurchasesPackage | null> {
   if (!isRevenueCatAvailable()) {
     return null;
   }
   try {
-    const offerings = await Purchases.getOfferings();
-    const current = offerings.current;
+    const current = await getCurrentOffering();
     if (!current) return null;
 
-    const byProduct = current.availablePackages.find(
-      (pkg) => pkg.product.identifier === PRO_PRODUCT_ID
-    );
-    if (byProduct) return byProduct;
-
-    const lifetime = current.lifetime;
-    if (lifetime?.product.identifier === PRO_PRODUCT_ID) {
-      return lifetime;
-    }
+    const lifetime = findPackageByProductId(current, PRO_PRODUCT_ID, 'LIFETIME');
+    if (lifetime) return lifetime;
 
     return current.availablePackages[0] ?? null;
+  } catch (error) {
+    if (__DEV__) console.warn('[pro] getOfferings failed:', error);
+    return null;
+  }
+}
+
+export async function findProMonthlyPackage(): Promise<PurchasesPackage | null> {
+  if (!isRevenueCatAvailable()) {
+    return null;
+  }
+  try {
+    const current = await getCurrentOffering();
+    if (!current) return null;
+
+    return findPackageByProductId(current, PRO_MONTHLY_PRODUCT_ID, 'MONTHLY');
   } catch (error) {
     if (__DEV__) console.warn('[pro] getOfferings failed:', error);
     return null;
@@ -131,5 +172,10 @@ export async function restoreProPurchases(): Promise<{
 
 export async function getProPriceString(): Promise<string | null> {
   const pkg = await findProPackage();
+  return pkg?.product.priceString ?? null;
+}
+
+export async function getProMonthlyPriceString(): Promise<string | null> {
+  const pkg = await findProMonthlyPackage();
   return pkg?.product.priceString ?? null;
 }

@@ -49,11 +49,14 @@ Deno.serve(async (req) => {
 
   const eventType = String(event.type ?? '');
   const appUserId = String(event.app_user_id ?? '');
-  const productId = String((event.product_id as string | undefined) ?? 'catchmap_pro_lifetime');
+  const productId = String(
+    (event.product_id as string | undefined) ?? 'catchmap_pro_lifetime'
+  );
 
   const grantEvents = new Set([
     'INITIAL_PURCHASE',
     'NON_RENEWING_PURCHASE',
+    'RENEWAL',
     'RESTORE',
     'PRODUCT_CHANGE',
   ]);

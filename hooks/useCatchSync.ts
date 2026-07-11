@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { isCloudSyncEnabled } from '@/constants/features';
+import { isCloudSyncFeatureAvailable } from '@/constants/features';
 import { fishingApi } from '@/lib/api/fishingApi';
 import { useToast } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
 import { useNetworkStatus } from '@/providers/NetworkProvider';
+import { usePro } from '@/providers/ProProvider';
 
 const CATCHES_KEY = ['catches'];
 const SYNC_COOLDOWN_MS = 30_000;
@@ -16,10 +17,12 @@ export function useCatchSync() {
   const { showToast } = useToast();
   const { isOnline } = useNetworkStatus();
   const { user } = useAuth();
+  const { isPro } = usePro();
   const lastSyncAtRef = useRef(0);
   const syncingRef = useRef(false);
   const wasOfflineRef = useRef(false);
-  const cloudSync = isCloudSyncEnabled() && user != null;
+  const cloudSync =
+    isCloudSyncFeatureAvailable() && user != null && isPro;
   const runSyncRef = useRef<(force?: boolean) => void>(() => {});
 
   const syncMutation = useMutation({
@@ -75,7 +78,7 @@ export function useCatchSync() {
     }
   }, [isOnline]);
 
-  // Re-runs when the user signs in so locally saved catches upload immediately.
+  // Re-runs when the user signs in or Pro unlocks so pending catches upload immediately.
   useEffect(() => {
     runSync(true);
 
@@ -86,7 +89,7 @@ export function useCatchSync() {
     });
 
     return () => subscription.remove();
-  }, [isOnline, user?.id]);
+  }, [isOnline, user?.id, isPro]);
 }
 
 /** Mount once at app root to enable background catch sync. */

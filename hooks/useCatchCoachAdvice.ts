@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { isCatchCoachEnabled } from '@/constants/features';
+import { usePro } from '@/providers/ProProvider';
 import { useCatchInsights } from '@/hooks/useCatchInsights';
 import { useCommunityCatchActivity } from '@/hooks/useCommunityCatchActivity';
 import { fishingApi } from '@/lib/api/fishingApi';
@@ -93,9 +94,11 @@ export function useCatchCoachAdvice({
   enabled = true,
 }: UseCatchCoachAdviceOptions) {
   const { isOffline } = useNetworkStatus();
+  const { isPro } = usePro();
   const { catches, getPersonalSpeciesNear } = useCatchInsights();
 
   const speciesEnabled = enabled && isCatchCoachEnabled() && !!species.trim();
+  void isPro;
   const hasCoords = latitude != null && longitude != null;
   const useExternalContext = !!context?.guide || !!context?.prediction;
 

@@ -68,6 +68,8 @@ import type { MapLayerState } from '@/lib/mapLayers/config';
 import { isPersonalBiteEnabled, isCloudSyncEnabled } from '@/constants/features';
 import { useProFeature } from '@/hooks/useProFeature';
 import { PRO_UPGRADE_HREF } from '@/constants/routes';
+import { getMaxWaypoints } from '@/constants/pro';
+import { usePro } from '@/providers/ProProvider';
 import { savedSpotToNearbySpot, type SavedSpotSnapshot } from '@/lib/types/savedSpot';
 import { getSpotLogSpeciesOptions } from '@/lib/species/spotLogSpecies';
 import { prefetchSpotData } from '@/lib/species/prefetchSpotData';
@@ -94,8 +96,9 @@ export default function MapScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
-  const tripPlannerPro = useProFeature('trip_planner');
-  const premiumMapLayersPro = useProFeature('premium_map_layers');
+  const { enabled: tripPlannerEnabled } = useProFeature('trip_planner');
+  const { enabled: premiumMapLayersPro, loading: premiumLayersLoading } =
+    useProFeature('premium_map_layers');
   const { lat: flyLatParam, lng: flyLngParam } = useLocalSearchParams<{
     lat?: string;
     lng?: string;
@@ -322,7 +325,22 @@ export default function MapScreen() {
     deleteWaypoint,
     saving: savingWaypoint,
   } = useWaypoints();
-  const { layers, radarTileUrl, radarLoading, radarError, toggleLayer } = useMapLayers();
+  const { layers, radarTileUrl, radarLoading, radarError, toggleLayer, setLayers } =
+    useMapLayers();
+  const { isPro } = usePro();
+
+  useEffect(() => {
+    if (premiumLayersLoading || premiumMapLayersPro) return;
+    setLayers((prev) => {
+      if (!prev.radar && !prev.heatmap && !prev.community) return prev;
+      return { ...prev, radar: false, heatmap: false, community: false };
+    });
+  }, [premiumMapLayersPro, premiumLayersLoading, setLayers]);
+
+  const effectiveLayers = useMemo(() => {
+    if (premiumMapLayersPro) return layers;
+    return { ...layers, radar: false, heatmap: false, community: false };
+  }, [layers, premiumMapLayersPro]);
 
   const personalBoost = useMemo(() => {
     if (!isPersonalBiteEnabled() || !fingerprint.unlocked || !weather) return 0;
@@ -353,20 +371,23 @@ export default function MapScreen() {
   );
 
   const biteHeatmapGeoJson = useMemo(() => {
-    if (!layers.heatmap) return null;
+    if (!effectiveLayers.heatmap) return null;
     return buildBiteHeatmapGeoJson(discoverySpots, scoresBySpotId);
-  }, [layers.heatmap, discoverySpots, scoresBySpotId]);
+  }, [effectiveLayers.heatmap, discoverySpots, scoresBySpotId]);
 
   const handleToggleLayer = useCallback(
     (layer: keyof MapLayerState) => {
       const premiumLayers: (keyof MapLayerState)[] = ['radar', 'heatmap', 'community'];
-      if (premiumLayers.includes(layer) && !premiumMapLayersPro) {
-        router.push(PRO_UPGRADE_HREF);
-        return;
+      if (premiumLayers.includes(layer)) {
+        if (premiumLayersLoading) return;
+        if (!premiumMapLayersPro) {
+          router.push(PRO_UPGRADE_HREF);
+          return;
+        }
       }
       toggleLayer(layer);
     },
-    [toggleLayer, router, premiumMapLayersPro]
+    [toggleLayer, router, premiumMapLayersPro, premiumLayersLoading]
   );
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -564,6 +585,17 @@ export default function MapScreen() {
   const handleSaveWaypoint = useCallback(
     async (values: { name: string; notes: string }) => {
       if (!pendingWaypointCoords) return;
+      const waypointLimit = getMaxWaypoints(isPro);
+      if (waypoints.length >= waypointLimit) {
+        hapticWarning();
+        showToast({
+          message: `Waypoint limit reached (${waypointLimit})`,
+          variant: 'warning',
+          actionLabel: isPro ? undefined : 'Upgrade',
+          onAction: isPro ? undefined : () => router.push(PRO_UPGRADE_HREF),
+        });
+        return;
+      }
       try {
         await saveWaypoint({
           name: values.name.trim() || 'My spot',
@@ -581,7 +613,7 @@ export default function MapScreen() {
         showToast({ message: 'Could not save waypoint', variant: 'error' });
       }
     },
-    [pendingWaypointCoords, saveWaypoint, showToast]
+    [pendingWaypointCoords, saveWaypoint, showToast, waypoints.length, isPro, router]
   );
 
   const handleWaypointPress = useCallback((waypoint: WaypointRecord) => {
@@ -892,7 +924,7 @@ export default function MapScreen() {
             waypoints={waypoints}
             onWaypointPress={handleWaypointPress}
             onMapLongPress={handleMapLongPress}
-            mapLayers={layers}
+            mapLayers={effectiveLayers}
             radarTileUrl={radarTileUrl}
             biteHeatmapGeoJson={biteHeatmapGeoJson}
           />
@@ -924,7 +956,12 @@ export default function MapScreen() {
             showLegend={showLegend}
             onToggleLegend={() => setShowLegend((prev) => !prev)}
             onLayersPress={() => setLayerSheetVisible(true)}
-            mapLayersActive={layers.depth || layers.radar || layers.heatmap || layers.community}
+            mapLayersActive={
+              effectiveLayers.depth ||
+              effectiveLayers.radar ||
+              effectiveLayers.heatmap ||
+              effectiveLayers.community
+            }
             bottomOffset={fabBottomOffset}
           />
 
@@ -1018,7 +1055,7 @@ export default function MapScreen() {
             discoveryEnriching={discoveryEnriching}
             onGoToBestSpot={handleGoToBestSpot}
             onPlanTrip={() => {
-              if (!tripPlannerPro) {
+              if (!tripPlannerEnabled) {
                 router.push(PRO_UPGRADE_HREF);
                 return;
               }
@@ -1060,7 +1097,7 @@ export default function MapScreen() {
 
       <MapLayerSheet
         visible={layerSheetVisible}
-        layers={layers}
+        layers={effectiveLayers}
         radarLoading={radarLoading}
         radarError={radarError}
         heatmapStatus={heatmapStatus}

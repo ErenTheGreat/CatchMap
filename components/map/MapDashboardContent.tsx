@@ -60,8 +60,8 @@ export default function MapDashboardContent({
   onViewInsights,
   onUseRecommendation,
 }: MapDashboardContentProps) {
-  const tripPlannerPro = useProFeature('trip_planner');
-  const offlineMapsPro = useProFeature('offline_maps');
+  const { enabled: tripPlannerEnabled } = useProFeature('trip_planner');
+  const { enabled: offlineMapsEnabled } = useProFeature('offline_maps');
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [selectedRecommendation, setSelectedRecommendation] =
@@ -78,7 +78,7 @@ export default function MapDashboardContent({
       ) : null}
 
       {offlineMap.state !== 'unavailable' ? (
-        offlineMapsPro ? (
+        offlineMapsEnabled ? (
         <View style={styles.offlineRow}>
           {offlineMap.state === 'idle' && (
             <TouchableOpacity style={styles.offlineButton} onPress={offlineMap.download}>
@@ -122,9 +122,9 @@ export default function MapDashboardContent({
         )
       ) : null}
 
-      {tripPlannerPro && bestTime.hourlyForecast.length > 0 ? (
+      {tripPlannerEnabled && bestTime.hourlyForecast.length > 0 ? (
         <TripPlannerCard hourlyForecast={bestTime.hourlyForecast} />
-      ) : !tripPlannerPro ? (
+      ) : !tripPlannerEnabled ? (
         <ProUpsellCard
           compact
           title="Trip planner"

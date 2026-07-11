@@ -135,7 +135,7 @@ function DiscoveryDashboard({
 }: DiscoveryDashboardProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const tripPlannerPro = useProFeature('trip_planner');
+  const { enabled: tripPlannerEnabled } = useProFeature('trip_planner');
   const [filter, setFilter] = useState<DiscoveryFilter>('all');
 
   const hasScores = Object.keys(scoresBySpotId).length > 0;
@@ -397,7 +397,7 @@ function DiscoveryDashboard({
       ) : null}
 
       {onPlanTrip ? (
-        tripPlannerPro ? (
+        tripPlannerEnabled ? (
           <ScalePressable
             style={styles.planTripButton}
             onPress={onPlanTrip}
@@ -514,7 +514,7 @@ function DiscoveryDashboard({
         </View>
       ) : null}
 
-      {tripPlannerPro && topScore && (topScore.hourlyForecast?.length ?? 0) > 0 ? (
+      {tripPlannerEnabled && topScore && (topScore.hourlyForecast?.length ?? 0) > 0 ? (
         <View style={styles.insightSection}>
           <TripPlannerCard
             hourlyForecast={topScore.hourlyForecast ?? []}

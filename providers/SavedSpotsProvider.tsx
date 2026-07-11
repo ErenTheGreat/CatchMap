@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useRouter } from 'expo-router';
 import {
   loadRecentSpots,
   loadSavedSpots,
@@ -17,6 +18,10 @@ import {
 } from '@/utils/savedSpotsStorage';
 import type { RecentSpotSnapshot, SavedSpotSnapshot } from '@/lib/types/savedSpot';
 import type { NearbySpot } from '@/utils/osmFishingSpots';
+import { getMaxSavedSpots } from '@/constants/pro';
+import { PRO_UPGRADE_HREF } from '@/constants/routes';
+import { usePro } from '@/providers/ProProvider';
+import { useToast } from '@/components/ui';
 
 interface SavedSpotsContextValue {
   ready: boolean;
@@ -34,6 +39,9 @@ export function SavedSpotsProvider({ children }: { children: React.ReactNode }) 
   const [ready, setReady] = useState(false);
   const [savedSpots, setSavedSpots] = useState<SavedSpotSnapshot[]>([]);
   const [recentSpots, setRecentSpots] = useState<RecentSpotSnapshot[]>([]);
+  const { isPro } = usePro();
+  const { showToast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -56,11 +64,21 @@ export function SavedSpotsProvider({ children }: { children: React.ReactNode }) 
   const toggleSaved = useCallback((spot: NearbySpot) => {
     setSavedSpots((prev) => {
       const exists = prev.some((item) => item.id === spot.id);
+      const limit = getMaxSavedSpots(isPro);
+      if (!exists && prev.length >= limit) {
+        showToast({
+          message: `Saved spot limit reached (${limit})`,
+          variant: 'warning',
+          actionLabel: isPro ? undefined : 'Upgrade',
+          onAction: isPro ? undefined : () => router.push(PRO_UPGRADE_HREF),
+        });
+        return prev;
+      }
       const next = exists ? removeSavedSpot(prev, spot.id) : upsertSavedSpot(prev, spot);
       void saveSavedSpots(next);
       return next;
     });
-  }, []);
+  }, [isPro, router, showToast]);
 
   const removeSaved = useCallback((spotId: string) => {
     setSavedSpots((prev) => {
