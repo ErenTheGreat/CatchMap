@@ -1,0 +1,8 @@
+{
+  "source": "data/us/great_lakes_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/great_lakes",
+  "rows": 11940,
+  "batches": 24,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-06T23:29:36.074Z"
+}

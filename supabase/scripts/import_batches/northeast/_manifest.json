@@ -1,0 +1,8 @@
+{
+  "source": "data/us/northeast_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/northeast",
+  "rows": 7257,
+  "batches": 15,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T10:40:48.661Z"
+}

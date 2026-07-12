@@ -1,0 +1,8 @@
+{
+  "source": "data/us/northern_plains_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/northern_plains",
+  "rows": 2386,
+  "batches": 5,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T11:23:04.669Z"
+}

@@ -1,0 +1,9 @@
+{
+  "source": "data/ca_waterbodies.json",
+  "offset": 500,
+  "chunkSize": 400,
+  "rows": 16664,
+  "chunks": 42,
+  "outDir": "supabase/scripts/import_batches/_ca_json_chunks",
+  "generatedAt": "2026-07-06T22:31:11.363Z"
+}

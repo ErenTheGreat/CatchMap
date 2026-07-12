@@ -1,0 +1,142 @@
+{
+  "great_lakes": {
+    "label": "Great Lakes",
+    "bbox": [-92.5, 41.0, -76.0, 49.5],
+    "states": ["MI", "WI", "MN", "OH", "IL", "IN", "NY"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 12,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "gulf_coast": {
+    "label": "Gulf Coast and Florida",
+    "bbox": [-97.5, 24.0, -80.0, 35.0],
+    "states": ["TX", "LA", "MS", "AL", "FL"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "northeast": {
+    "label": "Northeast Atlantic",
+    "bbox": [-80.0, 36.0, -66.0, 47.5],
+    "states": ["ME", "NH", "VT", "MA", "RI", "CT", "NY", "NJ", "PA", "DE", "MD", "VA"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "pacific_nw": {
+    "label": "Pacific Northwest",
+    "bbox": [-125.0, 42.0, -116.0, 49.5],
+    "states": ["OR", "WA", "ID"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "california": {
+    "label": "California",
+    "bbox": [-124.5, 32.5, -114.0, 42.0],
+    "states": ["CA"],
+    "source": "cdfw",
+    "minLakeAreaSqKm": 0,
+    "minStreamLengthKm": 0
+  },
+  "intermountain_west": {
+    "label": "Intermountain West",
+    "bbox": [-115.0, 31.0, -102.0, 42.0],
+    "states": ["AZ", "NM", "NV", "UT"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "rocky_mountain": {
+    "label": "Rocky Mountain",
+    "bbox": [-115.0, 41.0, -102.0, 49.0],
+    "states": ["CO", "WY", "MT"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "great_plains": {
+    "label": "Great Plains",
+    "bbox": [-102.0, 35.0, -92.5, 41.0],
+    "states": ["OK", "KS", "NE", "MO", "AR"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "northern_plains": {
+    "label": "Northern Plains",
+    "bbox": [-104.0, 41.0, -96.0, 49.0],
+    "states": ["ND", "SD"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  },
+  "southeast_inland": {
+    "label": "Southeast Inland",
+    "bbox": [-88.0, 33.0, -80.0, 36.0],
+    "states": ["TN", "KY"],
+    "tileSpanDeg": 1,
+    "minLakeAreaSqKm": 0.162,
+    "minStreamLengthKm": 8,
+    "fetchParallel": 4,
+    "nhd": {
+      "waterbodyLayer": 12,
+      "flowlineLayer": 6,
+      "waterbodyFTypes": [390, 436, 466],
+      "flowlineFTypes": [460, 558]
+    }
+  }
+}

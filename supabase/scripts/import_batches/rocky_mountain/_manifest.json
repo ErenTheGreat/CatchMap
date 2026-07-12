@@ -1,0 +1,8 @@
+{
+  "source": "data/us/rocky_mountain_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/rocky_mountain",
+  "rows": 1891,
+  "batches": 4,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T11:23:04.609Z"
+}

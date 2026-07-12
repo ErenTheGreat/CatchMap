@@ -1,0 +1,77 @@
+CatchMap: Fishing Spots & Log — Play Store listing (Pro launch)
+================================================================
+
+ANDROID PACKAGE ID
+------------------
+app.catchmap
+(Must match app.config.ts / eas.json production build.)
+
+PRIVACY POLICY (live)
+---------------------
+https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy
+
+TERMS OF SERVICE (live)
+-----------------------
+https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/terms-of-service
+
+SHORT DESCRIPTION (max 80 characters)
+---------------------------------------
+Discover US fishing spots, bite forecasts, and log catches with optional cloud backup.
+
+FULL DESCRIPTION
+----------------
+CatchMap helps anglers fish smarter across the United States.
+
+DISCOVER SPOTS ON THE MAP
+• Explore lakes, rivers, bays, and coastal waters on an interactive map
+• Search by name and pan to browse new areas
+• Bite forecasts combine weather, tides, solunar periods, and species patterns
+• See anonymized community catch activity near your viewport
+
+LOG EVERY CATCH
+• Record species, weight, length, lure, notes, and photos
+• Capture date, time, and conditions at the moment you landed the fish
+• Review history with search, filters, and personal-best highlights
+• Export your log as JSON or CSV
+
+CATCHMAP PRO
+Upgrade to Pro for the serious angler toolkit:
+• Hosted Catch AI — chat assistant for rigs, conditions, and tactics
+• Photo species identification from your catch pictures
+• Cloud backup and sync when signed in
+• Trip planner with ranked spots, reminders, and weekend outlook
+• Pattern-match alerts and personal bite fingerprint insights
+• Premium map layers: radar, heatmap, community activity
+• Daily fishing plan, Fish Today verdict, and spot compare
+
+Free map and catch logging. Pro unlocks AI, sync, and advanced planning.
+
+YOUR DATA, YOUR CHOICE
+Use CatchMap without an account — everything stays on your device. Sign in with Pro to back up catches privately. Community insights use only anonymized, opt-in data.
+
+Support: support@catchmap.app
+Privacy: https://cpzwvlpqdzjjsdlnmfgg.supabase.co/functions/v1/privacy-policy
+
+SCREENSHOTS (8 recommended)
+---------------------------
+1. Map with discovery dashboard and bite score
+2. Spot detail — weather, tides, species predictions
+3. Log catch form with species picker
+4. Catch history with insights
+5. Species guide with rig diagram
+6. Catch AI chat (Pro)
+7. Trip planner / Fish Today (Pro)
+8. Settings — account, Pro upgrade, legal links
+
+BUILD & SUBMIT
+--------------
+1. Configure RevenueCat keys: ./scripts/setup-revenuecat-eas-env.sh
+2. Set Supabase secrets (see docs/PRO_LAUNCH_SETUP.md)
+3. npm run verify:pro-launch
+4. eas build --platform android --profile production
+5. eas submit --platform android --profile production --latest
+
+LAUNCH NOTES
+------------
+• v1.0 does NOT include offline map downloads in production builds.
+• Do not advertise offline maps in store copy until a future native-map release.

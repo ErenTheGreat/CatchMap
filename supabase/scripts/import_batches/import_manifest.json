@@ -1,0 +1,142 @@
+[
+  {
+    "batch": "batch_001.sql",
+    "bytes": 74019
+  },
+  {
+    "batch": "batch_002.sql",
+    "bytes": 73854
+  },
+  {
+    "batch": "batch_003.sql",
+    "bytes": 73503
+  },
+  {
+    "batch": "batch_004.sql",
+    "bytes": 73708
+  },
+  {
+    "batch": "batch_005.sql",
+    "bytes": 73514
+  },
+  {
+    "batch": "batch_006.sql",
+    "bytes": 73941
+  },
+  {
+    "batch": "batch_007.sql",
+    "bytes": 74531
+  },
+  {
+    "batch": "batch_008.sql",
+    "bytes": 74564
+  },
+  {
+    "batch": "batch_009.sql",
+    "bytes": 73996
+  },
+  {
+    "batch": "batch_010.sql",
+    "bytes": 74163
+  },
+  {
+    "batch": "batch_011.sql",
+    "bytes": 74111
+  },
+  {
+    "batch": "batch_012.sql",
+    "bytes": 74635
+  },
+  {
+    "batch": "batch_013.sql",
+    "bytes": 74945
+  },
+  {
+    "batch": "batch_014.sql",
+    "bytes": 74681
+  },
+  {
+    "batch": "batch_015.sql",
+    "bytes": 74684
+  },
+  {
+    "batch": "batch_016.sql",
+    "bytes": 74875
+  },
+  {
+    "batch": "batch_017.sql",
+    "bytes": 74999
+  },
+  {
+    "batch": "batch_018.sql",
+    "bytes": 75016
+  },
+  {
+    "batch": "batch_019.sql",
+    "bytes": 74987
+  },
+  {
+    "batch": "batch_020.sql",
+    "bytes": 74652
+  },
+  {
+    "batch": "batch_021.sql",
+    "bytes": 75147
+  },
+  {
+    "batch": "batch_022.sql",
+    "bytes": 74961
+  },
+  {
+    "batch": "batch_023.sql",
+    "bytes": 74979
+  },
+  {
+    "batch": "batch_024.sql",
+    "bytes": 75061
+  },
+  {
+    "batch": "batch_025.sql",
+    "bytes": 75098
+  },
+  {
+    "batch": "batch_026.sql",
+    "bytes": 75290
+  },
+  {
+    "batch": "batch_027.sql",
+    "bytes": 74926
+  },
+  {
+    "batch": "batch_028.sql",
+    "bytes": 75178
+  },
+  {
+    "batch": "batch_029.sql",
+    "bytes": 75084
+  },
+  {
+    "batch": "batch_030.sql",
+    "bytes": 75423
+  },
+  {
+    "batch": "batch_031.sql",
+    "bytes": 74466
+  },
+  {
+    "batch": "batch_032.sql",
+    "bytes": 76266
+  },
+  {
+    "batch": "batch_033.sql",
+    "bytes": 74645
+  },
+  {
+    "batch": "batch_034.sql",
+    "bytes": 74938
+  },
+  {
+    "batch": "batch_035.sql",
+    "bytes": 24884
+  }
+]

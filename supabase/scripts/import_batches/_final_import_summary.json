@@ -1,0 +1,54 @@
+{
+  "batches_run": [
+    {
+      "batch": "001",
+      "status": "success",
+      "chars": 74019,
+      "note": "previously completed"
+    },
+    {
+      "batch": "002",
+      "status": "queued",
+      "chars": 73854
+    },
+    {
+      "batch": "003",
+      "status": "queued",
+      "chars": 73503
+    },
+    {
+      "batch": "004",
+      "status": "queued",
+      "chars": 73708
+    },
+    {
+      "batch": "005",
+      "status": "queued",
+      "chars": 73514
+    },
+    {
+      "batch": "006",
+      "status": "queued",
+      "chars": 73941
+    },
+    {
+      "batch": "007",
+      "status": "queued",
+      "chars": 74531
+    },
+    {
+      "batch": "008",
+      "status": "queued",
+      "chars": 74564
+    },
+    {
+      "batch": "009",
+      "status": "queued",
+      "chars": 73996
+    }
+  ],
+  "errors": [],
+  "timeouts": [],
+  "locations_count_before": 1060,
+  "note": "Use CallMcpTool execute_sql with _mcp_live_XXX.json payloads"
+}

@@ -1,0 +1,8 @@
+{
+  "source": "data/us/great_plains_waterbodies.json",
+  "outDir": "supabase/scripts/import_batches/great_plains",
+  "rows": 803,
+  "batches": 2,
+  "rowsPerBatch": 500,
+  "generatedAt": "2026-07-08T11:23:04.637Z"
+}

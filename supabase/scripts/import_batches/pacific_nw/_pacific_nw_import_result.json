@@ -1,0 +1,32 @@
+{
+  "project_id": "cpzwvlpqdzjjsdlnmfgg",
+  "chunks_total": 13,
+  "chunks_ok": 13,
+  "chunks_failed": 0,
+  "before": {
+    "total_locations": 28980,
+    "pacific_nw_count": 8
+  },
+  "after": {
+    "total_locations": 30480,
+    "pacific_nw_count": 1488
+  },
+  "added_total": 1500,
+  "added_pacific_nw": 1480,
+  "errors": [],
+  "completed": [
+    "batch_001_chunk_01.sql",
+    "batch_001_chunk_02.sql",
+    "batch_001_chunk_03.sql",
+    "batch_001_chunk_04.sql",
+    "batch_002_chunk_01.sql",
+    "batch_002_chunk_02.sql",
+    "batch_002_chunk_03.sql",
+    "batch_002_chunk_04.sql",
+    "batch_003_chunk_01.sql",
+    "batch_003_chunk_02.sql",
+    "batch_003_chunk_03.sql",
+    "batch_003_chunk_04.sql",
+    "batch_004_chunk_01.sql"
+  ]
+}
