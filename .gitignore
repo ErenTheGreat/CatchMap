@@ -58,6 +58,24 @@ _mcp_*
 _next_mcp*
 _q_*
 _q0*
+# Uppercase import/MCP scratch (case-sensitive git on EAS conflicts with lowercase rules above)
+supabase/scripts/import_batches/_EXEC_*
+supabase/scripts/import_batches/_IMPORT_*
+supabase/scripts/import_batches/_MCP_BATCHES.json
+supabase/scripts/import_batches/_MCP_EXEC_*
+supabase/scripts/import_batches/_MCP_QUERY_*
+supabase/scripts/import_batches/_payload_*
+supabase/scripts/import_batches/_run_*.json
+supabase/scripts/import_batches/_round*.json
+supabase/scripts/import_batches/_tmp_*
+supabase/scripts/import_batches/_batch*.json
+supabase/scripts/import_batches/_out_*.sql
+supabase/scripts/import_batches/_chunk_out_*
+supabase/scripts/import_batches/_active.*
+supabase/scripts/import_batches/_inline_query.txt
+supabase/scripts/import_batches/_q.txt
+supabase/scripts/import_batches/_q.sql
+supabase/scripts/import_batches/_p*.json
 supabase/.exec_*
 supabase/.mcp_*
 supabase/.query_*

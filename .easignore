@@ -1,2 +1,3 @@
+# Not needed for mobile builds — avoids macOS/git filename casing issues.
 supabase/scripts/import_batches/
-supabase/scripts/import_batches/
+supabase/scripts/
