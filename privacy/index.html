@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — CatchMap</title>
+  <meta name="description" content="CatchMap privacy policy: what data we collect, how we use it, and your choices." />
+  <meta name="theme-color" content="#0f1f3d" />
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ErenTheGreat/CatchMap/master/assets/images/favicon.png" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #0f1f3d;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --body: #cbd5e1;
+      --accent: #60a5fa;
+      --line: rgba(255, 255, 255, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1a3560 0%, var(--bg) 55%);
+      color: var(--ink);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(11, 18, 32, 0.7);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+    }
+    .bar {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bar img { width: 28px; height: 28px; border-radius: 8px; }
+    .bar strong { font-size: 0.95rem; letter-spacing: 0.02em; }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    h1 { font-size: clamp(1.6rem, 3vw, 2rem); line-height: 1.2; margin: 0 0 8px; }
+    .muted { color: var(--muted); font-size: 0.95rem; }
+    h2 {
+      font-size: 1.05rem;
+      margin: 2rem 0 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--line);
+    }
+    p, li { color: var(--body); }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.45rem 0; }
+    strong { color: var(--ink); }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <img src="https://raw.githubusercontent.com/ErenTheGreat/CatchMap/master/assets/images/icon.png" alt="" width="28" height="28" />
+      <strong>CatchMap</strong>
+      <span class="muted">Privacy Policy</span>
+    </div>
+  </header>
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="muted">Last updated: July 26, 2026</p>
+    <p>CatchMap helps anglers discover fishing spots, view conditions, and log catches. This policy explains what data the app collects and how we use it.</p>
+
+    <h2>Information we collect</h2>
+    <ul>
+      <li><strong>Location (optional)</strong> — Used to show nearby fishing spots on the map while you use the app. Not sold or used for advertising. We do not request background location.</li>
+      <li><strong>Account (optional)</strong> — Email and password if you sign in for cloud backup. Managed by Supabase Auth.</li>
+      <li><strong>Catch logs</strong> — Stored <strong>locally on your device</strong> by default. When signed in with CatchMap Pro, catches and photos may sync to your private cloud account (protected by row-level security).</li>
+      <li><strong>Community contribution (opt-in per catch)</strong> — If you enable sharing on a catch log, anonymized species, lure, and approximate area data may contribute to community bite insights. Your name and exact GPS are never shared.</li>
+      <li><strong>Photos (optional)</strong> — Stored on your device; uploaded to private cloud storage only when signed in with CatchMap Pro and attached to a catch. Pro photo species ID sends images to our secure AI proxy (Google Gemini) for identification — images are not stored by CatchMap after processing.</li>
+      <li><strong>CatchMap Pro (optional purchase)</strong> — Available as an auto-renewing monthly subscription and/or a one-time lifetime purchase via Apple App Store or Google Play. Pro unlocks hosted Catch AI, cloud backup, trip planner, and related features. Purchase status is verified via Apple/Google and RevenueCat.</li>
+      <li><strong>Hosted Catch AI (Pro)</strong> — Chat prompts, species ID photos, and coaching requests are sent to our servers and processed with Google Gemini under a daily fair-use limit. We do not sell AI prompts or catch photos.</li>
+      <li><strong>Map &amp; species data</strong> — Loaded from our backend over HTTPS.</li>
+      <li><strong>Personal patterns</strong> — Bite fingerprints, trip feedback, and pattern-match alerts are computed on your device from your catch history.</li>
+      <li><strong>Feedback (optional)</strong> — Message, category, app version, platform, optional email.</li>
+      <li><strong>Crash diagnostics (optional)</strong> — If enabled in a future release, anonymous crash reports may be sent to help fix stability issues. No catch content or exact location is included.</li>
+    </ul>
+
+    <h2>Information we do not collect</h2>
+    <ul>
+      <li>No sale of personal data</li>
+      <li>No advertising identifiers for ads</li>
+      <li>No exact GPS in community aggregates</li>
+    </ul>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>Use the app without an account — all catches stay local-only.</li>
+      <li>Sign in with Pro to back up catches and waypoints across devices.</li>
+      <li>Toggle community contribution per catch when logging.</li>
+      <li>Manage or cancel a monthly subscription in your Apple or Google account settings.</li>
+      <li>Delete local-only catches in Settings.</li>
+      <li>Delete your account in Settings to permanently remove cloud data and your sign-in.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Settings → Send feedback in the app, or email <a href="mailto:support@catchmap.app">support@catchmap.app</a></p>
+
+    <footer>
+      <p>&copy; 2026 CatchMap. <a href="./">Privacy</a> · <a href="../terms/">Terms</a></p>
+    </footer>
+  </main>
+</body>
+</html>
