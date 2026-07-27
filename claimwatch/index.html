@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claimwatch — Know what competitor AI agents claim</title>
+    <meta
+      name="description"
+      content="Claimwatch mystery-shops competitors’ public AI support agents every week and alerts you when their claims change."
+    />
+    <meta property="og:title" content="Claimwatch" />
+    <meta
+      property="og:description"
+      content="See what rival AI agents claim before your buyers do."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://erenthegreat.github.io/CatchMap/claimwatch/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&family=Work+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="atmosphere__wash"></div>
+      <div class="atmosphere__grid"></div>
+      <div class="atmosphere__orb atmosphere__orb--a"></div>
+      <div class="atmosphere__orb atmosphere__orb--b"></div>
+    </div>
+
+    <header class="nav">
+      <a class="nav__brand" href="#top" aria-label="Claimwatch home">
+        <span class="nav__mark" aria-hidden="true"></span>
+        <span>Claimwatch</span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#signal">The signal</a>
+      </nav>
+      <a class="nav__cta" href="#access">Get early access</a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="brand-lockup">Claimwatch</p>
+          <h1>See what rival AI agents claim before your buyers do.</h1>
+          <p class="hero__lede">
+            We mystery-shop competitors’ public support bots every week and
+            alert you the moment their pricing, features, or policies shift.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#access">Request access</a>
+            <a class="btn btn--ghost" href="#how">See how it works</a>
+          </div>
+        </div>
+
+        <div class="hero__stage" aria-hidden="true">
+          <div class="radar">
+            <div class="radar__ring radar__ring--1"></div>
+            <div class="radar__ring radar__ring--2"></div>
+            <div class="radar__ring radar__ring--3"></div>
+            <div class="radar__sweep"></div>
+          </div>
+
+          <div class="probe">
+            <div class="probe__header">
+              <span class="probe__dot"></span>
+              <span class="probe__label">Live probe · competitor.support</span>
+              <span class="probe__clock" data-clock>00:00:00</span>
+            </div>
+
+            <div class="probe__thread" id="probe-thread"></div>
+
+            <div class="probe__diff" id="probe-diff">
+              <div class="diff-line diff-line--old">
+                <span>was</span>
+                <p>Enterprise from $149 / seat</p>
+              </div>
+              <div class="diff-line diff-line--new">
+                <span>now</span>
+                <p>Enterprise from $99 / seat</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--how" id="how">
+        <div class="section__intro">
+          <h2>Three moves. One weekly edge.</h2>
+          <p>
+            Claimwatch treats every competitor chatbot as a public claim surface
+            — then watches it like a release channel.
+          </p>
+        </div>
+
+        <ol class="steps">
+          <li class="step" style="--i: 0">
+            <span class="step__index">01</span>
+            <h3>Script the questions</h3>
+            <p>
+              Pricing, seat minimums, integrations, refund windows, security
+              claims — the questions buyers actually ask.
+            </p>
+          </li>
+          <li class="step" style="--i: 1">
+            <span class="step__index">02</span>
+            <h3>Probe their agents</h3>
+            <p>
+              Our scout chats their public AI support bots on a schedule and
+              captures exact answers with timestamps.
+            </p>
+          </li>
+          <li class="step" style="--i: 2">
+            <span class="step__index">03</span>
+            <h3>Ship the diffs</h3>
+            <p>
+              When a claim flips or contradicts their site, you get a Slack alert
+              and a clean weekly brief.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section section--signal" id="signal">
+        <div class="section__intro">
+          <h2>The signal your team can act on.</h2>
+          <p>
+            Not another dashboard of noise — a living transcript of what rivals
+            tell the market through their agents.
+          </p>
+        </div>
+
+        <div class="ticker" aria-hidden="true">
+          <div class="ticker__track">
+            <span>Acme bot · SOC2 claimed</span>
+            <span>Nova bot · HIPAA added</span>
+            <span>LatticeAI · seat min dropped</span>
+            <span>Forge · refund window 30→14</span>
+            <span>Pulse · Salesforce integration live</span>
+            <span>Acme bot · SOC2 claimed</span>
+            <span>Nova bot · HIPAA added</span>
+            <span>LatticeAI · seat min dropped</span>
+            <span>Forge · refund window 30→14</span>
+            <span>Pulse · Salesforce integration live</span>
+          </div>
+        </div>
+
+        <div class="signal-board">
+          <article class="signal-card" data-reveal>
+            <header>
+              <span class="signal-card__tag">Pricing</span>
+              <time>Mon 09:12</time>
+            </header>
+            <h3>Rival cut Enterprise by 33%</h3>
+            <p>
+              Support agent now quotes $99/seat. Marketing page still shows
+              $149 — contradiction flagged.
+            </p>
+          </article>
+          <article class="signal-card" data-reveal>
+            <header>
+              <span class="signal-card__tag">Compliance</span>
+              <time>Wed 14:40</time>
+            </header>
+            <h3>New HIPAA claim detected</h3>
+            <p>
+              Competitor bot answered “yes” to HIPAA for the first time in eight
+              weeks of probes.
+            </p>
+          </article>
+          <article class="signal-card" data-reveal>
+            <header>
+              <span class="signal-card__tag">Product</span>
+              <time>Fri 11:05</time>
+            </header>
+            <h3>Integration story flipped</h3>
+            <p>
+              Yesterday: “coming soon.” Today: “available now” for Salesforce —
+              before their changelog posted.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section--access" id="access">
+        <div class="access">
+          <div class="access__copy">
+            <h2>Get the Monday brief before your market does.</h2>
+            <p>
+              We’re onboarding a small set of B2B SaaS design partners. Tell us
+              who you watch — we’ll start probing.
+            </p>
+          </div>
+
+          <form class="access__form" id="access-form">
+            <label class="field">
+              <span>Work email</span>
+              <input
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                placeholder="you@company.com"
+              />
+            </label>
+            <label class="field">
+              <span>Competitors to watch</span>
+              <input
+                type="text"
+                name="competitors"
+                required
+                placeholder="e.g. Intercom, Zendesk, Drift"
+              />
+            </label>
+            <button class="btn btn--primary btn--wide" type="submit">
+              Request early access
+            </button>
+            <p class="form-note" id="form-note" role="status" aria-live="polite">
+              No spam. Just a short onboarding note.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__brand">
+        <span class="nav__mark" aria-hidden="true"></span>
+        <span>Claimwatch</span>
+      </div>
+      <p>Competitive intelligence from the agents rivals already deployed.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>

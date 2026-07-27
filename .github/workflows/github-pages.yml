@@ -1,0 +1,52 @@
+# Deploy CatchMap legal pages + Claimwatch marketing site to GitHub Pages
+name: github-pages
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'privacy/**'
+      - 'terms/**'
+      - 'claimwatch/**'
+      - 'index.html'
+      - '.github/workflows/github-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build site folder
+        run: |
+          mkdir -p site/privacy site/terms site/claimwatch
+          cp index.html site/
+          if [ -f privacy/index.html ]; then cp privacy/index.html site/privacy/; fi
+          if [ -f terms/index.html ]; then cp terms/index.html site/terms/; fi
+          if [ -d legal ]; then
+            [ -f legal/privacy-policy.html ] && cp legal/privacy-policy.html site/privacy/index.html || true
+            [ -f legal/terms-of-service.html ] && cp legal/terms-of-service.html site/terms/index.html || true
+          fi
+          cp -R claimwatch/. site/claimwatch/
+          rm -f site/claimwatch/README.md
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

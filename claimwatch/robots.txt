@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://erenthegreat.github.io/CatchMap/claimwatch/sitemap.xml
