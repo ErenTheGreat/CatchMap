@@ -3,6 +3,14 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ErenTheGreat/CatchMap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ErenTheGreat/CatchMap/issues"
+  },
+  "homepage": "https://github.com/ErenTheGreat/CatchMap#readme",
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start --dev-client --port 8081",
     "dev:clear": "EXPO_NO_TELEMETRY=1 expo start --dev-client --port 8081 --clear",

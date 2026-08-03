@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "repos": [
+    {
+      "url": "https://github.com/ErenTheGreat/CatchMap",
+      "branch": "master"
+    }
+  ],
+  "install": "npm install"
+}
